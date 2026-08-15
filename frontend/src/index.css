@@ -1,0 +1,50 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  color: #172033;
+  background-color: #ffffff;
+
+  /* Identidade visual Wiki-Chem */
+  --color-primary-dark: #0d1b4c;
+  --color-primary: #1e66ff;
+  --color-primary-light: #d6e9ff;
+  --color-background-light: #f2f6ff;
+  --color-white: #ffffff;
+
+  --color-text: #172033;
+  --color-text-secondary: #526071;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-white);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}

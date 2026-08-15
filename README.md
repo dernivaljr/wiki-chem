@@ -9,7 +9,7 @@ O projeto busca reunir técnicas, conceitos e metodologias analíticas de forma 
 ### Front-end
 
 * React
-* JavaScript
+* TypeScript
 * HTML5
 * CSS3
 
