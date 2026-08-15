@@ -65,6 +65,11 @@ wiki-chem/
 └── README.md
 ```
 
+## Licença
+
+Este projeto está licenciado sob a GNU General Public License v2.0.
+Consulte o arquivo [LICENSE](LICENSE) para mais informações.
+
 ## Status
 
 🚧 Projeto em desenvolvimento para a disciplina de **Engenharia de Software II**.
