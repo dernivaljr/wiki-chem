@@ -1,39 +1,72 @@
-# Wiki de Química Analítica 🧪
+# Wiki-Chem
 
-Guia colaborativo, aberto e acessível de química analítica focado em simplificar conceitos teóricos, métodos práticos e cálculos laboratoriais.
+**Wiki-Chem** é uma plataforma web desenvolvida para consulta e aprendizado de conteúdos relacionados à **Química Analítica**.
 
----
+O projeto busca reunir técnicas, conceitos e metodologias analíticas de forma organizada e acessível, oferecendo suporte para estudantes, professores e profissionais de laboratório.
 
-## Sobre o Projeto
-Este repositório abriga o conteúdo de uma wiki educacional dedicada à **Química Analítica**. Nosso objetivo é transformar conteúdos densos em explicações diretas, exemplos passo a passo e resoluções de problemas úteis para o dia a dia de estudantes, docentes e profissionais da área.
+## Tecnologias
 
-## Tópicos Principais
-* **Química Analítica Qualitativa:** Identificação de espécies e íons em amostras.
-* **Química Analítica Quantitativa:** Técnicas gravimétricas, volumétricas e instrumentais.
-* **Cálculos Laboratoriais:** Concentrações, estequiometria, preparo de soluções e desvio padrão.
-* **Métodos e Rotinas:** Boas práticas de laboratório, calibração de vidrarias e tratamento de dados.
+### Front-end
 
-## Para Quem é Este Guia?
-* **Estudantes:** Apoio em disciplinas de graduação e técnico em química.
-* **Professores:** Material complementar para aulas e listas de exercícios.
-* **Profissionais:** Consulta rápida de métodos e fórmulas analíticas.
+* React
+* JavaScript
+* HTML5
+* CSS3
 
-## Como Contribuir
-Adoramos novas contribuições para melhorar e expandir nosso conteúdo! Siga os passos abaixo:
-1. Faça um **Fork** deste repositório.
-2. Crie uma nova branch com a sua alteração: `git checkout -b minha-contribuicao`.
-3. Faça o **Commit** das suas alterações: `git commit -m 'Adiciona novo tópico sobre titulometria'`.
-4. Faça o **Push** para a branch: `git push origin minha-contribuicao`.
-5. Abra um **Pull Request**.
+### Back-end
 
-## Estrutura do Repositório
+* Node.js
+* API REST
+* Arquitetura MVC
+
+### Banco de Dados
+
+* MySQL
+
+### Futuras implementações
+
+* Busca semântica
+* RAG — Retrieval-Augmented Generation
+* Consulta de metodologias em artigos, handbooks, brochuras e outras fontes técnicas
+* Respostas assistidas por IA com referência às fontes utilizadas
+
+### Desenvolvimento e organização
+
+* Git
+* GitHub
+* Trello
+* Figma
+
+## Identidade Visual
+
+A identidade do Wiki-Chem combina elementos de **química, análise e conhecimento**.
+
+O símbolo utiliza um frasco de laboratório integrado a um gráfico de barras, representando a relação entre química analítica e interpretação de dados.
+
+### Paleta principal
+
+| Cor            | Hex       |
+| -------------- | --------- |
+| Azul escuro    | `#0D1B4C` |
+| Azul principal | `#1E66FF` |
+| Azul claro     | `#D6E9FF` |
+| Fundo claro    | `#F2F6FF` |
+| Branco         | `#FFFFFF` |
+
+**Tipografia:** Inter
+
+## Estrutura planejada
+
 ```text
-/
-├── content/          # Páginas e artigos da wiki em Markdown
-├── assets/           # Imagens, gráficos e fórmulas
-├── calculations/     # Exemplos práticos de cálculos em planilhas/scripts
-└── README.md         # Documentação principal do projeto
+wiki-chem/
+├── frontend/
+├── backend/
+├── docs/
+└── README.md
 ```
 
-## Licença
-Este projeto é distribuído sob a licença [MIT](LICENSE) - sinta-se livre para usar, modificar e compartilhar para fins educacionais.
+## Status
+
+🚧 Projeto em desenvolvimento para a disciplina de **Engenharia de Software II**.
+
+A primeira etapa contempla o desenvolvimento da interface em React e a implementação progressiva do backend, banco de dados e mecanismos de consulta inteligente.
