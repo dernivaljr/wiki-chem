@@ -2,17 +2,17 @@
 //import reactLogo from './assets/react.svg'
 //import viteLogo from './assets/vite.svg'
 //import heroImg from './assets/hero.png'
-//import './App.css'
+import Header from './components/Header/Header'
+import Home from './pages/Home/Home'
+import './App.css'
 
 function App() {
   //const [count, setCount] = useState(0)
 
   return (
     <>
-      <main>
-      <h1>Wiki-Chem</h1>
-      <p>Química analítica de forma clara, prática e acessível.</p>
-    </main>
+      <Header />
+      <Home />
     </>
   )
 }
