@@ -1,13 +1,14 @@
 import wikiChemSymbol from '../../assets/wiki-chem-symbol.png'
 import './Header.css'
+import { NavLink } from 'react-router-dom'
 
 function Header() {
   return (
     <header className="header">
       <div className="header__container">
-        <a
+        <NavLink
           className="header__brand"
-          href="/"
+          to="/"
           aria-label="Wiki-Chem - Página inicial"
         >
           <img
@@ -23,11 +24,11 @@ function Header() {
               QUÍMICA • ANÁLISE • CONHECIMENTO
             </span>
           </div>
-        </a>
+        </NavLink>
 
         <nav className="header__nav" aria-label="Navegação principal">
-          <a href="/">Home</a>
-          <a href="/sobre">Sobre</a>
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/sobre">Sobre</NavLink>
         </nav>
       </div>
     </header>
