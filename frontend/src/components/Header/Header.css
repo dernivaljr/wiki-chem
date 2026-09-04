@@ -69,6 +69,28 @@
   color: var(--color-primary);
 }
 
+.header__nav .header__login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: var(--color-primary-dark);
+  color: var(--color-white);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.header__nav .header__login:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.header__login span {
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
 @media (max-width: 600px) {
   .header__container {
     width: calc(100% - 32px);
@@ -94,5 +116,10 @@
 
   .header__nav a {
     font-size: 0.9rem;
+  }
+
+  .header__nav .header__login {
+    padding: 8px 10px;
+    font-size: 0.82rem;
   }
 }

@@ -29,6 +29,7 @@ function Header() {
         <nav className="header__nav" aria-label="Navegação principal">
           <NavLink to="/">Home</NavLink>
           <NavLink to="/sobre">Sobre</NavLink>
+          <NavLink className="header__login" to="/login">Entrar <span aria-hidden="true">→</span></NavLink>
         </nav>
       </div>
     </header>
