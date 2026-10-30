@@ -1,4 +1,5 @@
 import { createCatalogRepository } from './modules/catalog/catalog.repository.js'
+import { createCommerceRepository } from './modules/commerce/commerce.repository.js'
 import { createIdentityRepository } from './modules/identity/identity.repository.js'
 import { buildApp } from './app.js'
 import { ConfigurationError, loadConfig } from './config/env.js'
@@ -11,6 +12,7 @@ async function main() {
   const app = buildApp(config, {
     identity: createIdentityRepository(pool),
     catalog: createCatalogRepository(pool),
+    commerce: createCommerceRepository(pool),
     checkDatabase: createHealthRepository(pool, config.DB_TIMEOUT_MS).checkDatabase,
     closeDatabase: () => pool.end(),
   })

@@ -1,10 +1,10 @@
 # E-commerce de conteúdo digital — proposta para o MVP
 
-**Estado:** proposta para aprovação, sem integração financeira ou implementação. Regras A/P/V: [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Complementos: [modelo](MODELO-DADOS.md), [API](ARQUITETURA-MVP.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
+**Estado:** ofertas, preços e carrinho implementados no recorte A13; checkout, pedidos, direitos e demais políticas continuam propostos, sem integração financeira. Regras A/P/V: [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Complementos: [modelo](MODELO-DADOS.md), [API](ARQUITETURA-MVP.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
 
 ## 1. Unidade comercial e significado da demonstração
 
-A metodologia individual é a unidade comercial principal. P04 propõe um produto por metodologia, quantidade um e uma aquisição por usuário/metodologia no MVP. Pacotes, assinaturas, upgrade pago e pagamento real não são alternativas já implementadas.
+A metodologia individual é a unidade comercial principal. Produto único por metodologia e quantidade um foram adotados em A13; a regra de aquisição por usuário/metodologia permanece proposta em P04 para pedidos/direitos. Pacotes, assinaturas, upgrade pago e pagamento real não são alternativas já implementadas.
 
 O checkout deve exibir **“DEMONSTRAÇÃO — SEM COBRANÇA”** na revisão, confirmação, resultado e histórico. O botão proposto é “Confirmar aquisição de demonstração”. O pedido usa mode SIMULATED e conclusão COMPLETED_SIMULATED, nunca PAID. Não coletar cartão, documento financeiro, endereço de faturamento ou chave de pagamento, nem escolher/chamar gateway. O acesso concedido é real dentro da demonstração; a cobrança não existe.
 
@@ -12,7 +12,7 @@ BRL e preços individuais são orientações A03/A05. Valores comerciais, faixas
 
 ### 1.1 Valores fictícios para fixtures de desenvolvimento
 
-**DEMONSTRAÇÃO — DADOS FICTÍCIOS DE DESENVOLVIMENTO, SEM COBRANÇA OU VALIDADE COMERCIAL.** As identidades abaixo são produtos sintéticos de software, não preços das candidatas C01–C05 nem política de precificação. A tabela documenta valores de entrada para testes posteriores; não cria seed, oferta, procedimento, referência, autor ou autorização.
+**DEMONSTRAÇÃO — DADOS FICTÍCIOS DE DESENVOLVIMENTO, SEM COBRANÇA OU VALIDADE COMERCIAL.** As identidades abaixo são produtos sintéticos de software, não preços das candidatas C01–C05 nem política de precificação. A tabela fornece valores para testes isolados de ofertas/carrinho; não cria seed, oferta, procedimento, referência, autor ou autorização.
 
 | Fixture | Nome sintético | amountCentavos (string) | currency | Exibição de demonstração |
 | --- | --- | --- | --- | --- |
@@ -24,7 +24,9 @@ BRL e preços individuais são orientações A03/A05. Valores comerciais, faixas
 
 Casos monetários verificáveis: FX01 + FX02 totalizam `"2750"` (R$ 27,50); as cinco totalizam `"12000"` (R$ 120,00). Em cenário isolado de alteração de preço, FX01 muda de `"1000"` para `"1250"` (R$ 12,50): antes da confirmação, nova prévia é exigida; depois de uma aquisição já concluída a `"1000"`, o item histórico permanece nesse valor. Publicar atualização não cria nova cobrança.
 
-Futuras fixtures devem exigir ativação explícita apenas em dev/test, com marcador visível DEMO e bloqueio de carregamento em produção; não serão migrações de dados comerciais. Não atribuir estes preços às metodologias reais por correspondência de numeração. A tabela monetária não define campos de licença/revisão como aprovados: testes unitários podem isolar dependências com doubles identificados, mas publicação e integração completas precisam de conteúdo original/autorizado e condições de uso efetivamente validadas em V02. Nunca aprovar fonte fictícia ou pular a proteção editorial apenas para fazer checkout passar em testes. Não se acrescenta código/seed/configuração nesta revisão.
+As fixtures implementadas em testes recusam produção; qualquer carregador futuro deve exigir ativação explícita apenas em dev/test, com marcador visível DEMO e bloqueio de carregamento em produção; não serão migrações de dados comerciais. Não atribuir estes preços às metodologias reais por correspondência de numeração. A tabela monetária não define campos de licença/revisão como aprovados: testes unitários podem isolar dependências com doubles identificados, mas publicação e integração completas precisam de conteúdo original/autorizado e condições de uso efetivamente validadas em V02. Nunca aprovar fonte fictícia ou pular a proteção editorial apenas para fazer checkout passar em testes. Não existe carregador ou seed comercial da aplicação.
+
+O comportamento executável de oferta/carrinho, sem compra, está em [Ofertas e carrinho](OFERTAS-CARRINHO.md). As seções de pedidos e direitos abaixo permanecem propostas. Preços reais e autorização de corpus não são presumidos por testes.
 
 ## 2. Oferta, versão e direitos
 

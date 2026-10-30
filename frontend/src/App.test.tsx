@@ -14,7 +14,7 @@ describe('páginas e navegação', () => {
     expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Navegação principal' })).toBeInTheDocument()
   })
-  it.each(['/consultas', '/perfil', '/metodologias/10'])('protege %s e encaminha ao acesso', async path => {
+  it.each(['/consultas', '/perfil', '/metodologias/10', '/carrinho'])('protege %s e encaminha ao acesso', async path => {
     render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>)
     expect(await screen.findByRole('heading', { name: 'Bem-vindo de volta' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Meu perfil' })).not.toBeInTheDocument()

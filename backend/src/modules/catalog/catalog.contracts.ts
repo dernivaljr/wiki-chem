@@ -1,4 +1,7 @@
 import { z } from 'zod'
+import { id, revision } from '../../shared/identifiers.js'
+export { id, revision } from '../../shared/identifiers.js'
+import { offerSchema } from '../commerce/commerce.contracts.js'
 
 export const facets = ['techniques', 'technologies', 'equipment', 'matrices', 'analytes', 'standards', 'segments'] as const
 export type Facet = typeof facets[number]
@@ -12,8 +15,6 @@ export const facetTables = {
   standards: { table: 'standards', link: 'version_standards', column: 'standard_id' },
   segments: { table: 'segments', link: 'version_segments', column: 'segment_id' },
 } as const
-export const id = z.string().regex(/^[1-9][0-9]{0,19}$/).refine(value => /^[1-9][0-9]{0,19}$/.test(value) && BigInt(value) <= 18446744073709551615n)
-export const revision = z.number().int().positive().max(2147483647)
 export const idParams = z.strictObject({ id })
 export const paging = z.strictObject({ page: z.coerce.number().int().min(1).max(1000000).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(20) })
 const text = (max: number) => z.string().max(max).default('')
@@ -97,6 +98,7 @@ export const taxonomiesSchema = z.strictObject({
 })
 export type Taxonomies = z.infer<typeof taxonomiesSchema>
 export const previewSchema = z.strictObject({
+  offer: offerSchema.nullable(), purchasable: z.boolean(),
   id, versionId: id, versionLabel: z.string(), title: z.string(), freeSummary: z.string(), publicDescription: z.string(),
   technicalMetadata: taxonomiesSchema,
   contributors: z.array(contributorInput),

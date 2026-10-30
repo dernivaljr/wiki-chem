@@ -5,7 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { buildApp } from '../../src/app.js'
 import { loadConfig } from '../../src/config/env.js'
 import { createDatabasePool } from '../../src/database/pool.js'
-import { loadMigrations, runMigrations } from '../../src/database/migrations.js'
+import { migrateTestDatabase } from '../test-database.js'
 import { createIdentityRepository } from '../../src/modules/identity/identity.repository.js'
 import { provisionInitialAdmin } from '../../src/modules/identity/admin-bootstrap.js'
 import { sessionCookieName } from '../../src/modules/identity/identity.routes.js'
@@ -47,7 +47,7 @@ async function login(email: string, previous?: string, api = app) {
 const session = (value: string, api = app) => api.inject({ url: '/api/v1/auth/session', headers: { cookie: value } })
 
 beforeAll(async () => {
-  await runMigrations(pool, config.DB_NAME, await loadMigrations(), true)
+  await migrateTestDatabase(config)
   app = buildApp(config, { checkDatabase: async () => {}, identity: repository, now: () => now })
   await app.ready()
 })

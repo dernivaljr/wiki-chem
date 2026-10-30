@@ -1,3 +1,4 @@
+import { loadOffers, lockProductForMethod } from '../commerce/commerce.offers.js'
 import { createHash } from 'node:crypto'
 import type { Pool, PoolConnection, RowDataPacket } from 'mysql2/promise'
 import { withTransaction } from '../../database/pool.js'
@@ -50,6 +51,7 @@ async function audit(db: Db, actor: Actor, action: string, type: string, id: str
     [actor.userId, action, type, id, actor.requestId])
 }
 async function methodRow(db: Db, id: string, lock = false) {
+  if (lock) await lockProductForMethod(db, id)
   const [row] = await records(db, 'SELECT * FROM methodologies WHERE id = ? AND deleted_at IS NULL' + (lock ? ' FOR UPDATE' : ''), [id])
   if (!row) throw missing()
   return row
@@ -82,7 +84,9 @@ async function taxonomyCollections(db: Db, includeInactive: boolean) {
 async function readPreviews(db: Db, versions: Row[]): Promise<Preview[]> {
   if (!versions.length) return []
   const ids = versions.map(row => String(row.id)), slots = placeholders(ids.length)
-  const previews = versions.map(row => ({ id: String(row.methodology_id), versionId: String(row.id), versionLabel: row.version_label as string,
+  const offers = await loadOffers(db, versions.map(row => String(row.methodology_id)))
+  const previews = versions.map(row => ({
+    offer: offers.get(String(row.methodology_id)) ?? null, purchasable: offers.get(String(row.methodology_id))?.available ?? false, id: String(row.methodology_id), versionId: String(row.id), versionLabel: row.version_label as string,
     title: row.title as string, freeSummary: row.free_summary as string, publicDescription: row.public_description as string,
     technicalMetadata: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] } as Taxonomies,
     references: [] as Preview['references'], contributors: [] as Preview['contributors'],
@@ -234,6 +238,7 @@ export function createCatalogRepository(pool: Pool) {
         if (input.slug && input.slug !== row.slug && Number(history?.count)) throw new AppError(409, 'METHODOLOGY_IMMUTABLE', 'Identificador de metodologia publicada não pode ser substituído.')
         const lifecycle = input.retired === undefined ? row.lifecycle : input.retired ? 'RETIRED' : row.current_published_version_id ? 'PUBLISHED' : 'DRAFT'
         await db.execute('UPDATE methodologies SET slug = ?, lifecycle = ?, revision = revision + 1 WHERE id = ?', [input.slug ?? row.slug, lifecycle, id])
+        if (input.retired !== undefined) await db.execute('UPDATE products SET active = IF(?, FALSE, active), revision = revision + 1, updated_at = UTC_TIMESTAMP(6) WHERE methodology_id = ?', [input.retired, id])
         await audit(db, actor, 'METHODOLOGY_UPDATED', 'methodology', id)
         return methodDto(await methodRow(db, id))
       })
@@ -245,6 +250,7 @@ export function createCatalogRepository(pool: Pool) {
         if (Number(history?.count)) throw new AppError(409, 'PUBLISHED_HISTORY_EXISTS', 'Metodologia com histórico publicado pode ser arquivada, não excluída.')
         await db.execute('UPDATE methodology_versions SET deleted_at = UTC_TIMESTAMP(6), revision = revision + 1 WHERE methodology_id = ? AND deleted_at IS NULL', [id])
         await db.execute('UPDATE methodologies SET deleted_at = UTC_TIMESTAMP(6), revision = revision + 1 WHERE id = ?', [id])
+        await db.execute('UPDATE products SET active = FALSE, revision = revision + 1, updated_at = UTC_TIMESTAMP(6) WHERE methodology_id = ?', [id])
         await audit(db, actor, 'METHODOLOGY_DELETED', 'methodology', id)
       })
     },
@@ -313,6 +319,7 @@ export function createCatalogRepository(pool: Pool) {
         await db.execute("UPDATE methodology_versions SET editorial_status = 'PUBLISHED', reviewed_by = ?, reviewed_at = UTC_TIMESTAMP(6), reviewed_revision = revision, review_note = ?, published_at = UTC_TIMESTAMP(6), revision = revision + 1 WHERE id = ?", [actor.userId, input.reviewNote, id])
         await db.execute('INSERT INTO version_reviews (version_id, reviewed_revision, reviewed_by, reviewed_at, review_note) SELECT id, reviewed_revision, reviewed_by, reviewed_at, review_note FROM methodology_versions WHERE id = ?', [id])
         await db.execute("UPDATE methodologies SET current_published_version_id = ?, lifecycle = 'PUBLISHED', revision = revision + 1 WHERE id = ?", [id, method.id])
+        await db.execute('UPDATE products SET revision = revision + 1, updated_at = UTC_TIMESTAMP(6) WHERE methodology_id = ?', [String(method.id)])
         await audit(db, actor, 'VERSION_PUBLISHED', 'version', id)
         return { ...summary(await versionRow(db, id)), ...editor }
       })

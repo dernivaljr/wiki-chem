@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. Entidades comerciais continuam planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A12 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; pedidos, direitos e idempotência continuam planejados. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A13 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -40,7 +40,7 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 | `users` | id, display_name, email_normalized, password_hash, role, status, provisioned_by nullable, created_at, updated_at | UNIQUE(email_normalized); role CUSTOMER/ADMIN; status ACTIVE/BLOCKED; cliente não edita papel |
 | `auth_sessions` | id, user_id, token_hash, issued_at, last_seen_at, expires_at, revoked_at | UNIQUE(token_hash); FK user; token de autenticação original não armazenado; CSRF derivado por HMAC do segredo da sessão, sem persistência em claro; prazos em [Identidade](IDENTIDADE.md) |
 | `carts` | id, user_id, revision, created_at, updated_at | UNIQUE(user_id); um carrinho reutilizável por usuário; revision incrementa em alteração efetiva |
-| `cart_items` | cart_id, product_id, added_at | PK(cart_id, product_id); quantidade implicitamente um; sem preço confiado ao cliente |
+| `cart_items` | cart_id, product_id, methodology_id, observed_price_id, observed_version_id, observed_offer_revision, title_snapshot, version_label_snapshot, added_at | PK(cart_id, product_id); quantidade um; referências observadas vêm do servidor e têm FKs compostas de pertencimento; GET não as sobrescreve |
 | `products` | id, methodology_id, active, current_price_id nullable, revision, created_at, updated_at | UNIQUE(methodology_id); ponteiro de preço deve pertencer ao próprio produto; inativo até oferta válida |
 | `product_prices` | id, product_id, amount_centavos, currency, created_by, created_at | Preço imutável; currency BRL; histórico append-only; ativação do ponteiro é transacional |
 | `orders` | id, user_id, status, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at, completed_at nullable, cancelled_at nullable | mode SIMULATED; status PENDING_CONFIRMATION/COMPLETED_SIMULATED/CANCELLED/EXPIRED; total igual à soma dos itens |
@@ -154,4 +154,8 @@ Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADM
 
 ## 9. Persistência editorial implementada
 
-[Catálogo editorial](CATALOGO-EDITORIAL.md) descreve as entidades executáveis: methodologies, methodology_versions, methodology_contents, sources, version_sources, contributors, version_contributions, version_reviews, audit_events, sete tabelas de termos e sete associações. version_classification_notes guarda justificativas sem misturar desconhecido e não aplicável. Fontes e contribuições usam fingerprint único para identidade imutável; revisão esperada controla edição. FK composta garante pertencimento do ponteiro corrente. deleted_at permite remoção lógica de rascunhos sem reutilizar identidade. Não há tabela de produto, preço, carrinho, pedido ou direito instalada por este recorte.
+[Catálogo editorial](CATALOGO-EDITORIAL.md) descreve as entidades executáveis: methodologies, methodology_versions, methodology_contents, sources, version_sources, contributors, version_contributions, version_reviews, audit_events, sete tabelas de termos e sete associações. version_classification_notes guarda justificativas sem misturar desconhecido e não aplicável. Fontes e contribuições usam fingerprint único para identidade imutável; revisão esperada controla edição. FK composta garante pertencimento do ponteiro corrente. deleted_at permite remoção lógica de rascunhos sem reutilizar identidade. A persistência de produtos/preços/carrinhos está na seção 10; pedidos e direitos não estão instalados.
+
+## 10. Persistência de ofertas e carrinho implementada
+
+[Ofertas e carrinho](OFERTAS-CARRINHO.md) descreve products, product_prices, carts e cart_items, relações compostas, triggers de imutabilidade e revisões. O ponteiro de preço é do próprio produto; o item referencia preço e versão pertencentes à mesma identidade. Quantidade é implicitamente um. Os valores observados não são snapshots de compra, pois ainda não há pedidos. A soma informativa usa BigInt no servidor e não é persistida como total do carrinho; indisponíveis permanecem visíveis e não integram o total disponível. FX01–FX05 são exclusivamente fixtures sintéticas, sem migração de dados de produção.

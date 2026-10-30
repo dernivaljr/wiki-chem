@@ -1,43 +1,16 @@
 import { z } from 'zod'
 import { searchQuery } from './catalog.contracts.js'
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { Config } from '../../config/env.js'
-import { AppError } from '../../shared/errors.js'
 import { emptyQuery, errorResponse } from '../../shared/contracts.js'
 import type { ZodProvider } from '../../shared/validation.js'
 import type { IdentityService } from '../identity/identity.service.js'
-import { requireRole } from '../identity/identity.service.js'
-import { sessionCookieName } from '../identity/identity.routes.js'
-import { checkCsrf, validToken } from '../identity/security.js'
-import type { CatalogRepository, Actor } from './catalog.repository.js'
+import { createAccessGuard } from '../identity/access.js'
+import type { CatalogRepository } from './catalog.repository.js'
 import { expectedRevision, facetSchema, id, idParams, methodInput, methodPatch, methodSchema, newVersion, paged, paging, previewSchema, publishInput, taxonomiesSchema, termInput, termPatch, termSchema, versionPatch, versionSchema, versionSummarySchema } from './catalog.contracts.js'
 
 export async function registerCatalogRoutes(app: FastifyInstance, config: Config, identity: IdentityService, catalog: CatalogRepository) {
-  const actors = new WeakMap<FastifyRequest, Actor>()
-  const authenticate = async (request: FastifyRequest, reply: FastifyReply, admin: boolean) => {
-    const token = request.cookies[sessionCookieName(config)]
-    try {
-      const session = await identity.session(token, false)
-      if (admin) requireRole(session.user, 'ADMIN')
-      if (!['GET', 'HEAD'].includes(request.method)) {
-        if (request.headers.origin !== config.APP_ORIGIN || request.headers['sec-fetch-site'] === 'cross-site') throw new AppError(403, 'ORIGIN_FORBIDDEN', 'Origem da requisição não permitida.')
-        if (!request.headers['content-type']?.toLowerCase().startsWith('application/json')) throw new AppError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Esta ação exige JSON.')
-        if (!validToken(token)) throw new AppError(401, 'SESSION_REQUIRED', 'Entre novamente.')
-        checkCsrf(token, request.headers['x-csrf-token'])
-      }
-      const current = await identity.session(token, true)
-      if (admin) requireRole(current.user, 'ADMIN')
-      actors.set(request, { userId: current.user.id, requestId: request.id })
-    } catch (error) {
-      if (error instanceof AppError && error.statusCode === 401) reply.clearCookie(sessionCookieName(config), { path: '/', httpOnly: true, sameSite: 'lax', secure: config.NODE_ENV === 'production' })
-      throw error
-    }
-  }
-  const actor = (request: FastifyRequest) => {
-    const value = actors.get(request)
-    if (!value) throw new AppError(401, 'SESSION_REQUIRED', 'Entre novamente.')
-    return value
-  }
+  const { authenticate, actor } = createAccessGuard(config, identity)
   const errors = { 400: errorResponse, 401: errorResponse, 403: errorResponse, 404: errorResponse, 409: errorResponse, 503: errorResponse }
   const api = app.withTypeProvider<ZodProvider>()
   api.get('/methodologies', { onRequest: (request, reply) => authenticate(request, reply, false), schema: { querystring: searchQuery, response: { 200: paged(previewSchema), ...errors } } },
