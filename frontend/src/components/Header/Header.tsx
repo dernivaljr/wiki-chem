@@ -42,6 +42,7 @@ function Header() {
           {auth.user ? <>
             <NavLink to="/consultas">Consultas</NavLink>
             <NavLink to="/perfil">Perfil</NavLink>
+            {auth.user.role === 'ADMIN' && <NavLink to="/admin">Administração</NavLink>}
             <button className="header__login" type="button" disabled={pending} onClick={() => { void logout() }}>{pending ? 'Saindo…' : 'Sair'}</button>
           </> : <NavLink className="header__login" to="/login">Entrar <span aria-hidden="true">→</span></NavLink>}
         </nav>

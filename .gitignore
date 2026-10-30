@@ -33,3 +33,6 @@ Thumbs.db
 # Arquivos temporários
 *.tmp
 *.temp
+
+# Sessões efêmeras exclusivas de testes de navegador
+.test-fixtures/

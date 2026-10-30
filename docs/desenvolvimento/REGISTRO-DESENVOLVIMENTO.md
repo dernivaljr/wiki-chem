@@ -75,3 +75,13 @@ Comandos: npm run install:clean; npm run build; npm run lint; npm test; npm run 
 Execução [41039975425](https://github.com/dernivaljr/wiki-chem/actions/runs/41039975425) aprovada em ambos os jobs no commit 8ec1c0100a6b01b8cb79e6e286e4ca6852e3702b: 48 testes backend, 26 frontend, 43 integração (22 identidade, 16 infraestrutura MySQL, três processo e dois proxy), 13 regressões visuais e sete jornadas reais de autenticação no navegador. Instalação limpa, builds, lint, migrações iniciais/repetidas e auditorias aprovados; zero vulnerabilidades nas auditorias completas/produção.
 
 A revisão final acrescenta isolamento do formulário ao trocar usuário e testes de recusa do CLI administrativo em execução não interativa. A checagem documental verificou oito documentos, 44 links locais e oito Mermaid preservados. Os checks da revisão corrente do PR #5 devem estar aprovados antes do merge, seguido da verificação da main. Esses registros não integram o material acadêmico.
+
+## Etapa 05 — catálogo editorial (registro interno)
+
+Base main 5ce9269520d78e51d9f4939029b15b7cd3d2a879 e CI 41041227867 confirmados antes de criar feat/methodology-admin. Recorte autorizado: taxonomias, versões, administração, revisão/publicação; sem busca, preços, comércio ou IA/RAG.
+
+A implementação acrescenta 25 migrações SQL de estrutura (28 no total), sem dados técnicos. Fontes, atribuições e conteúdo integral são preservados por versão; método corrente tem FK composta de pertencimento. O material acadêmico descreve sistema/requisitos/modelo em CATALOGO-EDITORIAL.md e demais documentos; este registro guarda operações.
+
+Verificações locais executadas: npm run build:backend; npm run build:frontend; npm run lint; npm test. Passaram 65 testes backend de unidade/contrato e 35 frontend. MySQL real, migrações completas e navegador serão confirmados pelos checks do PR; não se atribui sucesso local a testes sem servidor MySQL/Chromium disponível neste Windows.
+
+Fixtures são texto original sintético DEMO, sem instruções laboratoriais nem licença de fonte externa. O setup integrado reseta somente banco descartável wikichem_test_<sufixo> com NODE_ENV=test e MYSQL_TEST_ALLOW=true, cria ADMIN com senha aleatória não gravada e mantém cookie efêmero em .test-fixtures/ ignorado no Git. Nunca executar suíte contra dados a preservar. Não são criados usuários ou conteúdos de produção.

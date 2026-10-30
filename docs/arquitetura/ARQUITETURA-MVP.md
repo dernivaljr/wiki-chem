@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** infraestrutura e identidade implementadas; catálogo/comércio planejados. A01–A10 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P03/P09 e demais propostas comerciais/editoriais continuam pendentes.
+**Estado:** infraestrutura, identidade e catálogo editorial implementados; pesquisa/comércio planejados. A01–A11 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
 
 ## 1. Estrutura e limites de confiança
 
-Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade está implementada; catálogo, conhecimento editorial e comércio do diagrama permanecem planejados.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade e conhecimento editorial estão implementados; pesquisa e comércio do diagrama permanecem planejados.
 
 ```mermaid
 flowchart LR
@@ -140,9 +140,9 @@ GET `/methodologies/:id` devolve somente `MethodologyPreview`, mesmo para compra
 
 A autorização integral usa direito ACTIVE à metodologia e usuário/sessão ativos. A versão resolvida deve pertencer à mesma metodologia, ter published_at e estado PUBLISHED/SUPERSEDED, e access_state ALLOWED. Isso libera a original, histórico e atualizações publicadas, nunca DRAFT. Query malformada retorna 400; versão inexistente, de outra metodologia ou não publicada retorna 404 sem conteúdo; suspensão retorna 403 `CONTENT_SUSPENDED`. Se a atual está suspensa, não há fallback silencioso: informar indisponibilidade e permitir seleção explícita de outra versão histórica elegível. Revogar direito/bloquear usuário impede todas as versões. Desativar venda isoladamente não bloqueia biblioteca. P03 continua sendo proposta pendente de V03.
 
-### 4.4 Administração
+### 4.4 Administração editorial implementada e recursos comerciais planejados
 
-Todas as rotas seguintes exigem papel admin, sessão e CSRF em escrita; leitura editorial integral é auditada. Não há endpoint de autoatribuição de papel.
+[Catálogo editorial](CATALOGO-EDITORIAL.md) define os contratos executáveis deste recorte, limites e separação de conteúdo. Rotas de produto/preço e suspensão comercial da tabela abaixo são futuras. Todas as rotas administrativas exigem papel admin, sessão e CSRF em escrita; leitura editorial integral é auditada. Não há endpoint de autoatribuição de papel.
 
 P09 propõe apenas um formulário de rascunho e uma ação de publicação com revisão explícita. Texto, conteúdo, fontes, autoria/curadoria e vínculos técnicos só podem ser editados em DRAFT; publicada/superseded exige novo rascunho. Não existem fila ou estados intermediários de revisão/aprovação. No ato de publicar, conferir expectedRevision e completude/permissões, exigir `reviewAcknowledged=true` e `reviewNote`, e registrar revisor obtido da sessão, data e reviewed_revision na mesma transação. O administrador pode ser também curador/revisor no recorte mínimo, pendente de V09; isso não dispensa revisão nem autoria. Suspensão/restauração e disponibilidade permanecem separadas e auditadas.
 
@@ -191,6 +191,6 @@ O ambiente é validado antes de iniciar. Segredos são externos ao código; erro
 
 Migrações usam lock por banco e registro APPLYING/APPLIED. Arquivos aplicados são imutáveis e verificados por checksum. DDL tem commit implícito: falha exige inspeção e correção progressiva ou restauração, sem rollback automático nem reaplicação cega. A única criação anterior ao ledger é seu próprio bootstrap.
 
-O esquema contém ledger, usuários e sessões. Identidade e perfil usam a API real, preservando a identidade visual. Catálogo, corpus, pesquisa e comércio não estão implementados. Administração editorial é futura; somente o bootstrap operacional está disponível.
+O esquema contém infraestrutura, identidade e catálogo editorial. /admin usa a API real para rascunhos, taxonomias, fontes, revisão e publicação. Não existe corpus real pré-carregado, busca funcional ou comércio. Conteúdo, permissões reais e demais decisões de produto continuam sujeitos à curadoria.
 
 Referências: [Fastify — validação/serialização](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/), [MySQL2](https://sidorares.github.io/node-mysql2/docs), [MySQL 8.4 — DDL e commit implícito](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html) e [locks de sessão](https://dev.mysql.com/doc/refman/8.4/en/locking-functions.html).

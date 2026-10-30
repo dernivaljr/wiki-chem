@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém ledger, users e auth_sessions; demais entidades são planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A10 orientam o escopo; P03/P09 e demais decisões comerciais/editoriais continuam pendentes; identidade mínima está adotada em A10.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. Entidades comerciais continuam planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A11 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -151,3 +151,7 @@ P03/V03: direito metodológico com histórico/atualizações e duração; P04/V0
 A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users e auth_sessions estão migradas. Entidades de catálogo/comércio descrevem o destino do MVP, não tabelas existentes.
 
 Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADMIN, estado ACTIVE/BLOCKED, token_hash único, FK restritiva e timestamps UTC. provisioned_by registra o responsável pelo bootstrap. Hash Argon2id contém salt/parâmetros, sem senha em claro; token original e CSRF não são persistidos. Detalhes em [Identidade](IDENTIDADE.md).
+
+## 9. Persistência editorial implementada
+
+[Catálogo editorial](CATALOGO-EDITORIAL.md) descreve as entidades executáveis: methodologies, methodology_versions, methodology_contents, sources, version_sources, contributors, version_contributions, version_reviews, audit_events, sete tabelas de termos e sete associações. version_classification_notes guarda justificativas sem misturar desconhecido e não aplicável. Fontes e contribuições usam fingerprint único para identidade imutável; revisão esperada controla edição. FK composta garante pertencimento do ponteiro corrente. deleted_at permite remoção lógica de rascunhos sem reutilizar identidade. Não há tabela de produto, preço, carrinho, pedido ou direito instalada por este recorte.

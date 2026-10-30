@@ -1,3 +1,4 @@
+import Admin from './pages/Admin/Admin'
 import AuthProvider from './auth/AuthProvider'
 import ProtectedRoute from './auth/ProtectedRoute'
 import Profile from './pages/Profile/Profile'
@@ -19,6 +20,7 @@ function AppContent() {
         <Route path="/sobre" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/consultas" element={<ProtectedRoute><Consultas /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><Admin /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
     </>

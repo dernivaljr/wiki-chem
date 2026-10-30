@@ -6,14 +6,15 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 
 | Implementado | Limites |
 | --- | --- |
-| Home, Sobre, cadastro/login e perfil React | Identidade visual preservada; pesquisa e filtros estão explicitamente indisponíveis |
-| Cadastro e login reais | CUSTOMER por padrão, e-mail normalizado único e senha Argon2id |
-| Sessão opaca MySQL, logout e perfil próprio | Cookie HttpOnly/SameSite, Secure em produção; token somente como hash no banco, CSRF e expiração |
-| Proteção de /consultas e /perfil | Bootstrap, retorno interno seguro, carregamento, sessão expirada e falhas de rede |
-| API modular, saúde, pool e migrações controladas | users/auth_sessions e ledger implementados; sem catálogo, pedidos ou conteúdo pago |
-| Bootstrap operacional inicial do ADMIN | Interativo, sem senha padrão ou promoção de cliente existente; nenhuma criação automática |
+| Identidade real, sessão, logout, perfil e rotas protegidas | Recuperação e e-mail verificado continuam fora do incremento |
+| Administração /admin exclusiva de ADMIN | CUSTOMER não recebe conteúdo editorial nem modifica o catálogo |
+| Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulários científicos e curadoria ainda precisam de validação humana |
+| Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Sem corpus científico ou permissões pré-carregados |
+| Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
+| Prévia autenticada de metodologia publicada conhecida | Sem procedimento/evidência privada; busca, preços e comércio não implementados |
+| Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem somente nas suítes de teste |
 
-Recuperação de senha, e-mail verificado/mudança de e-mail e “manter conectado” não integram este incremento. Não há aceite de termos ou políticas inexistentes. A interface identifica o ambiente acadêmico de demonstração. Pesquisa efetiva, catálogo, comércio e biblioteca serão incrementos próprios. IA/RAG não integra o MVP.
+A identidade visual React foi preservada. /consultas continua indicando pesquisa indisponível. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
 
 ## Instalação
 
@@ -70,6 +71,17 @@ npm run admin:bootstrap
 
 O comando solicita responsável, nome, e-mail e senha com confirmação **sem eco**. Não aceita argumentos; não passe senha de usuário em ambiente, linha de comando, arquivo ou histórico. Configure a senha somente na entrada interativa. Repetição para o mesmo admin não altera credencial; e-mail de CUSTOMER ou outro primeiro administrador gera conflito. O responsável é registrado em provisioned_by. Desabilite ADMIN_BOOTSTRAP_ENABLED ao concluir e preserve o acesso operacional. Este comando não cria regras ou telas de administração editorial.
 
+
+## Catálogo administrativo
+
+Depois das migrações e do provisionamento operacional do primeiro ADMIN, acesse /admin pela conta correspondente. A navegação administrativa aparece somente para ADMIN, com autorização independente no backend. CUSTOMER não pode ler o formulário editorial nem utilizar seus endpoints, mesmo conhecendo IDs.
+
+Em Classificações, crie termos para os sete eixos. Normas exigem emissor/identificador/edição e conferência da identificação. Não confunda esse registro com declaração de vigência regulatória ou permissão de reprodução. Vocabulário e conteúdo real precisam de curadoria; nenhuma migração popula conteúdo ou termos.
+
+Em Metodologias e versões, crie identidade e rascunho; registre prévia, procedimento, múltiplos termos, fontes, condições de uso e autoria/curadoria. Fonte verificada exige evidência e conferência explícita. Salve antes de revisar/publicar: mudanças locais não salvas desabilitam publicação. Alterações concorrentes produzem 409 e exigem recarregar, sem sobrescrita automática.
+
+A publicação valida completude/revisão em transação e preserva versões anteriores. Copiar versão exige nova conferência das condições de uso. Arquivar retira a prévia e preserva história. Exclusão é lógica e restrita a rascunhos/metodologias sem publicação. Consulte [Catálogo editorial](docs/arquitetura/CATALOGO-EDITORIAL.md) para contratos REST, limites, modelo e pendências.
+
 ## Execução
 
 Em terminais separados, na raiz:
@@ -107,13 +119,13 @@ Comandos por pacote: `build:frontend`, `build:backend`, `lint:frontend`, `lint:b
 
 ### Integração automatizada
 
-A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. Use somente banco descartável de testes; as suítes podem recriar ledger, users e auth_sessions, recusando outras tabelas inesperadas. A suíte recusa nomes não permitidos e tabelas inesperadas. Não execute sobre dados que deseja preservar.
+A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. Use somente banco descartável de testes; as suítes podem recriar todas as tabelas versionadas, recusando qualquer tabela desconhecida. FKs permanecem habilitadas; o ciclo do ponteiro corrente é desmontado explicitamente na limpeza. A suíte recusa nomes não permitidos e tabelas inesperadas. Não execute sobre dados que deseja preservar.
 
 São exercitados migração inicial/repetida, status sem escrita, checksum/histórico inválidos, lock concorrente, falha DDL, statements múltiplos rejeitados, precisão BIGINT, FKs, unicidade, commit/rollback, credenciais inválidas, banco inexistente, pool encerrado e proxy. A suite usa tabelas genéricas de teste, sem antecipar entidades ou regras comerciais.
 
-Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste.
+Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste. O setup desse comando recria todas as tabelas conhecidas no banco descartável e prepara uma sessão ADMIN com senha aleatória, usada apenas em testes de administração. Exige MIGRATION_DB_USER/MIGRATION_DB_PASSWORD; cookie temporário fica em frontend/.test-fixtures/ ignorado pelo Git. Não contém senha padrão nem semente de produção.
 
-O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, sete jornadas reais de autenticação no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
+O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação e administração no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
 
 ## Organização e documentação
 

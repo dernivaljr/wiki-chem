@@ -1,6 +1,6 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura e identidade estão implementadas; catálogo, pesquisa efetiva e comércio permanecem planejados.
+**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade e administração editorial estão implementadas; pesquisa efetiva e comércio permanecem planejados.
 
 ## 1. Contexto e metodologia
 
@@ -8,7 +8,7 @@ O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenhar
 
 A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas e /perfil exigem sessão; pesquisa/filtros estão identificados como indisponíveis. Não há catálogo ou pedidos.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas e /perfil exigem sessão; pesquisa/filtros estão identificados como indisponíveis. O catálogo editorial tem taxonomias, versões e publicação; não há pedidos ou pesquisa funcional.
 
 Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
@@ -28,6 +28,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | A08 | Implementação incremental: a fundação não antecipa identidade, catálogo ou comércio; distinguir requisitos e propostas |
 | A09 | Fundação adotada: Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4, mysql2/promise, SQL parametrizado, migrações SQL controladas e Vitest |
 | A10 | Identidade real autorizada: Argon2id, sessão opaca revogável, CSRF, perfil próprio e bootstrap operacional seguro; recuperação, e-mail verificado e publicação comercial fora do incremento |
+| A11 | Catálogo editorial e /admin autorizados: sete taxonomias N:N por versão, fontes, autoria/curadoria, revisão explícita e publicação imutável; sem pesquisa, preços ou comércio |
 
 ### Propostas transversais e adoções identificadas
 
@@ -41,9 +42,9 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | P06 | Desativar venda não remove a biblioteca; suspensão expressa por impedimento de uso bloqueia conteúdo e requer tratamento administrativo |
 | P07 | Monólito modular adotado e mesma origem preparada no desenvolvimento; tecnologias em A09, hospedagem em produção pendente |
 | P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
-| P09 | Administração editorial mínima por um administrador: salvar rascunho e publicar com revisão explícita registrada; sem etapas intermediárias ou papéis editoriais adicionais obrigatórios. Autoria, fontes, permissões e proteção continuam exigidas; validar em V09 |
+| P09 | Fluxo editorial mínimo adotado no recorte A11: rascunho e publicação com revisão explícita; autoria, condições verificadas e histórico preservados. Demais decisões de governança em V09 |
 
-As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. P01 e o recorte de perfil de P08 foram adotados em A10; propostas comerciais/editoriais não são aprovadas por essa adoção. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
+As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. P01 e o recorte de perfil de P08 foram adotados em A10, e o fluxo editorial mínimo P09 em A11; propostas comerciais/editoriais não são aprovadas por essa adoção. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
 
 ## 3. Objetivo, usuários e limite do MVP
 

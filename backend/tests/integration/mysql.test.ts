@@ -1,3 +1,4 @@
+import { resetTestDatabase } from '../test-database.js'
 import { createHash } from 'node:crypto'
 import type { Pool, RowDataPacket } from 'mysql2/promise'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
@@ -33,12 +34,7 @@ function api(dbPool = pool) {
 beforeAll(async () => {
   const version = await rows('SELECT VERSION() AS version')
   expect(version[0]?.version).toMatch(/^8\.4\./)
-  const tables = await rows('SELECT TABLE_NAME AS name FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()')
-  if (tables.some(row => !['schema_migrations', 'auth_sessions', 'users'].includes(row.name))) throw new Error('Banco de testes contém tabelas inesperadas; limpeza recusada.')
-  // Limpeza restrita ao ledger no banco exclusivo, após a verificação acima.
-  await pool.query('DROP TABLE IF EXISTS auth_sessions')
-  await pool.query('DROP TABLE IF EXISTS users')
-  await pool.query('DROP TABLE IF EXISTS schema_migrations')
+  await resetTestDatabase(pool, config)
 }, 30000)
 afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())) })
 afterAll(async () => { await pool.end() })
