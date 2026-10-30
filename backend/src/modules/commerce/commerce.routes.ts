@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AppError } from '../../shared/errors.js'
 import type { FastifyInstance } from 'fastify'
 import type { Config } from '../../config/env.js'
 import { emptyQuery, errorResponse } from '../../shared/contracts.js'
@@ -12,11 +13,14 @@ export async function registerCommerceRoutes(app: FastifyInstance, config: Confi
   const { authenticate, actor } = createAccessGuard(config, identity)
   const errors = { 400: errorResponse, 401: errorResponse, 403: errorResponse, 404: errorResponse, 409: errorResponse, 503: errorResponse }
   await app.register(async scope => {
-    scope.addHook('onRequest', (request, reply) => authenticate(request, reply, false, true))
+    scope.addHook('onRequest', async (request, reply) => {
+      await authenticate(request, reply, false, true)
+      if (request.method === 'DELETE' && (request.headers['transfer-encoding'] || (request.headers['content-length'] !== undefined && request.headers['content-length'] !== '0'))) throw new AppError(400, 'UNEXPECTED_BODY', 'Remoção usa somente a revisão na query, sem corpo.')
+    })
     const api = scope.withTypeProvider<ZodProvider>()
     api.get('/', { prefixTrailingSlash: 'both', schema: { querystring: emptyQuery, response: { 200: z.strictObject({ data: cartSchema }), ...errors } } }, async request => ({ data: await repository.getCart(actor(request).userId) }))
     api.put('/items/:id', { schema: { params: idParams, querystring: emptyQuery, body: cartAdd, response: { 200: z.strictObject({ data: cartSchema }), ...errors } } }, async request => ({ data: await repository.changeCart(actor(request), request.params.id, request.body.expectedRevision, request.body) }))
-    api.delete('/items/:id', { schema: { params: idParams, querystring: cartRemove, body: z.undefined(), response: { 200: z.strictObject({ data: cartSchema }), ...errors } } }, async request => ({ data: await repository.changeCart(actor(request), request.params.id, request.query.expectedRevision) }))
+    api.delete('/items/:id', { schema: { params: idParams, querystring: cartRemove, body: z.nullish(z.never()), response: { 200: z.strictObject({ data: cartSchema }), ...errors } } }, async request => ({ data: await repository.changeCart(actor(request), request.params.id, request.query.expectedRevision) }))
   }, { prefix: '/cart' })
   await app.register(async scope => {
     scope.addHook('onRequest', (request, reply) => authenticate(request, reply, true))

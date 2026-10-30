@@ -253,4 +253,11 @@ describe('produtos, preços e carrinhos no MySQL real', () => {
       expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|password_hash|token_hash/)
     }
   })
+  it('remoção sem corpo funciona e recusa qualquer corpo explícito sem alterar o carrinho', async () => {
+    const user = await customer(), initial = data<Cart>(await add(user, fx[0]!))
+    const target = '/cart/items/' + fx[0]!.id + '?expectedRevision=' + initial.revision
+    for (const payload of [{}, null, { quantity: 1 }]) expect((await call('DELETE', target, payload, user)).statusCode).toBe(400)
+    expect((await cart(user)).items).toHaveLength(1)
+    expect(data<Cart>(await call('DELETE', target, undefined, user)).items).toHaveLength(0)
+  })
 })
