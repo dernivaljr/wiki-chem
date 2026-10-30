@@ -3,7 +3,8 @@ import type { Pool, PoolConnection, RowDataPacket } from 'mysql2/promise'
 import { withTransaction } from '../../database/pool.js'
 import { AppError } from '../../shared/errors.js'
 import { facets, facetTables } from './catalog.contracts.js'
-import type { Editor, Facet, Methodology, Term, TermInput, Version } from './catalog.contracts.js'
+import type { Editor, Facet, Methodology, Preview, SearchQuery, Taxonomies, Term, TermInput, Version } from './catalog.contracts.js'
+import { filterKeys, placeholders, previewColumns, publishedFrom, publishedWhere, searchOrders, searchPredicate } from './catalog.search.js'
 import { emptyEditor, validateTerm, validatePublication } from './catalog.rules.js'
 
 type Db = Pool | PoolConnection
@@ -75,6 +76,28 @@ async function taxonomyCollections(db: Db, includeInactive: boolean) {
       .map(row => termDto(row, facet))
   }
   return result
+}
+// Uma consulta por coleção, independentemente da quantidade de resultados.
+// A allowlist não lê conteúdo integral, evidência ou notas privadas.
+async function readPreviews(db: Db, versions: Row[]): Promise<Preview[]> {
+  if (!versions.length) return []
+  const ids = versions.map(row => String(row.id)), slots = placeholders(ids.length)
+  const previews = versions.map(row => ({ id: String(row.methodology_id), versionId: String(row.id), versionLabel: row.version_label as string,
+    title: row.title as string, freeSummary: row.free_summary as string, publicDescription: row.public_description as string,
+    technicalMetadata: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] } as Taxonomies,
+    references: [] as Preview['references'], contributors: [] as Preview['contributors'],
+  }))
+  const byVersion = new Map(previews.map(item => [item.versionId, item]))
+  for (const facet of facets) {
+    const map = facetTables[facet]
+    const terms = await records(db, 'SELECT x.version_id, t.* FROM ' + map.link + ' x JOIN ' + map.table + ' t ON t.id = x.' + map.column + ' WHERE x.version_id IN (' + slots + ') ORDER BY x.version_id, t.id', ids)
+    for (const row of terms) byVersion.get(String(row.version_id))!.technicalMetadata[facet].push(termDto(row, facet))
+  }
+  const references = await records(db, "SELECT vs.version_id, s.reference_text, s.source_type, s.canonical_url, s.owner_credit, s.edition_label, vs.locator FROM version_sources vs JOIN sources s ON s.id = vs.source_id WHERE vs.permission_status = 'APPROVED' AND vs.version_id IN (" + slots + ') ORDER BY vs.version_id, s.id', ids)
+  for (const row of references) byVersion.get(String(row.version_id))!.references.push({ referenceText: row.reference_text, sourceType: row.source_type, canonicalUrl: row.canonical_url, ownerCredit: row.owner_credit, editionLabel: row.edition_label, locator: row.locator })
+  const contributors = await records(db, 'SELECT vc.version_id, c.display_name, c.contributor_type, c.reference, vc.contribution_role FROM version_contributions vc JOIN contributors c ON c.id = vc.contributor_id WHERE vc.version_id IN (' + slots + ') ORDER BY vc.version_id, c.id, vc.contribution_role', ids)
+  for (const row of contributors) byVersion.get(String(row.version_id))!.contributors.push({ displayName: row.display_name, contributorType: row.contributor_type, reference: row.reference, role: row.contribution_role })
+  return previews
 }
 async function readEditor(db: Db, row: Row): Promise<Editor> {
   const result = emptyEditor()
@@ -294,24 +317,27 @@ export function createCatalogRepository(pool: Pool) {
         return { ...summary(await versionRow(db, id)), ...editor }
       })
     },
+    async search(query: SearchQuery) {
+      return boundary(() => withTransaction(pool, async db => {
+        for (const facet of facets) {
+          const ids = query[filterKeys[facet]]
+          if (!ids.length) continue
+          const terms = await records(db, 'SELECT id FROM ' + facetTables[facet].table + ' WHERE active = TRUE AND id IN (' + placeholders(ids.length) + ')', ids)
+          if (terms.length !== ids.length) throw new AppError(400, 'INVALID_FILTER', 'Selecione classificações ativas e existentes.', [{ field: filterKeys[facet], reason: 'Filtro desconhecido ou inativo.' }])
+        }
+        const predicate = searchPredicate(query)
+        const [count] = await records(db, 'SELECT COUNT(*) AS total' + publishedFrom + ' WHERE ' + predicate.sql, predicate.params)
+        const versions = await records(db, 'SELECT ' + previewColumns + publishedFrom + ' WHERE ' + predicate.sql + ' ORDER BY ' + searchOrders[query.sort] + ' LIMIT ? OFFSET ?', [...predicate.params, query.pageSize, (query.page - 1) * query.pageSize])
+        return { data: await readPreviews(db, versions), total: Number(count?.total ?? 0), page: query.page, pageSize: query.pageSize }
+      }, true))
+    },
     async preview(methodologyId: string) {
       return boundary(() => withTransaction(pool, async db => {
-        const [row] = await records(db, "SELECT v.* FROM methodologies m JOIN methodology_versions v ON v.id = m.current_published_version_id AND v.methodology_id = m.id WHERE m.id = ? AND m.deleted_at IS NULL AND m.lifecycle = 'PUBLISHED' AND v.editorial_status = 'PUBLISHED' AND v.access_state = 'ALLOWED' AND v.deleted_at IS NULL", [methodologyId])
-        if (!row) throw missing()
-        // Esta consulta não lê methodology_contents nem evidência privada.
-        const metadata = {} as Record<Facet, Term[]>
-        for (const facet of facets) {
-          const map = facetTables[facet]
-          metadata[facet] = (await records(db, 'SELECT t.* FROM ' + map.link + ' x JOIN ' + map.table + ' t ON t.id = x.' + map.column + ' WHERE x.version_id = ? ORDER BY t.id', [String(row.id)])).map(term => termDto(term, facet))
-        }
-        const references = await records(db, 'SELECT s.reference_text, s.source_type, s.canonical_url, s.owner_credit, s.edition_label, vs.locator FROM version_sources vs JOIN sources s ON s.id = vs.source_id WHERE vs.version_id = ? ORDER BY s.id', [String(row.id)])
-        const contributors = await records(db, 'SELECT c.display_name, c.contributor_type, c.reference, vc.contribution_role FROM version_contributions vc JOIN contributors c ON c.id = vc.contributor_id WHERE vc.version_id = ? ORDER BY c.id, vc.contribution_role', [String(row.id)])
-        return { id: methodologyId, versionId: String(row.id), versionLabel: row.version_label, title: row.title, freeSummary: row.free_summary, publicDescription: row.public_description,
-          technicalMetadata: metadata,
-          contributors: contributors.map(item => ({ displayName: item.display_name, contributorType: item.contributor_type, reference: item.reference, role: item.contribution_role })),
-          references: references.map(source => ({ referenceText: source.reference_text, sourceType: source.source_type, canonicalUrl: source.canonical_url, ownerCredit: source.owner_credit, editionLabel: source.edition_label, locator: source.locator })),
-        }
-      }))
+        const versions = await records(db, 'SELECT ' + previewColumns + publishedFrom + ' WHERE m.id = ? AND ' + publishedWhere, [methodologyId])
+        const [preview] = await readPreviews(db, versions)
+        if (!preview) throw missing()
+        return preview
+      }, true))
     },
   }
 }

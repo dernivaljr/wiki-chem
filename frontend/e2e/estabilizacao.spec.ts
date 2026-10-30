@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 
 // Respostas controladas somente para regressão visual; auth.spec.ts testa identidade real.
 test.beforeEach(async ({ page }) => {
+  await page.route('**/api/v1/taxonomies', route => route.fulfill({ json: { data: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] } } }))
+  await page.route('**/api/v1/methodologies?*', route => route.fulfill({ json: { data: [], page: 1, pageSize: 20, total: 0 } }))
   await page.route('**/api/v1/auth/session', route => {
     const ref = route.request().headers().referer ?? ''
     const protectedPage = new URL(ref || 'http://127.0.0.1').pathname === '/consultas'
@@ -90,7 +92,7 @@ function luminance(color: string) {
 test('textos auxiliares e placeholders atingem contraste de 4,5:1', async ({ page }) => {
   const cases = [
     { route: '/consultas', selector: '.consultas__suggestions', panel: '.consultas__search-panel' },
-    { route: '/consultas', selector: '.consultas__counter', panel: '.consultas__search-panel' },
+    { route: '/consultas', selector: '#search-q', panel: '.consultas__search-panel', pseudo: '::placeholder' },
     { route: '/login', selector: '.auth__step', panel: '.auth__panel' },
     { route: '/login', selector: 'input[name="email"]', panel: '.auth__panel', pseudo: '::placeholder' },
     { route: '/login', selector: 'input[name="password"]', panel: '.auth__panel', pseudo: '::placeholder' },

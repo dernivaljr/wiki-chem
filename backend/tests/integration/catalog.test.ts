@@ -9,7 +9,7 @@ import { loadMigrations, runMigrations } from '../../src/database/migrations.js'
 import { provisionInitialAdmin } from '../../src/modules/identity/admin-bootstrap.js'
 import { createIdentityRepository } from '../../src/modules/identity/identity.repository.js'
 import { createCatalogRepository } from '../../src/modules/catalog/catalog.repository.js'
-import { facets } from '../../src/modules/catalog/catalog.contracts.js'
+import { facets, searchQuery } from '../../src/modules/catalog/catalog.contracts.js'
 import type { Facet, Methodology, Version } from '../../src/modules/catalog/catalog.contracts.js'
 import { demoEditor } from '../catalog-fixtures.js'
 import { resetTestDatabase } from '../test-database.js'
@@ -192,7 +192,12 @@ describe('catálogo editorial em MySQL real', () => {
     expect(response.json().data.references).toHaveLength(1)
     expect((await call('GET', '/admin/versions/' + version.id, undefined, customer)).statusCode).toBe(403)
     expect((await call('GET', '/methodologies/' + method.id + '?include=procedure', undefined, customer)).statusCode).toBe(400)
-    expect((await call('GET', '/methodologies')).statusCode).toBe(404)
+    const list = await call('GET', '/methodologies')
+    expect(list.statusCode, list.body).toBe(200)
+    expect(list.body).not.toContain(privateMarker)
+    expect(list.body).not.toContain(evidenceMarker)
+    expect(list.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote/)
+    expect((await call('GET', '/methodologies', undefined, null)).statusCode).toBe(401)
   })
   it('publicada é imutável e nova versão não herda confirmação de direitos de fonte', async () => {
     const { method, version } = await complete(); const published = unwrap<Version>(await publish(version))
@@ -286,5 +291,167 @@ describe('catálogo editorial em MySQL real', () => {
     try { expect((await call('GET', '/admin/taxonomies')).statusCode).toBe(403); expect((await call('POST', '/admin/methodologies', { slug: 'must-not-exist' })).statusCode).toBe(403) }
     finally { await pool.execute("UPDATE users SET role = 'ADMIN' WHERE id = ?", [admin.id]) }
     expect(await rows('SELECT id FROM methodologies WHERE slug = ?', ['must-not-exist'])).toHaveLength(0)
+  })
+})
+
+describe('pesquisa autenticada de prévias no MySQL', () => {
+  const token = 'busca' + randomUUID().replaceAll('-', '')
+  const hidden = 'restrito' + randomUUID().replaceAll('-', '')
+  const bibliography = 'referencia' + randomUUID().replaceAll('-', '')
+  const publicOnly = 'publico' + randomUUID().replaceAll('-', '')
+  const summaryOnly = 'resumo' + randomUUID().replaceAll('-', '')
+  const oldOnly = 'antiga' + randomUUID().replaceAll('-', '')
+  let a: Methodology, b: Methodology, c: Methodology
+  let current: Version, old: Version, suspended: Version, withdrawn: Methodology
+  const fields = (position: 'a' | 'b' | 'c') => {
+    const selected = Object.fromEntries(facets.map(facet => [facet, position === 'b' ? [termIds[facet][1]!] : [termIds[facet][0]!]])) as Record<Facet, string[]>
+    if (position === 'a') { selected.analytes = termIds.analytes; selected.matrices = termIds.matrices }
+    if (position === 'c') { selected.analytes = [termIds.analytes[1]!]; selected.matrices = [termIds.matrices[1]!] }
+    const editor = demoEditor(selected, hidden)
+    editor.title = 'DEMO ' + token + (position === 'c' ? ' Zinco' : ' Água')
+    editor.freeSummary = position === 'a' ? summaryOnly + ' Fe²⁺ Na+ 10%_! literal \\ original DEMO.' : 'Resumo DEMO Fe²⁺ sem instruções.'
+    editor.publicDescription = position === 'a' ? publicOnly + ' ácido cloreto — somente descrição gratuita DEMO.' : 'Descrição gratuita DEMO.'
+    editor.sources[0]!.referenceText = position === 'a' ? bibliography + ' — texto original DEMO da suíte.' : 'Origem original DEMO ' + position
+    editor.sources[0]!.permissionEvidence = hidden
+    return editor
+  }
+  async function saveAndPublish(version: Version, data: ReturnType<typeof demoEditor>) {
+    const saved = unwrap<Version>(await call('PATCH', '/admin/versions/' + version.id, { ...data, expectedRevision: version.revision }))
+    return unwrap<Version>(await publish(saved))
+  }
+  const find = (params = new URLSearchParams({ q: token }), user: typeof admin | null = customer) => call('GET', '/methodologies?' + params.toString(), undefined, user)
+  const ids = (response: LightMyRequestResponse) => { expect(response.statusCode, response.body).toBe(200); return response.json().data.map((item: { id: string }) => item.id) as string[] }
+  beforeAll(async () => {
+    const first = await methodAndDraft(); a = first.method
+    old = await saveAndPublish(first.version, { ...fields('b'), title: 'DEMO ' + token + ' ' + oldOnly })
+    const second = await methodAndDraft(); b = second.method; await saveAndPublish(second.version, fields('b'))
+    const third = await methodAndDraft(); c = third.method; await saveAndPublish(third.version, fields('c'))
+    const next = unwrap<Version>(await call('POST', '/admin/methodologies/' + a.id + '/versions', { versionLabel: 'v2' }), 201)
+    current = await saveAndPublish(next, fields('a'))
+    const draft = await methodAndDraft()
+    await call('PATCH', '/admin/versions/' + draft.version.id, { ...fields('a'), expectedRevision: draft.version.revision })
+    const suspendedMethod = await methodAndDraft(); suspended = await saveAndPublish(suspendedMethod.version, fields('a'))
+    await pool.execute("UPDATE methodology_versions SET access_state = 'SUSPENDED' WHERE id = ?", [suspended.id])
+    const retired = await methodAndDraft(); await saveAndPublish(retired.version, fields('a'))
+    withdrawn = unwrap<Methodology>(await call('GET', '/admin/methodologies/' + retired.method.id))
+    await call('PATCH', '/admin/methodologies/' + withdrawn.id, { retired: true, expectedRevision: withdrawn.revision })
+    const deleted = await methodAndDraft()
+    await call('PATCH', '/admin/versions/' + deleted.version.id, { ...fields('a'), expectedRevision: deleted.version.revision })
+    await call('DELETE', '/admin/methodologies/' + deleted.method.id, { expectedRevision: deleted.method.revision })
+  }, 30000)
+  const keys = { techniques: 'techniqueIds', technologies: 'technologyIds', equipment: 'equipmentIds', matrices: 'matrixIds', analytes: 'analyteIds', standards: 'standardIds', segments: 'segmentIds' }
+  it.each(facets)('filtra %s individualmente na versão corrente', async facet => {
+    const query = new URLSearchParams({ q: token, [keys[facet]]: termIds[facet][0]! })
+    expect(ids(await find(query))).toEqual(facet === 'matrices' || facet === 'analytes' ? [a.id] : [a.id, c.id])
+  })
+  it('combina OR interno com AND entre sete facetas, sem duplicar múltiplos analitos/matrizes', async () => {
+    const query = new URLSearchParams({ q: token })
+    for (const facet of ['analytes', 'matrices'] as const) for (const id of termIds[facet]) query.append(keys[facet], id)
+    const all = await find(query)
+    expect(ids(all)).toEqual([a.id, b.id, c.id]); expect(all.json().total).toBe(3)
+    query.delete('analyteIds'); query.append('analyteIds', termIds.analytes[0]!)
+    expect(ids(await find(query))).toEqual([a.id])
+    const seven = new URLSearchParams({ q: token })
+    for (const facet of facets) seven.append(keys[facet], termIds[facet][0]!)
+    expect(ids(await find(seven))).toEqual([a.id])
+  })
+  it.each(['agua', 'ÁGUA', 'a\u0301gua'])('encontra títulos com acentos e caixa: %s', async word => {
+    expect(ids(await find(new URLSearchParams({ q: token + ' ' + word })))).toEqual([a.id, b.id])
+  })
+  it.each(['Na+', '10%_!', '%', '_', '!', '\\'])('trata símbolo ou caractere especial como literal: %s', async word => {
+    expect(ids(await find(new URLSearchParams({ q: token + ' ' + word })))).toEqual([a.id])
+  })
+  it('palavras podem ocorrer em campos gratuitos diferentes, inclusive referências e termos curtos', async () => {
+    for (const term of [summaryOnly, publicOnly, bibliography, 'cloreto', 'ácido']) expect(ids(await find(new URLSearchParams({ q: token + ' ' + term })))).toEqual([a.id])
+    expect(ids(await find(new URLSearchParams({ q: token + ' Fe²⁺' })))).toEqual([a.id, b.id, c.id])
+    expect(ids(await find(new URLSearchParams({ q: token + ' ' + prefix + '-techniques-a' })))).toEqual([a.id, c.id])
+  })
+  it('retorna zero para inexistente, SQL literal, conteúdo privado e versão substituída', async () => {
+    for (const q of [token + ' impossível', "' OR 1=1 --", hidden, oldOnly]) {
+      const response = await find(new URLSearchParams({ q }))
+      expect(ids(response)).toEqual([]); expect(response.json().total).toBe(0)
+    }
+  })
+  it('pagina sem repetição e desempata títulos por identidade; publicação recente tem ordem estável', async () => {
+    const collected: string[] = []
+    for (let page = 1; page <= 4; page++) {
+      const response = await find(new URLSearchParams({ q: token, page: String(page), pageSize: '1' }))
+      collected.push(...ids(response)); expect(response.json()).toMatchObject({ total: 3, page, pageSize: 1 })
+    }
+    expect(collected).toEqual([a.id, b.id, c.id])
+    expect(ids(await find(new URLSearchParams({ q: token, sort: 'updated_desc' })))).toEqual([a.id, c.id, b.id])
+  })
+  it('vazio lista catálogo autorizado; exclui rascunhos, suspensas, arquivadas e excluídas', async () => {
+    expect(ids(await find())).toEqual([a.id, b.id, c.id])
+    const response = await find(new URLSearchParams({ pageSize: '100' }))
+    expect(ids(response)).toEqual(expect.arrayContaining([a.id, b.id, c.id]))
+    expect(ids(response)).not.toContain(withdrawn.id)
+    expect(response.body).not.toContain('"versionId":"' + suspended.id + '"')
+    expect(response.body).not.toContain('"versionId":"' + old.id + '"')
+  })
+  it('rejeita filtros desconhecidos/inativos e parâmetros comerciais ou duplicados', async () => {
+    for (const query of ['techniqueIds=18446744073709551615', 'analyteIds=1,2', 'q=a&q=b', 'sort=price_asc', 'page=0', 'pageSize=101', 'productIds=1']) expect((await call('GET', '/methodologies?' + query, undefined, customer)).statusCode).toBe(400)
+    const termId = termIds.equipment[0]!
+    await pool.execute('UPDATE equipment SET active = FALSE WHERE id = ?', [termId])
+    try { expect((await find(new URLSearchParams({ equipmentIds: termId }))).statusCode).toBe(400) }
+    finally { await pool.execute('UPDATE equipment SET active = TRUE WHERE id = ?', [termId]) }
+  })
+  it('exige sessão e não expõe nem usa campos privados para correspondência', async () => {
+    expect((await find(undefined, null)).statusCode).toBe(401)
+    for (const response of [await find(), await call('GET', '/methodologies/' + a.id, undefined, customer)]) {
+      expect(response.statusCode).toBe(200)
+      expect(response.body).not.toContain(hidden)
+      expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote|price|offer|owned/)
+    }
+  })
+  it('total, página e metadados usam um snapshot mesmo com publicação concorrente', async () => {
+    const snapshotToken = 'snapshot' + randomUUID().replaceAll('-', '')
+    const first = await methodAndDraft(), second = await methodAndDraft()
+    const editor = { ...fields('a'), title: 'DEMO ' + snapshotToken }
+    await saveAndPublish(first.version, editor)
+    let inserted = false
+    // Barreira depois do COUNT, sem substituir o driver/banco: a segunda
+    // publicação ocorre por API e outra conexão real antes da leitura da página.
+    const instrumented = new Proxy(pool, { get(target, property) {
+      if (property === 'getConnection') return async () => {
+        const connection = await target.getConnection()
+        return new Proxy(connection, { get(db, key) {
+          if (key === 'execute') return async (sql: string, values: string[]) => {
+            const response = await db.execute(sql, values)
+            if (sql.startsWith('SELECT COUNT(*) AS total FROM methodologies') && !inserted) {
+              inserted = true
+              await saveAndPublish(second.version, editor)
+            }
+            return response
+          }
+          const value: unknown = Reflect.get(db, key)
+          return typeof value === 'function' ? value.bind(db) : value
+        } })
+      }
+      const value: unknown = Reflect.get(target, property)
+      return typeof value === 'function' ? value.bind(target) : value
+    } })
+    const result = await createCatalogRepository(instrumented).search(searchQuery.parse({ q: snapshotToken }))
+    expect(inserted).toBe(true)
+    expect(result.total).toBe(1)
+    expect(result.data.map(item => item.id)).toEqual([first.method.id])
+    const after = await find(new URLSearchParams({ q: snapshotToken }))
+    expect(ids(after)).toEqual([first.method.id, second.method.id])
+    expect(after.json().total).toBe(2)
+  })
+  it('prévia e pesquisa usam o mesmo bloqueio de suspensão, exclusão e condição de fonte', async () => {
+    const cases = [
+      { sql: "UPDATE methodology_versions SET access_state = ? WHERE id = ?", blocked: 'SUSPENDED', restored: 'ALLOWED', id: current.id },
+      { sql: 'UPDATE methodology_versions SET deleted_at = ? WHERE id = ?', blocked: '2026-01-01 00:00:00', restored: null, id: current.id },
+      { sql: 'UPDATE methodologies SET deleted_at = ? WHERE id = ?', blocked: '2026-01-01 00:00:00', restored: null, id: a.id },
+      { sql: 'UPDATE version_sources SET permission_status = ? WHERE version_id = ?', blocked: 'PENDING', restored: 'APPROVED', id: current.id },
+    ]
+    for (const item of cases) {
+      await pool.execute(item.sql, [item.blocked, item.id])
+      try {
+        expect(ids(await find())).not.toContain(a.id)
+        expect((await call('GET', '/methodologies/' + a.id, undefined, customer)).statusCode).toBe(404)
+      } finally { await pool.execute(item.sql, [item.restored, item.id]) }
+    }
   })
 })

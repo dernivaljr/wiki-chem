@@ -61,12 +61,13 @@ test('duplicidade e credencial inválida não geram sucesso fictício', async ({
   await expect(page.getByRole('alert')).toHaveText('E-mail ou senha inválidos.')
   await expect(page).toHaveURL(/\/login/)
 })
-test('retorno externo é rejeitado e pesquisa permanece explicitamente indisponível', async ({ page }) => {
+test('retorno externo é rejeitado e abre a pesquisa autenticada funcional', async ({ page }) => {
   await page.goto('/login?returnTo=https%3A%2F%2Fevil.invalid')
   await login(page, await signup(page))
   await expect(page).toHaveURL(/\/consultas$/)
-  await expect(page.getByText('Pesquisa e filtros ainda indisponíveis. Nenhuma consulta é executada nesta etapa.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Pesquisar — indisponível' })).toBeDisabled()
+  await expect(page.getByRole('heading', { name: 'Pesquisar metodologias' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Pesquisar', exact: true })).toBeEnabled()
+  await expect(page.getByRole('group', { name: 'Analitos', exact: true })).toBeVisible()
 })
 test('protege escritas com origem e CSRF reais', async ({ page, context }) => {
   await page.goto('/login')

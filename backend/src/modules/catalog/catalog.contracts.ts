@@ -103,3 +103,14 @@ export const previewSchema = z.strictObject({
   references: z.array(z.strictObject({ referenceText: z.string(), sourceType: z.enum(['ORIGINAL', 'REFERENCE']), canonicalUrl: z.string(), ownerCredit: z.string(), editionLabel: z.string(), locator: z.string() })),
 })
 export const paged = <T extends z.ZodType>(schema: T) => z.strictObject({ data: z.array(schema), page: z.number(), pageSize: z.number(), total: z.number() })
+const filterIds = z.preprocess(value => typeof value === 'string' ? [value] : value,
+  z.array(id).max(20).refine(values => new Set(values).size === values.length, 'Filtro duplicado').default([]))
+export const searchQuery = paging.extend({
+  q: z.string().max(200).default('').transform(value => value.normalize('NFC').trim().replace(/\s+/gu, ' '))
+    .refine(value => !/[\p{Cc}]/u.test(value) && (!value || value.split(' ').length <= 12), 'Use até 12 palavras, sem caracteres de controle'),
+  techniqueIds: filterIds, technologyIds: filterIds, equipmentIds: filterIds, matrixIds: filterIds,
+  analyteIds: filterIds, standardIds: filterIds, segmentIds: filterIds,
+  sort: z.enum(['title_asc', 'updated_desc']).default('title_asc'),
+})
+export type SearchQuery = z.infer<typeof searchQuery>
+export type Preview = z.infer<typeof previewSchema>
