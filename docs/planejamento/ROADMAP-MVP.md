@@ -104,7 +104,8 @@ Versão inicial de filtros/curadoria/preços/condições pode ser pequena, mas p
 - Revisão de consistência entre RF, P/V, contratos, entidades, estados e tarefas; diagramas Mermaid nativos incluídos.
 - Verificação local executada: cinco entregáveis, 24 links locais válidos, 58 IDs definidos e sem referências desconhecidas, oito blocos Mermaid, cercas de código e encoding sem erros; relações ER passaram pela checagem estrutural. Diff conferido para conter somente os cinco Markdown.
 - Não instalar pacotes, executar migrações, configurar banco/serviços, alterar CI ou modificar aplicação para validar documentos. O CI já existente pode validar a regressão da branch; resultado de CI não aprova requisitos nem comprova MVP implementado.
-- Limitação: não há CLI Mermaid instalada no ambiente; não foram instaladas dependências para esta documentação. Houve revisão de sintaxe/relacionamentos e checagem estrutural, sem alegar parse/render completo automatizado. O leitor pode visualizar os blocos Mermaid no GitHub; validação visual integral permanece uma verificação de revisão do PR.
+- CI de regressão documental aprovado no commit `7791496fe4d3cf688ba9fe663ff67b0ac0813f18`: [execução 40983062010](https://github.com/dernivaljr/wiki-chem/actions/runs/40983062010). Os checks do PR identificam os resultados de revisões posteriores.
+- Renderização conferida no visualizador do GitHub: os oito blocos carregaram, sendo três ER no modelo, dois fluxos no documento comercial e um diagrama em cada um dos outros três documentos, sem erro de parser observado. Não há CLI Mermaid instalada e não foram instaladas dependências; a checagem pelo navegador não representa aprovação semântica dos requisitos ou decisões.
 
 ## 7. Evolução posterior
 
