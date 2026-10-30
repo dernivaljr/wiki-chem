@@ -1,4 +1,4 @@
-export interface ApiOptions { method?: string; body?: unknown; csrf?: string; includeMeta?: boolean }
+export interface ApiOptions { method?: string; body?: unknown; csrf?: string; includeMeta?: boolean; idempotencyKey?: string }
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
@@ -9,7 +9,7 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}): Pro
   try {
     const response = await fetch('/api/v1' + path, {
       method: options.method ?? 'GET', credentials: 'same-origin', signal: AbortSignal.timeout(10000),
-      headers: { Accept: 'application/json', ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(options.csrf ? { 'X-CSRF-Token': options.csrf } : {}) },
+      headers: { Accept: 'application/json', ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(options.csrf ? { 'X-CSRF-Token': options.csrf } : {}), ...(options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
       ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
     })
     if (response.status === 204) return undefined as T

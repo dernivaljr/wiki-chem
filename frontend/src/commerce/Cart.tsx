@@ -1,3 +1,5 @@
+import DemoBanner from '../checkout/DemoBanner'
+import CartCheckout from '../checkout/CartCheckout'
 import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -29,7 +31,8 @@ function CartBody({ initial, reload }: { initial: CartData; reload: () => void }
     </article>)}
     <section className="search-card" aria-label="Resumo do carrinho"><h2>Total atual dos itens disponíveis</h2><p><strong>{brl(cart.totalCentavos)}</strong></p>
       <p>{cart.unavailableCount} {cart.unavailableCount === 1 ? 'item indisponível excluído' : 'itens indisponíveis excluídos'} do total, sem remoção do carrinho.</p>
-      <p>Valores e disponibilidade serão revalidados. Checkout e confirmação de demonstração estarão disponíveis em um próximo incremento.</p>
+      <p>Valores e disponibilidade serão revalidados antes da confirmação.</p>
+      <CartCheckout cart={cart} reload={reload} blocked={pending} />
     </section>
   </>
 }
@@ -37,7 +40,8 @@ export default function Cart() {
   const { request } = useAuth()
   const load = useCallback(() => request<CartData>('/cart'), [request])
   const { result, retry } = useCatalogResource(load)
-  return <main className="consultas"><div className="consultas__container"><h1>Meu carrinho</h1><p>Carrinho persistente de metodologias digitais. Nenhuma compra é realizada nesta etapa.</p>
+  return <main className="consultas"><div className="consultas__container"><h1>Meu carrinho</h1><p>Carrinho persistente de metodologias digitais. A aquisição é somente demonstrativa, sem cobrança.</p>
+    <DemoBanner />
     {result.status === 'loading' && <p role="status">Carregando carrinho…</p>}
     {result.status === 'error' && <div role="alert"><p>{result.error instanceof Error ? result.error.message : 'Não foi possível carregar o carrinho.'}</p><button type="button" onClick={retry}>Tentar novamente</button></div>}
     {result.status === 'ready' && <CartBody initial={result.data} reload={retry} />}

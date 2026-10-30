@@ -7,4 +7,4 @@ export type Taxonomies = Record<Facet, Term[]>
 export interface Contributor { displayName: string; contributorType: 'PERSON' | 'ORGANIZATION'; reference: string; role: 'AUTHOR' | 'CURATOR' }
 export interface Page<T> { data: T[]; page: number; pageSize: number; total: number }
 export interface Reference { referenceText: string; sourceType: 'ORIGINAL' | 'REFERENCE'; canonicalUrl: string; ownerCredit: string; editionLabel: string; locator: string }
-export interface Preview { offer: Offer | null; purchasable: boolean; id: string; versionId: string; versionLabel: string; title: string; freeSummary: string; publicDescription: string; technicalMetadata: Taxonomies; contributors: Contributor[]; references: Reference[] }
+export interface Preview { owned: boolean; offer: Offer | null; purchasable: boolean; id: string; versionId: string; versionLabel: string; title: string; freeSummary: string; publicDescription: string; technicalMetadata: Taxonomies; contributors: Contributor[]; references: Reference[] }

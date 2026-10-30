@@ -58,7 +58,7 @@ describe('oferta e carrinho na interface', () => {
     expect(screen.getByText('Há uma nova versão publicada.')).toBeInTheDocument()
     expect(screen.getByText(/mantido no carrinho e excluído do total/)).toBeInTheDocument()
     expect(screen.getByText('R$ 0,00')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /checkout|confirmar/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Avançar para checkout demonstrativo/i })).toBeDisabled()
   })
   it('remove com revisão no servidor e sem corpo JSON, preservando CSRF', async () => {
     mockFetch().mockImplementation(async (url, options) => {

@@ -1,4 +1,4 @@
-import { loadOffers, lockProductForMethod } from '../commerce/commerce.offers.js'
+import { loadOffers, lockProductForMethod, ownedMethods } from '../commerce/commerce.offers.js'
 import { createHash } from 'node:crypto'
 import type { Pool, PoolConnection, RowDataPacket } from 'mysql2/promise'
 import { withTransaction } from '../../database/pool.js'
@@ -81,12 +81,14 @@ async function taxonomyCollections(db: Db, includeInactive: boolean) {
 }
 // Uma consulta por coleção, independentemente da quantidade de resultados.
 // A allowlist não lê conteúdo integral, evidência ou notas privadas.
-async function readPreviews(db: Db, versions: Row[]): Promise<Preview[]> {
+async function readPreviews(db: Db, versions: Row[], userId?: string): Promise<Preview[]> {
   if (!versions.length) return []
   const ids = versions.map(row => String(row.id)), slots = placeholders(ids.length)
   const offers = await loadOffers(db, versions.map(row => String(row.methodology_id)))
+  const owned = userId ? await ownedMethods(db, userId, versions.map(row => String(row.methodology_id))) : new Set<string>()
   const previews = versions.map(row => ({
-    offer: offers.get(String(row.methodology_id)) ?? null, purchasable: offers.get(String(row.methodology_id))?.available ?? false, id: String(row.methodology_id), versionId: String(row.id), versionLabel: row.version_label as string,
+    owned: owned.has(String(row.methodology_id)),
+    offer: offers.get(String(row.methodology_id)) ?? null, purchasable: (offers.get(String(row.methodology_id))?.available ?? false) && !owned.has(String(row.methodology_id)), id: String(row.methodology_id), versionId: String(row.id), versionLabel: row.version_label as string,
     title: row.title as string, freeSummary: row.free_summary as string, publicDescription: row.public_description as string,
     technicalMetadata: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] } as Taxonomies,
     references: [] as Preview['references'], contributors: [] as Preview['contributors'],
@@ -324,7 +326,7 @@ export function createCatalogRepository(pool: Pool) {
         return { ...summary(await versionRow(db, id)), ...editor }
       })
     },
-    async search(query: SearchQuery) {
+    async search(query: SearchQuery, userId?: string) {
       return boundary(() => withTransaction(pool, async db => {
         for (const facet of facets) {
           const ids = query[filterKeys[facet]]
@@ -335,13 +337,13 @@ export function createCatalogRepository(pool: Pool) {
         const predicate = searchPredicate(query)
         const [count] = await records(db, 'SELECT COUNT(*) AS total' + publishedFrom + ' WHERE ' + predicate.sql, predicate.params)
         const versions = await records(db, 'SELECT ' + previewColumns + publishedFrom + ' WHERE ' + predicate.sql + ' ORDER BY ' + searchOrders[query.sort] + ' LIMIT ? OFFSET ?', [...predicate.params, query.pageSize, (query.page - 1) * query.pageSize])
-        return { data: await readPreviews(db, versions), total: Number(count?.total ?? 0), page: query.page, pageSize: query.pageSize }
+        return { data: await readPreviews(db, versions, userId), total: Number(count?.total ?? 0), page: query.page, pageSize: query.pageSize }
       }, true))
     },
-    async preview(methodologyId: string) {
+    async preview(methodologyId: string, userId?: string) {
       return boundary(() => withTransaction(pool, async db => {
         const versions = await records(db, 'SELECT ' + previewColumns + publishedFrom + ' WHERE m.id = ? AND ' + publishedWhere, [methodologyId])
-        const [preview] = await readPreviews(db, versions)
+        const [preview] = await readPreviews(db, versions, userId)
         if (!preview) throw missing()
         return preview
       }, true))

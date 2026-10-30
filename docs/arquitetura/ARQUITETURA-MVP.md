@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; checkout e direitos planejados. A01–A13 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
+**Estado:** infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; checkout, pedidos e direitos registrados implementados; biblioteca integral planejada. A01–A14 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
 
 ## 1. Estrutura e limites de confiança
 
-Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade, conhecimento editorial e pesquisa estão implementados; ofertas e carrinho estão implementados; confirmação, pedidos e direitos permanecem planejados.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade, conhecimento editorial e pesquisa estão implementados; ofertas e carrinho estão implementados; confirmação, pedidos e registro de direitos estão implementados; resolução e leitura integral pela biblioteca permanecem futuras.
 
 ```mermaid
 flowchart LR
@@ -46,7 +46,7 @@ P07 propõe mesma origem para frontend/API; o proxy Vite encaminha /api/v1 ao ba
 
 ## 3. Identidade, autorização e segurança
 
-[Identidade](IDENTIDADE.md) registra as decisões implementadas de hash, sessão, origem, CSRF, limites e bootstrap. Controles de conteúdo/comércio abaixo continuam planejados.
+[Identidade](IDENTIDADE.md) registra as decisões implementadas de hash, sessão, origem, CSRF, limites e bootstrap. Controle de acesso integral à biblioteca continua planejado; catálogo, ofertas e aquisição demonstrativa estão implementados.
 
 - Sessão opaca aleatória, somente hash do token no banco, revogável; cookie de produção proposto `__Host-wikichem_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, sem Domain. Prazos configuráveis: oito horas absolutas e 30 minutos por inatividade; “manter conectado” foi retirado; sessão é rotacionada no login e revogada no logout/bloqueio.
 - Senha Argon2id (19 MiB, duas iterações, paralelismo um), 12–128 caracteres, sem trim ou truncamento. Respostas de login genéricas e limitação de tentativas; sem registrar senha/token.
@@ -96,7 +96,7 @@ Erro: `{ "error": { "code": "CODIGO_ESTAVEL", "message": "Mensagem segura", "det
 | GET `/health` | 200 `{ "data": { "status": "ok" } }` | Processo HTTP operacional, sem consultar banco |
 | GET `/health/database` | 200 `{ "data": { "status": "available" } }` ou 503 DATABASE_UNAVAILABLE | SELECT 1 com timeout; não garante esquema de negócio |
 
-Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. Identidade, catálogo e pesquisa têm contratos executáveis; ofertas/carrinho têm contratos executáveis e pedidos/direitos continuam planejados.
+Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. Identidade, catálogo e pesquisa têm contratos executáveis; ofertas/carrinho têm contratos executáveis e checkout/pedidos têm contratos executáveis; direitos estão registrados e sua leitura integral permanece futura.
 
 ### 4.1 Identidade implementada
 
@@ -121,7 +121,7 @@ Listagem e GET /methodologies/:id retornam apenas MethodologyPreview: id, versio
 
 RF07 apresenta preço e disponibilidade quando cadastrados. offer é nullable e contém productId, revision, active, priceId/amountCentavos nullable, currency, available e reason; purchasable reflete elegibilidade de inclusão. Não existe owned nem compra presumida. Oferta ausente/inativa não bloqueia pesquisa. Direitos e regras de aquisição P03/P06 continuam propostas. [Ofertas e carrinho](OFERTAS-CARRINHO.md) define os contratos executáveis.
 
-### 4.3 Carrinho implementado; pedidos e direitos planejados
+### 4.3 Carrinho, checkout e pedidos implementados; biblioteca futura
 
 | Método/rota | Entrada/retorno essencial | Regras |
 | --- | --- | --- |
@@ -157,7 +157,7 @@ P09, adotada no recorte A11, utiliza apenas um formulário de rascunho e uma aç
 | POST `/admin/versions/:id/suspend` e `/restore` | Motivo/evidência e revisão; controla impedimento expresso de uso, sem reescrever pedidos |
 | GET/POST/PATCH `/admin/taxonomies/:type` (PATCH em `/:termId`) | `type` em enum das sete facetas; criar/deprecar termo, sem reutilizar identidade/edição histórica |
 
-DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; pedidos e direitos ainda exigem implementação e aprovação das regras pendentes. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a futura compra concorrente usa os bloqueios descritos no documento comercial.
+DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; checkout/pedidos também têm contratos executáveis; biblioteca e condições comerciais definitivas exigem implementação/aprovação. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a aquisição demonstrativa concorrente usa os bloqueios descritos no documento comercial.
 
 ## 5. Persistência, testes e operação proposta
 
@@ -174,7 +174,7 @@ As tecnologias da fundação foram expressamente autorizadas. Identidade e admin
 | Tema | Proposta/opções para decisão | Aprovação e evidência necessárias |
 | --- | --- | --- |
 | Framework/contratos — A09, adotado | Fastify em Node.js 24/TypeScript strict, Zod e erros centralizados | Testes de entrada, saída, limites e mensagens seguras |
-| MySQL/acesso — A09, adotado | MySQL 8.4, mysql2/promise, pool, SQL parametrizado e helper transacional DML, sem ORM | Integração verifica BIGINT, FKs, unicidade, concorrência e rollback em tabelas genéricas; integridade comercial continua futura |
+| MySQL/acesso — A09, adotado | MySQL 8.4, mysql2/promise, pool, SQL parametrizado e helper transacional DML, sem ORM | Integração verifica BIGINT, FKs, unicidade, concorrência e rollback em tabelas genéricas; integridade de aquisição demonstrativa é detalhada no documento de checkout |
 | Migrações — A09, adotado; operação V08 | Executor pequeno: um statement por arquivo, sequência contígua, SHA-256, lock exclusivo e ledger APPLYING/APPLIED; conta operacional distinta | Banco vazio/repetição, status sem escrita, checksum/histórico e falha DDL verificados; backup/restauração de produção pendentes |
 | Autenticação — A10, adotada | Argon2id, sessão opaca MySQL, cookies, CSRF, origem, limites e prazos configuráveis | Recuperação, verificação/mudança de e-mail, retenção e condições jurídicas continuam pendentes em V06 |
 | Primeiro administrador — A10, implementado | Comando local com habilitação explícita, conta operacional, terminal e senha oculta; registra responsável e é idempotente | Sem senha padrão, argumento de segredo, promoção de cliente ou API pública; ADMIN utiliza a administração editorial protegida |
@@ -194,3 +194,7 @@ Migrações usam lock por banco e registro APPLYING/APPLIED. Arquivos aplicados 
 O esquema contém infraestrutura, identidade e catálogo editorial. /admin usa a API real para rascunhos, taxonomias, fontes, revisão e publicação. Não existe corpus real pré-carregado, checkout ou direito de compra; ofertas/carrinho estão implementados e a pesquisa recupera o catálogo publicado por texto e sete filtros. Conteúdo, permissões reais e demais decisões de produto continuam sujeitos à curadoria.
 
 Referências: [Fastify — validação/serialização](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/), [MySQL2](https://sidorares.github.io/node-mysql2/docs), [MySQL 8.4 — DDL e commit implícito](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html) e [locks de sessão](https://dev.mysql.com/doc/refman/8.4/en/locking-functions.html).
+
+## Contratos implementados de aquisição demonstrativa
+
+As rotas de checkout/pedidos da seção comercial estão implementadas conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md), que especifica DTOs executáveis, TTL, códigos, locks e recuperação. O módulo checkout usa Fastify/Zod e mysql2, sem nova dependência. Idempotency-Key é UUID e demoAcknowledged deve ser literal true. OrderDetail também contém cancelledAt, cartRevisionSnapshot, itemCount, serverTime e IDs de itens/preços. A listagem usa total/page/pageSize no nível superior. Todas as leituras são do proprietário; escritas usam sessão/CSRF/origem. Rotas /library continuam apenas propostas e não existem na implementação. O direito por metodologia fica registrado para consumo posterior, sujeito às condições de P03/V03.

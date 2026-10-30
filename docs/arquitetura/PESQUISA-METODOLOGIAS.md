@@ -67,3 +67,7 @@ A validação executada aprovou **254 testes**, preservando as verificações de
 | Jornadas com API e MySQL reais | 15 | Identidade, administração e três jornadas de pesquisa por CUSTOMER, incluindo detalhes, URL, teclado, rede e sessão expirada |
 
 Instalação limpa, build, análise estática e auditorias completas/de produção foram executados com sucesso; as auditorias reportaram zero vulnerabilidades. As 28 migrações existentes foram aplicadas e repetidas sem reaplicação; a pesquisa não exigiu alteração do esquema. A execução integrada utilizou ambiente Linux com MySQL isolado e Chromium, sem depender de testes manuais. Esses resultados comprovam o comportamento do software com fixtures e não constituem validação científica do corpus, autorização real de uso de fontes ou medição de capacidade de produção.
+
+## Integração com aquisição demonstrativa
+
+O recorte A14 acrescenta checkout demonstrativo, histórico próprio e direitos registrados, conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md). Ofertas e carrinho identificam metodologia já adquirida, impedem recompra e não expõem procedimento. A biblioteca integral ainda não existe; condições comerciais definitivas continuam pendentes.

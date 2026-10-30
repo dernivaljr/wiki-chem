@@ -14,10 +14,11 @@ export type Product = z.infer<typeof productSchema>
 export const cartAdd = z.strictObject({ expectedRevision: revision, offerRevision: revision, priceId: id, versionId: id })
 export const cartRemove = z.strictObject({ expectedRevision: z.coerce.number().int().positive().max(2147483647) })
 export const cartItemSchema = z.strictObject({
+  owned: z.boolean(),
   productId: id, methodologyId: id, title: z.string(), quantity: z.literal(1),
   observedPriceId: id, observedAmountCentavos: amountCentavos, observedVersionId: id, observedVersionLabel: z.string(),
   currentVersionId: id.nullable(), currentVersionLabel: z.string().nullable(), offer: offerSchema,
-  issues: z.array(z.enum(['PRICE_CHANGED', 'VERSION_CHANGED', 'OFFER_CHANGED', 'UNAVAILABLE'])),
+  issues: z.array(z.enum(['PRICE_CHANGED', 'VERSION_CHANGED', 'OFFER_CHANGED', 'UNAVAILABLE', 'ALREADY_OWNED'])),
 })
 export const cartSchema = z.strictObject({ revision, items: z.array(cartItemSchema).max(100), currency: z.literal('BRL'), totalCentavos: total, unavailableCount: z.number().int().nonnegative() })
 export type Cart = z.infer<typeof cartSchema>

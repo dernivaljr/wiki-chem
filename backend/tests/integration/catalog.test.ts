@@ -401,7 +401,7 @@ describe('pesquisa autenticada de prévias no MySQL', () => {
     for (const response of [await find(), await call('GET', '/methodologies/' + a.id, undefined, customer)]) {
       expect(response.statusCode).toBe(200)
       expect(response.body).not.toContain(hidden)
-      expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote|owned/)
+      expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote/)
     }
   })
   it('total, página e metadados usam um snapshot mesmo com publicação concorrente', async () => {

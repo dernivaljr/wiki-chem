@@ -1,4 +1,6 @@
 import Cart from './commerce/Cart'
+import Orders from './checkout/Orders'
+import OrderPage from './checkout/OrderPage'
 import Admin from './pages/Admin/Admin'
 import AuthProvider from './auth/AuthProvider'
 import ProtectedRoute from './auth/ProtectedRoute'
@@ -25,6 +27,9 @@ function AppContent() {
         <Route path="/metodologias/:id" element={<ProtectedRoute><MethodologyDetail /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><Admin /></ProtectedRoute>} />
         <Route path="/carrinho" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/checkout/:id" element={<ProtectedRoute><OrderPage review /></ProtectedRoute>} />
+        <Route path="/pedidos" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/pedidos/:id" element={<ProtectedRoute><OrderPage /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
     </>

@@ -96,7 +96,8 @@ describe('produtos, preços e carrinhos no MySQL real', () => {
     expect(found.items.every(item => item.quantity === 1 && item.offer.available)).toBe(true)
     const duplicate = data<Cart>(await add(user, fx[0]!, found.revision))
     expect(duplicate.revision).toBe(found.revision); expect(duplicate.items).toHaveLength(5)
-    expect((await sql("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('orders','entitlements')"))).toHaveLength(0)
+    expect(await sql('SELECT id FROM orders WHERE user_id = ?', [user.id])).toHaveLength(0)
+    expect(await sql('SELECT id FROM entitlements WHERE user_id = ?', [user.id])).toHaveLength(0)
   })
   it('FX01 + FX02 somam 2750 e usuário nenhum fornece valores calculados', async () => {
     const user = await customer()

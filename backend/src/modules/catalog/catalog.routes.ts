@@ -14,11 +14,11 @@ export async function registerCatalogRoutes(app: FastifyInstance, config: Config
   const errors = { 400: errorResponse, 401: errorResponse, 403: errorResponse, 404: errorResponse, 409: errorResponse, 503: errorResponse }
   const api = app.withTypeProvider<ZodProvider>()
   api.get('/methodologies', { onRequest: (request, reply) => authenticate(request, reply, false), schema: { querystring: searchQuery, response: { 200: paged(previewSchema), ...errors } } },
-    async request => catalog.search(request.query))
+    async request => catalog.search(request.query, actor(request).userId))
   api.get('/taxonomies', { onRequest: (request, reply) => authenticate(request, reply, false), schema: { querystring: emptyQuery, response: { 200: z.strictObject({ data: taxonomiesSchema }), ...errors } } },
     async () => ({ data: await catalog.taxonomies(false) }))
   api.get('/methodologies/:id', { onRequest: (request, reply) => authenticate(request, reply, false), schema: { params: idParams, querystring: emptyQuery, response: { 200: z.strictObject({ data: previewSchema }), ...errors } } },
-    async request => ({ data: await catalog.preview(request.params.id) }))
+    async request => ({ data: await catalog.preview(request.params.id, actor(request).userId) }))
   await app.register(async scope => {
     scope.addHook('onRequest', (request, reply) => authenticate(request, reply, true))
     const admin = scope.withTypeProvider<ZodProvider>()

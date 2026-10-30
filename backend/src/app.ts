@@ -1,4 +1,6 @@
 import type { CatalogRepository } from './modules/catalog/catalog.repository.js'
+import type { CheckoutRepository } from './modules/checkout/checkout.repository.js'
+import { registerCheckoutRoutes } from './modules/checkout/checkout.routes.js'
 import type { CommerceRepository } from './modules/commerce/commerce.repository.js'
 import { registerCommerceRoutes } from './modules/commerce/commerce.routes.js'
 import { registerCatalogRoutes } from './modules/catalog/catalog.routes.js'
@@ -20,6 +22,7 @@ import { registerHealthRoutes } from './modules/health/health.routes.js'
 export function buildApp(config: Config, dependencies: {
   catalog?: CatalogRepository
   commerce?: CommerceRepository
+  checkout?: CheckoutRepository
   identity?: IdentityRepository
   now?: () => number
   checkDatabase: () => Promise<void>
@@ -54,6 +57,7 @@ export function buildApp(config: Config, dependencies: {
       registerIdentityRoutes(api, config, service)
       if (dependencies.catalog) await registerCatalogRoutes(api, config, service, dependencies.catalog)
       if (dependencies.commerce) await registerCommerceRoutes(api, config, service, dependencies.commerce)
+      if (dependencies.checkout) await registerCheckoutRoutes(api, config, service, dependencies.checkout)
     }
   }, { prefix: '/api/v1' })
   app.addHook('onClose', async () => { await dependencies.closeDatabase?.() })

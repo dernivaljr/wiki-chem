@@ -108,3 +108,7 @@ A validação executada aprovou **305 testes**, preservando as verificações an
 | Jornadas com API e MySQL reais | 19 | Inclui quatro jornadas comerciais de administração e cliente, com persistência, mudanças de oferta, falhas e tela de 320 px |
 
 As 35 migrações foram aplicadas e executadas novamente sem reaplicação. Instalação limpa, build e análise estática passaram; auditorias completas/de produção reportaram zero vulnerabilidades. O bundle frontend foi verificado sem marcadores das fixtures comerciais. Integração e navegador utilizaram Linux, MySQL 8.4 isolado e Chromium, sem depender de testes manuais. Esses resultados não constituem validação científica, aprovação de preços reais ou autorização jurídica de um corpus.
+
+## Integração com aquisição demonstrativa
+
+O recorte A14 acrescenta checkout demonstrativo, histórico próprio e direitos registrados, conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md). Ofertas e carrinho identificam metodologia já adquirida, impedem recompra e não expõem procedimento. A biblioteca integral ainda não existe; condições comerciais definitivas continuam pendentes.
