@@ -43,6 +43,8 @@ test('login → pesquisa → carrinho → revisão → pedido → biblioteca →
     const response = await user.context.request.get('/api/v1/library/' + item.methodologyId + '/content')
     expect(response.headers()['cache-control']).toContain('private, no-store')
     await page.getByRole('link', { name: 'Minha biblioteca', exact: true }).click()
+    await expect(page).toHaveURL(/\/biblioteca$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Minha biblioteca' })).toBeVisible()
     await expect(page.getByText('Versão adquirida: v1 · Atual: v1')).toBeVisible()
     expect(await page.locator('body').textContent()).not.toContain(item.marker)
     for (const width of [320, 375, 768, 1280]) { await page.setViewportSize({ width, height: 800 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true) }

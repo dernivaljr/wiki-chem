@@ -46,7 +46,7 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
   }
   return <section className="admin-editor" aria-labelledby="version-editor-title">
     <h3 id="version-editor-title">Versão {version.versionLabel} — {version.editorialStatus}</h3>
-    <p>Revisão {version.revision}. Procedimento restrito à edição administrativa.</p>
+    <p>Revisão {version.revision}. Edição exclusiva da administração; a leitura adquirida usa a biblioteca autorizada.</p>
     {readOnly && <p role="status">Conteúdo publicado é imutável. Crie outra versão para alterações.</p>}
     {readOnly && <VersionAccess key={version.id + ':' + version.revision} version={version} onSaved={onSaved} />}
     {version.reviewedBy && <div className="admin-review"><p>Revisão editorial por usuário {version.reviewedBy}, em {version.reviewedAt}; revisão de conteúdo {version.reviewedRevision}.</p><p>{version.reviewNote}</p></div>}

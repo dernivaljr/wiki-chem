@@ -33,7 +33,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | A12 | Pesquisa autenticada autorizada: texto, sete filtros com OR interno/AND entre categorias, paginação, ordenação e detalhes gratuitos; independente de produtos. Oferta comercial completa de RF07 na Etapa 07; sem preços fictícios |
 
 | A13 | Produtos/preços BRL/carrinho autorizados: um produto por metodologia, histórico imutável, quantidade um, revisão, revalidação e isolamento |
-| A14 | Checkout demonstrativo em duas transações, snapshots, idempotência, pedidos/histórico e direitos registrados por metodologia; sem cobrança e sem leitura integral da biblioteca. Recorte demonstrativo de P03; condições comerciais definitivas seguem pendentes |
+| A14 | Checkout demonstrativo em duas transações, snapshots, idempotência, pedidos/histórico e direitos registrados por metodologia; sem cobrança; leitura integral fornecida separadamente por A15. Recorte demonstrativo de P03; condições comerciais definitivas seguem pendentes |
 | A15 | Biblioteca e leitura integral autenticadas, direito próprio ACTIVE por metodologia, original/histórico/atualizações publicadas, suspensão/restauração justificada e auditada; recorte demonstrativo sem alterar condições comerciais definitivas |
 
 ### Propostas transversais e adoções identificadas
@@ -167,11 +167,11 @@ MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por 
 | --- | --- | --- |
 | V01 | Vocabulário e distinção técnica/tecnologia/equipamento; regras de busca, acentos/fórmulas, facetas e edição de norma; validar os exemplos C01–C05 | Produto + curadoria; antes de catálogo e fixtures de taxonomia |
 | V02 | Aprovar/rejeitar C01–C05 como recorte inicial; validar conteúdo, escopo, referências, atribuição, revisão e permissões de uso; candidata não é publicação autorizada | Curadoria + titulares/responsável por permissões; antes de publicação |
-| V03 | Aprovar P03: aquisição por metodologia, original/histórico/atualizações publicadas sem recompra; duração, limites, suspensão e critérios para distinguir atualização de metodologia realmente distinta continuam pendentes | Produto + curadoria/responsável por condições de uso; antes de biblioteca/compra |
+| V03 | Aprovar P03: aquisição por metodologia, original/histórico/atualizações publicadas sem recompra; duração, limites, suspensão e critérios para distinguir atualização de metodologia realmente distinta continuam pendentes | Produto + curadoria/responsável por condições de uso; demonstração autorizada em A14/A15, condições definitivas antes de publicação comercial |
 | V04 | Rejeição integral de repetição, prévia/expiração/cancelamento, preço alterado e preservação do carrinho | Produto; recorte demonstrativo A14 adotado, condições definitivas pendentes |
 | V05 | Preços reais, responsável, faixa/gratuidade e condições de oferta; FX01–FX05 são valores fictícios isolados de desenvolvimento e não decidem política comercial | Responsável comercial; antes de ativar produto real; nenhum preço final proposto |
 | V06 | Identidade mínima adotada em A10; recuperação, e-mail verificado/mudança de e-mail, retenção/eliminação e textos jurídicos continuam fora do recorte | Produto + segurança; antes das funcionalidades dependentes e exposição pública |
-| V07 | Fundação e identidade resolvidas por A09/A10; tipos/constraints dos futuros agregados e operação continuam pendentes | Mantenedor técnico; antes dos incrementos dependentes |
+| V07 | Fundação e identidade resolvidas por A09/A10; tipos/constraints comerciais e biblioteca implementados em A13–A15; operação de produção continua pendente | Mantenedor técnico; antes dos incrementos dependentes |
 | V08 | Hospedagem, mesma origem, segredos, backup/restore, observabilidade, volumes/SLO e navegadores suportados | Mantenedor/operação; antes de liberação; sem contratação/configuração nesta etapa |
 | V09 | Aprovar P09 (admin único e revisão no ato de publicar), provisionamento seguro/idempotente do primeiro admin, responsáveis, suspensão/restauração e auditoria; matriz técnica na arquitetura | Produto + curadoria + segurança; antes da administração |
 | V10 | Constituição própria, adoção formal do SDD e aprovação destes cinco documentos como baseline de implementação | Mantenedor; antes de iniciar incrementos dependentes |
