@@ -1,0 +1,147 @@
+# Wiki-Chem — Especificação do MVP v1 com e-commerce
+
+**Estado:** proposta para revisão e aprovação. **Data:** 29/10/2026 (America/Sao_Paulo). Este documento especifica comportamento futuro; não declara funcionalidades implementadas.
+
+## 1. Base, evidências e governança
+
+A branch documental parte de `main` em `6f48aecbca3fce10518e6224731086ec74c48d5c`. Pré-condições verificadas antes de criá-la:
+
+| Verificação | Evidência |
+| --- | --- |
+| Auditoria integrada | [PR #1](https://github.com/dernivaljr/wiki-chem/pull/1), merge `2fe5ee6a330d2057783077d42165e68e717db146` |
+| Etapa 01 integrada | [PR #2](https://github.com/dernivaljr/wiki-chem/pull/2), merge `6f48aecbca3fce10518e6224731086ec74c48d5c` |
+| CI da main aprovada nesse SHA | [Execução 40980122133](https://github.com/dernivaljr/wiki-chem/actions/runs/40980122133), evento push em main, conclusão success |
+
+Referências locais: [auditoria](../auditoria/AUDITORIA-2026-10-29.md) e [Etapa 01](../etapas/ETAPA-01-ESTABILIZACAO.md). A base tem frontend React, quatro rotas, testes e CI. Login/cadastro e consulta ainda são simulações. Não há backend, banco ou e-commerce implementados.
+
+Foram consultadas as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md), blob `05f4cb40e5b0a68c6bf7e606a74fe6c223c09e5b`. Requisitos, solução técnica e tarefas estão separados nestes cinco documentos. Não foi identificada constituição própria aprovada; sua formalização/adaptação permanece em V10. Consultar as diretrizes não constitui aprovação automática do desenho proposto.
+
+Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo de dados](../arquitetura/MODELO-DADOS.md), [regras comerciais](../arquitetura/ECOMMERCE.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
+
+## 2. Estados das decisões
+
+**A = orientação expressamente confirmada pelo solicitante para este trabalho.** Não significa aprovação das propostas de implementação. **P = proposta técnica ou de comportamento**, dependente de revisão deste PR. **V = ponto que exige validação identificada na seção 9.** Nenhum preço, fonte, contrato de uso ou parecer jurídico foi aprovado por estes documentos.
+
+| ID | Orientação confirmada (A) |
+| --- | --- |
+| A01 | Preservar React + TypeScript, identidade visual e frontend existente |
+| A02 | Cadastro/login/sessão/logout/perfil reais; pesquisa autenticada com os sete filtros |
+| A03 | Metodologia individual como produto, prévia gratuita, preço BRL e conteúdos completos autorizados pelo backend |
+| A04 | Carrinho, checkout explicitamente simulado, pedidos e histórico persistidos, biblioteca e administração básica |
+| A05 | Planejar Node.js + TypeScript/REST e MySQL relacional com relações N:N; valores históricos e consistência transacional |
+| A06 | Rastrear autoria/curadoria, revisão, fontes, versões e permissões; não comercializar reprodução protegida sem autorização |
+| A07 | IA/RAG, provedores, pacotes, assinaturas e pagamentos reais fora do MVP |
+| A08 | Esta entrega modifica apenas cinco documentos, sem código, dependências ou infraestrutura |
+
+### Propostas transversais
+
+| ID | Proposta (P), ainda sujeita à aprovação |
+| --- | --- |
+| P01 | Dois papéis: cliente e administrador; sessão opaca revogável no servidor, cookie seguro e proteção CSRF |
+| P02 | AND entre facetas e OR entre valores da mesma faceta; busca somente em informações de prévia |
+| P03 | Conteúdo e taxonomias vinculados à versão; direito de acesso à versão adquirida, sem atualização futura automática |
+| P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
+| P05 | Pedido em duas etapas: prévia persistida e confirmação de demonstração; revalidar oferta/preço/versão antes de concluir |
+| P06 | Desativar venda não remove a biblioteca; suspensão expressa por impedimento de uso bloqueia conteúdo e requer tratamento administrativo |
+| P07 | Monólito modular e publicação frontend/API na mesma origem; nenhuma escolha de framework, ORM ou hospedagem aprovada |
+| P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
+
+As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
+
+## 3. Objetivo, usuários e limite do MVP
+
+Permitir que um usuário autenticado encontre uma metodologia adequada ao contexto analítico, avalie uma prévia e adquira acesso em uma demonstração transacional persistida. “Adquirida” no MVP significa **aquisição simulada sem cobrança**, não pagamento ou documento fiscal emitido.
+
+Visitantes acessam Home, Sobre e acesso. Clientes pesquisam, consultam prévias, usam seu carrinho, pedidos, perfil e biblioteca. Administradores mantêm conteúdos/ofertas e revisão de permissões; não escolhem direitos de terceiros arbitrariamente pelo navegador. O mesmo administrador pode usar as funções de cliente, mas papel administrativo não gera aquisição comercial.
+
+Não se incluem: dados de cartão, gateway, liquidação, reembolso financeiro, assinaturas, pacotes, emissão fiscal, DRM, download/exportação, marketplace de autores, avaliações, geração de procedimentos ou IA. Conteúdo completo será exibido em área protegida; impedir captura de tela por usuário autorizado não é uma promessa do MVP.
+
+## 4. Requisitos e critérios de aceitação
+
+Os critérios abaixo são metas verificáveis da implementação posterior, não testes aprovados nesta etapa.
+
+| ID | Requisito | Critérios de aceitação |
+| --- | --- | --- |
+| RF01 | Cadastro persistente | Nome, e-mail e senha válidos criam conta cliente única; senha não é armazenada/retornada em claro; duplicidade normalizada não cria segunda conta; payload não pode promover papel; erros não expõem detalhes internos |
+| RF02 | Login, sessão e logout | Credencial válida inicia sessão real; inválida não inicia; sessão é rotacionada após login, expira e pode ser revogada; logout invalida no servidor; cookie antigo não autoriza requisição; bloquear conta invalida acesso |
+| RF03 | Perfil e propriedade | Usuário lê seu perfil e altera apenas os campos permitidos; não consegue consultar/alterar perfil, carrinho ou pedidos de outro usuário por troca de ID; P08/V06 delimitam e-mail/recuperação |
+| RF04 | Pesquisa autenticada | Sem sessão válida, API responde 401 e UI encaminha ao login com retorno interno seguro; após login há consulta real; termo e filtros sobrevivem à navegação por URL; resposta antiga não sobrescreve consulta mais recente |
+| RF05 | Sete filtros N:N | Técnica, tecnologia, equipamento, matriz, analito, norma e segmento aceitam múltiplos termos; testes exercitam cada faceta, OR interno e AND entre facetas na mesma versão publicada; limpar restaura a consulta; filtros desconhecidos são rejeitados |
+| RF06 | Busca textual e listagem | Regra P02 da arquitetura atende termos curtos, acentos e caracteres literais aprovados em V01; termo vazio permite navegação do catálogo; ordenação é estável e paginação limitada; nenhuma correspondência retorna lista vazia com feedback, sem conteúdo inventado |
+| RF07 | Prévia informativa | Resultado e detalhe mostram título, resumo gratuito, metadados essenciais das sete facetas aplicáveis, referências/localizadores permitidos, versão, preço BRL e disponibilidade; prévia não contém etapas completas do procedimento; curadoria avalia suficiência informativa e limite de exposição |
+| RF08 | Catálogo versionado | Rascunho não aparece na pesquisa; publicação exige prévia, procedimento separado, taxonomias e origem/permissões/revisão registradas; alterar versão publicada cria nova revisão, sem sobrescrever conteúdo adquirido; referências normativas distinguem edição/situação verificada |
+| RF09 | Produto e oferta | Cada metodologia tem no máximo um produto individual; preço vigente é definido pelo administrador autorizado e não pelo cliente; preço/versionamento/disponibilidade são revalidados no servidor; nenhum preço definitivo é estabelecido nesta especificação |
+| RF10 | Carrinho persistente | Carrinho pertence à sessão/usuário no banco, sobrevive a recarga/logout-login; um produto aparece uma única vez; quantidade diferente de um e produto já adquirido são rejeitados; itens inválidos são identificados, sem remoção silenciosa; total vem do servidor |
+| RF11 | Checkout simulado | UI e API identificam DEMONSTRAÇÃO — SEM COBRANÇA; não coletam dados financeiros nem chamam pagamentos; prévia cria pedido pendente com itens/valores/versionamento; confirmação explícita conclui pedido simulado e direitos na mesma transação |
+| RF12 | Concorrência e repetição | Clique repetido com chave idempotente confirma o mesmo pedido sem novos efeitos; duas chaves concorrentes para a mesma metodologia não duplicam direito; nenhum pedido é concluído parcialmente; valor/versão alterados exigem nova revisão da compra, sem aceitação automática |
+| RF13 | Histórico de pedidos | Histórico próprio é paginado e mostra estado, data, indicação de simulação, itens e valores históricos; alterações atuais de preço/título não modificam o histórico; pedido de outro cliente não é exposto |
+| RF14 | Minha biblioteca e conteúdo | Só confirmação simulada concluída gera direito; biblioteca aponta à versão adquirida; backend valida usuário, titularidade, estado do direito e disponibilidade jurídica do conteúdo a cada acesso; visitante e cliente sem direito nunca recebem procedimento por API, HTML, bundle, cache ou URL de arquivo público |
+| RF15 | Administração básica | Administrador mantém rascunhos, fontes/permissões, contribuições/revisão, facetas, versão publicada, preço e disponibilidade; cliente recebe 403 nessas operações; ações relevantes têm trilha auditável; retirada de venda não apaga pedidos/direitos |
+| RF16 | Identidade, UX e erros | Home/Sobre, marca, Inter e paleta atuais são preservadas; novas telas têm navegação/landmarks/labels/foco/contraste e não transbordam em 320 px; loading, vazio, 401, 403, 404, conflitos de compra e falha recuperável têm mensagens sem revelar conteúdo pago |
+| RF17 | Uso autorizado das fontes | Cada origem tem referência, edição/localizador quando aplicável, autoria/curadoria e condição de uso documentadas; pendência de permissão bloqueia publicação/venda; evidência restrita de autorização não é retornada no DTO de prévia |
+
+## 5. Fluxo e estados de experiência
+
+```mermaid
+flowchart TD
+  A["Cadastro ou login"] --> B["Pesquisa autenticada"]
+  B --> C["Texto e sete filtros"]
+  C --> D["Resultados: prévia, referências e preço"]
+  D --> E{"Já adquirido?"}
+  E -->|Sim| F["Abrir versão na Minha biblioteca"]
+  E -->|Não| G["Adicionar ao carrinho"]
+  G --> H["Revisar pedido de demonstração"]
+  H --> I{"Confirmar sem cobrança?"}
+  I -->|Sim| J["Transação: pedido e direitos"]
+  J --> F
+  I -->|Não| K["Cancelar ou continuar depois"]
+  F --> L["Backend autoriza procedimento completo"]
+```
+
+| Situação | Comportamento proposto |
+| --- | --- |
+| Item adquirido | Exibir “Na minha biblioteca”, versão adquirida e CTA Abrir; bloquear nova adição/compra da metodologia, inclusive de versão nova no MVP; política de upgrades em V03 |
+| Sem resultados | Manter termo/filtros visíveis, informar ausência e oferecer limpar/refinar; nenhuma compra é iniciada |
+| Sessão expirada | Interromper requisição protegida, limpar estado sensível no cliente e pedir login; preservar URL interna e carrinho no servidor; não reenviar confirmação automaticamente |
+| Erro de rede ao confirmar | Informar resultado desconhecido; consultar pedido ou repetir mesma chave; nunca presumir sucesso/fracasso nem criar outra compra automaticamente |
+| Compra interrompida | Pedido permanece pendente até cancelamento/expiração; não gera direito; reentrada consulta estado persistido; regras de expiração estão em ECOMMERCE |
+| Preço, versão ou disponibilidade mudaram | Mostrar conflito e exigir nova prévia/aceitação; valores antigos continuam no pedido histórico; sem concluir parte do carrinho |
+| Conteúdo retirado de venda | Continua na biblioteca conforme P06; suspensão expressa de conteúdo é exibida sem procedimento e exige revisão da condição de uso |
+
+Rotas atuais `/`, `/sobre` e `/login` são preservadas. `/consultas` passará a exigir sessão real. Novas rotas propostas: `/metodologias/:id`, `/carrinho`, `/checkout/:orderId`, `/perfil`, `/pedidos`, `/pedidos/:id`, `/biblioteca`, `/biblioteca/:methodologyId` e `/admin`. Rotas cliente não substituem autorização REST. A etapa de implementação deverá substituir as simulações existentes e atualizar seus testes de apresentação de modo incremental.
+
+## 6. Qualidade, segurança e conteúdo
+
+- RNF01: nenhuma resposta de prévia/pesquisa/facetas inclui procedimento, HTML oculto, arquivo completo ou trecho obtido de busca em conteúdo pago. Usar DTO por finalidade e listas explícitas de campos.
+- RNF02: autorização por requisição, sessão revogável, validação de entrada, SQL parametrizado, limites/paginação, controle de abuso e logs sem senha/token/procedimento. Testes negativos fazem parte da entrega, não apenas guard de React.
+- RNF03: um erro injetado entre atualização do pedido e concessão de direitos deixa ambos sem confirmação; concorrência é testada em MySQL real, não apenas em mocks.
+- RNF04: scripts e CI da Etapa 01 são preservados; testes de backend/contrato/compra são incrementais. Não declarar funcionalidade real aprovada com testes de simulação.
+- RNF05: restauração de backup, implantação, HTTPS, orçamento de resposta e matriz de navegadores serão definidos/validados em V08 antes da liberação. Não há infraestrutura provisionada por esta documentação.
+- RNF06: textos técnicos, autoria e fontes precisam de curadoria humana e condições de uso demonstráveis. Esta especificação não aprova termos de uso, obrigação legal, licença comercial ou segurança operacional de procedimento laboratorial.
+
+## 7. Conteúdo gratuito, pago e editorial
+
+A prévia deverá explicar finalidade, aplicabilidade, contexto de técnica/matriz/analito, limitações essenciais, versão, autoria/curadoria identificável e referências permitidas. A curadoria deve impedir que a prévia reproduza o procedimento integral. Procedimento, sequências operacionais detalhadas e conteúdo integral permanecem na representação protegida, com revisão técnica.
+
+Cada versão tem histórico de alteração e evidência de revisão. Fontes não são inferidas de títulos nem preenchidas por IA. Conteúdo original deve registrar autoria e revisão; conteúdo derivado deve registrar origem, localizador e autorização/condição de uso. Nenhuma fonte científica real, preço ou disponibilidade é inventada como dado de catálogo neste PR. Fixtures futuras serão sintéticas e marcadas como não técnicas/não comercializáveis.
+
+## 8. Condição de conclusão funcional
+
+MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por evidências do [roadmap](../planejamento/ROADMAP-MVP.md), com fluxo completo em ambiente integrado e testes de falha/concorrência/autorização. A publicação comercial real não é consequência desse marco: checkout continua sendo demonstração. Este PR conclui a elaboração documental, não o MVP.
+
+## 9. Registro único de validações pendentes
+
+| ID | Ponto a aprovar/validar | Responsável sugerido e bloqueio |
+| --- | --- | --- |
+| V01 | Vocabulário e distinção técnica/tecnologia/equipamento; regras de busca, acentos/fórmulas, facetas e edição de norma | Produto + curadoria; antes de fixtures e catálogo |
+| V02 | Corpus inicial, fontes/origens autorizadas, conteúdo mínimo, autores/revisores e limites da prévia | Curadoria + titulares/responsável por permissões; antes de publicação |
+| V03 | Direito por versão, atualizações/upgrades, duração do acesso e tratamento de suspensão de conteúdo | Produto + curadoria/responsável por condições de uso; antes de biblioteca/compra |
+| V04 | Rejeição integral de repetição, prévia/expiração/cancelamento, preço alterado e preservação do carrinho | Produto; antes de checkout |
+| V05 | Preços reais, quem os aprova, faixa monetária, eventual gratuidade e condições de oferta | Responsável comercial; antes de ativar produto; nenhum preço final proposto |
+| V06 | Campos do perfil, política de senha/sessão, recuperação, verificação/mudança de e-mail, retenção/eliminação de dados e textos de privacidade/uso | Produto + segurança + responsável pelas condições aplicáveis; antes de exposição pública; nada é parecer jurídico aprovado |
+| V07 | Framework HTTP, validação, acesso ao MySQL/migrações, hashing, versão MySQL e implementação da sessão | Mantenedor técnico; antes do backend, sem selecionar serviços externos agora |
+| V08 | Hospedagem, mesma origem, segredos, backup/restore, observabilidade, volumes/SLO e navegadores suportados | Mantenedor/operação; antes de liberação; sem contratação/configuração nesta etapa |
+| V09 | Papel/revisão editorial, concessão inicial de admin, suspensão/restauração e escopo da trilha de auditoria | Produto + curadoria + segurança; antes da administração |
+| V10 | Constituição própria, adoção formal do SDD e aprovação destes cinco documentos como baseline de implementação | Mantenedor; antes de iniciar incrementos dependentes |
+
+IA/RAG poderá receber apenas estudo posterior ao MVP funcional: viabilidade técnica, custos, qualidade, permissões e rastreabilidade. Não há escolha de provedor, SDK, banco vetorial ou arquitetura de IA neste escopo.
