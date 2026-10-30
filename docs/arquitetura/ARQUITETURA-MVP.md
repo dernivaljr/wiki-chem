@@ -157,7 +157,7 @@ P09, adotada no recorte A11, utiliza apenas um formulário de rascunho e uma aç
 | POST `/admin/versions/:id/suspend` e `/restore` | Motivo/evidência e revisão; controla impedimento expresso de uso, sem reescrever pedidos |
 | GET/POST/PATCH `/admin/taxonomies/:type` (PATCH em `/:termId`) | `type` em enum das sete facetas; criar/deprecar termo, sem reutilizar identidade/edição histórica |
 
-DTOs finais e validação detalhada deverão ser consolidados em contrato executável no incremento I01, sem alterar silenciosamente estas regras. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a futura compra concorrente usa os bloqueios descritos no documento comercial.
+DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; pedidos e direitos ainda exigem implementação e aprovação das regras pendentes. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a futura compra concorrente usa os bloqueios descritos no documento comercial.
 
 ## 5. Persistência, testes e operação proposta
 
