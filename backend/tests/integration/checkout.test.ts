@@ -261,7 +261,7 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
     await expect(pool.execute("INSERT INTO entitlements (user_id, methodology_id, order_item_id, status, granted_at) VALUES (?, ?, ?, 'ACTIVE', UTC_TIMESTAMP(6))", [other.id, item.methodologyId, item.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     expect(await sql('SELECT id FROM entitlements WHERE user_id = ?', [other.id])).toHaveLength(0)
   })
-  it('propriedade, sessão, CSRF e chave são obrigatórios; não há endpoint de biblioteca', async () => {
+  it('propriedade, sessão, CSRF e chave são obrigatórios', async () => {
     const user = await customer(), other = await customer(), before = await prepare(user), order = data<OrderDetail>(await create(user, before.revision), 201)
     for (const [method, path, body] of [['GET','/orders/' + order.id,undefined],['POST','/orders/' + order.id + '/cancel',{}],['POST','/orders/' + order.id + '/confirm-simulation',{ demoAcknowledged: true }]] as const) expect((await call(method, path, body, other, randomUUID())).statusCode).toBe(404)
     expect((await call('GET', '/orders', undefined, null)).statusCode).toBe(401)
@@ -269,7 +269,6 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
     expect((await call('POST', '/checkout/simulations', { cartRevision: before.revision }, user)).statusCode).toBe(400)
     expect((await call('POST', '/orders/' + order.id + '/confirm-simulation', { demoAcknowledged: false }, user, randomUUID())).statusCode).toBe(400)
     expect((await app.inject({ method: 'POST', url: '/api/v1/checkout/simulations', headers: { cookie: user.cookie, origin: config.APP_ORIGIN, 'idempotency-key': randomUUID() }, payload: { cartRevision: before.revision } })).statusCode).toBe(403)
-    for (const path of ['/library','/library/' + fx[0]!.methodologyId + '/content']) expect((await call('GET', path, undefined, user)).statusCode).toBe(404)
   })
   it('chave de confirmação não pode ser reutilizada para outro pedido do mesmo usuário', async () => {
     const user = await customer(), before = await prepare(user), first = data<OrderDetail>(await create(user, before.revision), 201), key = randomUUID()

@@ -1,4 +1,6 @@
 import Cart from './commerce/Cart'
+import Library from './library/Library'
+import LibraryReader from './library/LibraryReader'
 import Orders from './checkout/Orders'
 import OrderPage from './checkout/OrderPage'
 import Admin from './pages/Admin/Admin'
@@ -30,6 +32,8 @@ function AppContent() {
         <Route path="/checkout/:id" element={<ProtectedRoute><OrderPage review /></ProtectedRoute>} />
         <Route path="/pedidos" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
         <Route path="/pedidos/:id" element={<ProtectedRoute><OrderPage /></ProtectedRoute>} />
+        <Route path="/biblioteca" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+        <Route path="/biblioteca/:methodologyId" element={<ProtectedRoute><LibraryReader /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
     </>

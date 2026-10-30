@@ -11,7 +11,7 @@ export interface Editor {
   classifications: Record<Facet, string[]>; notApplicable: Record<Facet, string>; sources: Source[]; contributors: Contributor[]
 }
 export interface VersionSummary {
-  id: string; methodologyId: string; versionLabel: string; title: string; editorialStatus: 'DRAFT' | 'PUBLISHED' | 'SUPERSEDED'; revision: number
+  id: string; methodologyId: string; versionLabel: string; title: string; editorialStatus: 'DRAFT' | 'PUBLISHED' | 'SUPERSEDED'; accessState: 'ALLOWED' | 'SUSPENDED'; revision: number
   publishedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reviewedRevision: number | null; reviewNote: string | null
 }
 export type Version = VersionSummary & Editor

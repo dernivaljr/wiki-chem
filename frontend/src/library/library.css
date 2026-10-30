@@ -1,0 +1,4 @@
+.library-procedure { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; max-width: 78ch; font-family: inherit; }
+.library-selection { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-block: 22px; }
+.library-selection select { max-width: 100%; padding: 12px; font: inherit; border: 1px solid var(--color-primary-dark); border-radius: 4px; background: white; color: var(--color-primary-dark); }
+.library-references { line-height: 1.7; overflow-wrap: anywhere; padding-left: 20px; }

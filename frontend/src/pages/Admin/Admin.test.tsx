@@ -10,7 +10,7 @@ import type { Taxonomies, Version } from './catalog.types'
 
 const taxonomies: Taxonomies = { techniques: [{ id: '1', code: 'demo', label: 'Técnica DEMO', active: true, revision: 1 }], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] }
 const draft = (): Version => ({
-  id: '1', methodologyId: '1', versionLabel: 'v1', editorialStatus: 'DRAFT', revision: 1, title: '', freeSummary: '', publicDescription: '', fullDescription: '', fullProcedure: '',
+  id: '1', methodologyId: '1', versionLabel: 'v1', editorialStatus: 'DRAFT', accessState: 'ALLOWED', revision: 1, title: '', freeSummary: '', publicDescription: '', fullDescription: '', fullProcedure: '',
   changelog: '', classifications: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] },
   notApplicable: { techniques: '', technologies: '', equipment: '', matrices: '', analytes: '', standards: '', segments: '' },
   sources: [], contributors: [], publishedAt: null, reviewedBy: null, reviewedAt: null, reviewedRevision: null, reviewNote: null,

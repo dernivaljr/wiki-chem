@@ -1,6 +1,6 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade, administração editorial e pesquisa autenticada estão implementadas; ofertas, preços e carrinho persistente estão implementados. Checkout, pedidos e direitos permanecem planejados.
+**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade, administração editorial e pesquisa autenticada estão implementadas; ofertas, preços e carrinho persistente estão implementados. Checkout, pedidos e direitos estão implementados em A14; biblioteca integral está implementada em A15.
 
 ## 1. Contexto e metodologia
 
@@ -8,7 +8,7 @@ O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenhar
 
 A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas, /metodologias/:id e /perfil exigem sessão. Texto e sete filtros consultam o catálogo publicado corrente, com prévia gratuita e referências permitidas; ofertas/preços cadastrados são apresentados com disponibilidade, sem bloquear a pesquisa quando ausentes. /carrinho mantém itens e revalida valores. O checkout demonstrativo cria revisão persistida, confirma atomicamente com direitos por metodologia e oferece histórico próprio. A biblioteca integral permanece futura.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas, /metodologias/:id e /perfil exigem sessão. Texto e sete filtros consultam o catálogo publicado corrente, com prévia gratuita e referências permitidas; ofertas/preços cadastrados são apresentados com disponibilidade, sem bloquear a pesquisa quando ausentes. /carrinho mantém itens e revalida valores. O checkout demonstrativo cria revisão persistida, confirma atomicamente com direitos por metodologia e oferece histórico próprio. A biblioteca integral está implementada em A15.
 
 Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
@@ -34,6 +34,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 
 | A13 | Produtos/preços BRL/carrinho autorizados: um produto por metodologia, histórico imutável, quantidade um, revisão, revalidação e isolamento |
 | A14 | Checkout demonstrativo em duas transações, snapshots, idempotência, pedidos/histórico e direitos registrados por metodologia; sem cobrança e sem leitura integral da biblioteca. Recorte demonstrativo de P03; condições comerciais definitivas seguem pendentes |
+| A15 | Biblioteca e leitura integral autenticadas, direito próprio ACTIVE por metodologia, original/histórico/atualizações publicadas, suspensão/restauração justificada e auditada; recorte demonstrativo sem alterar condições comerciais definitivas |
 
 ### Propostas transversais e adoções identificadas
 
@@ -103,7 +104,7 @@ flowchart TD
 
 | Situação | Comportamento proposto |
 | --- | --- |
-| Item adquirido | No recorte A14, exibir aquisição simulada já registrada e acesso aos pedidos, sem botão de recompra. Na futura biblioteca, exibir “Na minha biblioteca”, versão original e atual; abrir atual publicada por padrão, com seleção do histórico publicado; bloquear recompra da mesma metodologia, pois suas atualizações já integram P03. Política ainda pendente de aprovação em V03 |
+| Item adquirido | No recorte A15, exibir “Na minha biblioteca”, versão original e atual; abrir atual publicada por padrão, com seleção do histórico publicado; bloquear recompra da mesma metodologia, pois suas atualizações já integram P03. Política ainda pendente de aprovação em V03 |
 | Sem resultados | Manter termo/filtros visíveis, informar ausência e oferecer limpar/refinar; nenhuma compra é iniciada |
 | Sessão expirada | Interromper requisição protegida, limpar estado sensível no cliente e pedir login; preservar URL interna e carrinho no servidor; não reenviar confirmação automaticamente |
 | Erro de rede ao confirmar | Informar resultado desconhecido; consultar pedido ou repetir mesma chave; nunca presumir sucesso/fracasso nem criar outra compra automaticamente |
@@ -111,7 +112,7 @@ flowchart TD
 | Preço, versão ou disponibilidade mudaram | Mostrar conflito e exigir nova prévia/aceitação; valores antigos continuam no pedido histórico; sem concluir parte do carrinho |
 | Conteúdo retirado de venda | Continua na biblioteca conforme P06; suspensão expressa de conteúdo é exibida sem procedimento e exige revisão da condição de uso |
 
-Rotas `/`, `/sobre` e `/login` são preservadas. `/consultas`, `/metodologias/:id`, `/carrinho`, `/checkout/:id`, `/perfil`, `/pedidos`, `/pedidos/:id` e `/admin` estão implementadas e protegidas conforme papel. Biblioteca permanece futura. Mapa de rotas do escopo: `/metodologias/:id`, `/carrinho`, `/checkout/:orderId`, `/perfil`, `/pedidos`, `/pedidos/:id`, `/biblioteca`, `/biblioteca/:methodologyId` e `/admin`. Rotas cliente não substituem autorização REST. A etapa de implementação deverá substituir as simulações existentes e atualizar seus testes de apresentação de modo incremental.
+Rotas `/`, `/sobre` e `/login` são preservadas. `/consultas`, `/metodologias/:id`, `/carrinho`, `/checkout/:id`, `/perfil`, `/pedidos`, `/pedidos/:id`, `/biblioteca`, `/biblioteca/:methodologyId` e `/admin` estão implementadas e protegidas conforme papel. Biblioteca está implementada em A15. Mapa de rotas do escopo: `/metodologias/:id`, `/carrinho`, `/checkout/:orderId`, `/perfil`, `/pedidos`, `/pedidos/:id`, `/biblioteca`, `/biblioteca/:methodologyId` e `/admin`. Rotas cliente não substituem autorização REST. O percurso integrado utiliza a API e persistência reais; aquisição permanece explicitamente demonstrativa.
 
 ## 6. Qualidade, segurança e conteúdo
 
@@ -179,4 +180,4 @@ IA/RAG poderá receber apenas estudo posterior ao MVP funcional: viabilidade té
 
 ## Aquisição demonstrativa implementada
 
-[Checkout demonstrativo](../arquitetura/CHECKOUT-DEMONSTRATIVO.md) descreve o recorte A14 de RF10–RF13 e MD04–MD09. Repetição, concorrência, cancelamento e expiração não produzem aquisição parcial. O direito é registrado, mas RF14 (biblioteca integral) não está entregue. P03 continua pendente como política comercial, sem garantia definitiva de duração ou uso das fontes.
+[Checkout demonstrativo](../arquitetura/CHECKOUT-DEMONSTRATIVO.md) descreve o recorte A14 de RF10–RF13 e MD04–MD09. Repetição, concorrência, cancelamento e expiração não produzem aquisição parcial. RF14 dispõe de biblioteca e leitura autorizada no recorte A15, descrito em [Biblioteca digital](../arquitetura/BIBLIOTECA-DIGITAL.md). P03 continua pendente como política comercial, sem garantia definitiva de duração ou uso das fontes.

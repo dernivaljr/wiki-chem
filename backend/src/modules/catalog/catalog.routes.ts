@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { searchQuery } from './catalog.contracts.js'
+import { versionAccessInput } from './catalog.contracts.js'
 import type { FastifyInstance } from 'fastify'
 import type { Config } from '../../config/env.js'
 import { emptyQuery, errorResponse } from '../../shared/contracts.js'
@@ -50,5 +51,7 @@ export async function registerCatalogRoutes(app: FastifyInstance, config: Config
       async (request, reply) => { await catalog.deleteVersion(request.params.id, request.body.expectedRevision, actor(request)); return reply.code(204).send(undefined) })
     admin.post('/versions/:id/publish', { schema: { params: idParams, querystring: emptyQuery, body: publishInput, response: { 200: z.strictObject({ data: versionSchema }), ...errors } } },
       async request => ({ data: await catalog.publish(request.params.id, request.body, actor(request)) }))
+    admin.patch('/versions/:id/access', { schema: { params: idParams, querystring: emptyQuery, body: versionAccessInput, response: { 200: z.strictObject({ data: versionSchema }), ...errors } } },
+      async request => ({ data: await catalog.setVersionAccess(request.params.id, request.body, actor(request)) }))
   }, { prefix: '/admin' })
 }

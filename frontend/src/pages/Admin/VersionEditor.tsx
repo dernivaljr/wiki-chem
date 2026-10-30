@@ -1,4 +1,5 @@
 import AdminField from './AdminField'
+import VersionAccess from './VersionAccess'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/AuthContext'
@@ -47,6 +48,7 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
     <h3 id="version-editor-title">Versão {version.versionLabel} — {version.editorialStatus}</h3>
     <p>Revisão {version.revision}. Procedimento restrito à edição administrativa.</p>
     {readOnly && <p role="status">Conteúdo publicado é imutável. Crie outra versão para alterações.</p>}
+    {readOnly && <VersionAccess key={version.id + ':' + version.revision} version={version} onSaved={onSaved} />}
     {version.reviewedBy && <div className="admin-review"><p>Revisão editorial por usuário {version.reviewedBy}, em {version.reviewedAt}; revisão de conteúdo {version.reviewedRevision}.</p><p>{version.reviewNote}</p></div>}
     <form className="admin-form" onSubmit={save} aria-busy={pending}>
       <fieldset disabled={pending || readOnly}>

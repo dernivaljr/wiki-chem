@@ -81,12 +81,13 @@ export const newVersion = z.strictObject({
 })
 export const publishInput = z.strictObject({ expectedRevision: revision, reviewAcknowledged: z.literal(true), reviewNote: z.string().trim().min(1).max(2000) })
 export const expectedRevision = z.strictObject({ expectedRevision: revision })
+export const versionAccessInput = z.strictObject({ expectedRevision: revision, accessState: z.enum(['ALLOWED', 'SUSPENDED']), reason: z.string().trim().min(1).max(2000) })
 export const methodSchema = z.strictObject({
   id, slug: z.string(), lifecycle: z.enum(['DRAFT', 'PUBLISHED', 'RETIRED']), revision, currentPublishedVersionId: id.nullable(),
 })
 export type Methodology = z.infer<typeof methodSchema>
 export const versionSummarySchema = z.strictObject({
-  id, methodologyId: id, versionLabel: z.string(), title: z.string(),
+  id, methodologyId: id, versionLabel: z.string(), title: z.string(), accessState: z.enum(['ALLOWED', 'SUSPENDED']),
   editorialStatus: z.enum(['DRAFT', 'PUBLISHED', 'SUPERSEDED']), revision,
   publishedAt: z.string().nullable(), reviewedBy: id.nullable(), reviewedAt: z.string().nullable(), reviewedRevision: revision.nullable(), reviewNote: z.string().nullable(),
 })

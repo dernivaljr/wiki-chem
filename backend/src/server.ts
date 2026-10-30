@@ -1,4 +1,5 @@
 import { createCatalogRepository } from './modules/catalog/catalog.repository.js'
+import { createLibraryRepository } from './modules/library/library.repository.js'
 import { createCommerceRepository } from './modules/commerce/commerce.repository.js'
 import { createCheckoutRepository } from './modules/checkout/checkout.repository.js'
 import { createIdentityRepository } from './modules/identity/identity.repository.js'
@@ -12,6 +13,7 @@ async function main() {
   const pool = createDatabasePool(config)
   const app = buildApp(config, {
     identity: createIdentityRepository(pool),
+    library: createLibraryRepository(pool),
     catalog: createCatalogRepository(pool),
     commerce: createCommerceRepository(pool),
     checkout: createCheckoutRepository(pool, { ttlSeconds: config.CHECKOUT_TTL_SECONDS }),

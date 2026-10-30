@@ -10,9 +10,10 @@ O Wiki-Chem é desenvolvido no curso de Desenvolvimento de Software Multiplatafo
 - [Pesquisa de metodologias](arquitetura/PESQUISA-METODOLOGIAS.md): consulta autenticada, filtros, prévias, URL e verificação.
 - [Ofertas e carrinho](arquitetura/OFERTAS-CARRINHO.md): preços imutáveis, administração, revalidação e isolamento.
 - [Checkout demonstrativo](arquitetura/CHECKOUT-DEMONSTRATIVO.md): transações, snapshots, idempotência, pedidos e registro de direitos, sem pagamentos reais.
+- [Biblioteca digital](arquitetura/BIBLIOTECA-DIGITAL.md): leitura integral, versões elegíveis, autorização e suspensão editorial.
 - [Identidade](arquitetura/IDENTIDADE.md): decisões mínimas, contratos, proteção de rotas e verificação da autenticação.
 - [Modelo de dados](arquitetura/MODELO-DADOS.md): entidades, relacionamentos e invariantes, distinguindo modelo planejado de esquema implementado.
-- [E-commerce](arquitetura/ECOMMERCE.md): regras comerciais, distinguindo ofertas/carrinho implementados de confirmação e direitos registrados, com biblioteca integral futura.
+- [E-commerce](arquitetura/ECOMMERCE.md): regras comerciais, distinguindo ofertas/carrinho implementados de confirmação e direitos registrados, com biblioteca integral autorizada.
 - [Planejamento incremental](planejamento/ROADMAP-MVP.md): sequência técnica e rastreabilidade entre requisitos e testes.
 
 Esses documentos explicam o sistema e os objetivos da disciplina. Apresentam estado e limitações com precisão; não constituem relatório acadêmico final nem diário de programação. O relatório final será elaborado posteriormente, com metodologia, implementação, testes, resultados e conclusões apoiados em evidências.

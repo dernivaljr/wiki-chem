@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; orders, order_items, entitlements e idempotency_records estão implementadas, com snapshots imutáveis e concessão transacional. Biblioteca integral permanece futura. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A14 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; orders, order_items, entitlements e idempotency_records estão implementadas, com snapshots imutáveis e concessão transacional. Biblioteca integral está implementada em A15. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A15 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -163,3 +163,7 @@ Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADM
 ## Esquema implementado de pedidos e direitos
 
 As migrações 0036–0047 acrescentam as quatro tabelas e oito triggers, totalizando 47 migrações SQL. [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md) detalha colunas efetivas, FKs compostas de propriedade/origem, checks, unicidade e fronteiras transacionais. ID, título, versão e preço do item nunca são recalculados a partir do catálogo. O direito referencia usuário/metodologia/item original; não recebe version_id. ACTIVE e REVOKED são persistidos, sem API de revogação neste recorte. Atualizações futuras de catálogo não alteram pedido nem direito. MD04–MD09 têm cobertura de aquisição demonstrativa; autorização de leitura de versões e políticas de retenção continuam futuras.
+
+## Biblioteca e disponibilidade editorial implementadas
+
+O recorte A15 reutiliza direitos e itens históricos para leitura integral autorizada, conforme [Biblioteca digital](BIBLIOTECA-DIGITAL.md). A migração 0048 acrescenta version_access_events: versão/administrador, estado anterior/novo, justificativa, revisão resultante, requestId e data, com FKs e índice por versão/ID. São 48 migrações no esquema. A biblioteca não cria direitos e não altera snapshots. Retirada de venda/arquivamento preserva direitos; suspensão da versão, fonte não permitida ou revogação do direito bloqueiam leitura. Política comercial definitiva e retenção continuam pendentes.
