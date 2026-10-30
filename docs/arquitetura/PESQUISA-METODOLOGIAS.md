@@ -56,4 +56,14 @@ As fixtures são originais, sintéticas, identificadas como DEMO e limitadas ao 
 
 ### Resultados observados
 
-A validação local aprovou 80 testes de unidade/contrato do backend e 54 testes de componentes, rotas e estado de URL do frontend. Instalação limpa, build, análise estática e auditorias completas/de produção foram executados com sucesso; as auditorias reportaram zero vulnerabilidades. Integração com MySQL e jornadas de navegador são verificações separadas; sua cobertura não equivale à validação científica do corpus.
+A validação executada aprovou **254 testes**, preservando as verificações de identidade e administração:
+
+| Categoria | Testes aprovados | Evidência funcional |
+| --- | ---: | --- |
+| Unidade e contrato do backend | 80 | Validação, identidade, regras editoriais e construção parametrizada da pesquisa |
+| Componentes, rotas e estado React | 54 | URL, filtros múltiplos, paginação, detalhes, rede, expiração e descarte de resposta obsoleta |
+| Integração com MySQL 8.4 e processos reais | 92 | Inclui 25 casos de pesquisa, sete facetas, acentos/símbolos, autorização, isolamento e snapshot durante publicação concorrente |
+| Regressões de navegador | 13 | Navegação, larguras de tela, foco e contraste |
+| Jornadas com API e MySQL reais | 15 | Identidade, administração e três jornadas de pesquisa por CUSTOMER, incluindo detalhes, URL, teclado, rede e sessão expirada |
+
+Instalação limpa, build, análise estática e auditorias completas/de produção foram executados com sucesso; as auditorias reportaram zero vulnerabilidades. As 28 migrações existentes foram aplicadas e repetidas sem reaplicação; a pesquisa não exigiu alteração do esquema. A execução integrada utilizou ambiente Linux com MySQL isolado e Chromium, sem depender de testes manuais. Esses resultados comprovam o comportamento do software com fixtures e não constituem validação científica do corpus, autorização real de uso de fontes ou medição de capacidade de produção.
