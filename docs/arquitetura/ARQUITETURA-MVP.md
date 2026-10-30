@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** infraestrutura, identidade e catálogo editorial implementados; pesquisa/comércio planejados. A01–A11 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
+**Estado:** infraestrutura, identidade, catálogo editorial e pesquisa implementados; comércio planejado. A01–A12 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
 
 ## 1. Estrutura e limites de confiança
 
-Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade e conhecimento editorial estão implementados; pesquisa e comércio do diagrama permanecem planejados.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade, conhecimento editorial e pesquisa estão implementados; comércio do diagrama permanece planejado.
 
 ```mermaid
 flowchart LR
@@ -40,7 +40,7 @@ Controladores fazem parsing/validação e devolvem DTOs; casos de uso concentram
 
 Manter Header, Hero, Home, About, estilos/tokens, Inter, ativos e correções de 320 px da Etapa 01. Ampliar navegação com Pesquisa, Carrinho, Minha biblioteca e Perfil após sessão real. Administração aparece somente para papel autorizado, mantendo validação também no backend. Não reescrever a aplicação ou trocar React/Vite.
 
-Login/cadastro e perfil usam a API real; cabeçalho e rotas refletem a sessão. Consultas exige sessão e sinaliza pesquisa/filtros indisponíveis. A pesquisa real será outro incremento. Implementar carregamento, falha e ausência de resultados; estado de consulta por URL e cancelamento/descarte de resposta obsoleta. Sessão em contexto React representa estado de UI, não credencial persistida em localStorage. Em 401, limpar dados sensíveis e retornar ao acesso sem repetir operação de compra automaticamente.
+Login/cadastro e perfil usam a API real; cabeçalho e rotas refletem a sessão. Consultas e detalhes exigem sessão e consultam a API de pesquisa real. Há carregamento, falha e ausência de resultados, estado por URL e descarte de resposta obsoleta. Sessão em contexto React representa estado de UI, não credencial persistida em localStorage. Em 401, limpar dados sensíveis e retornar ao acesso sem repetir operação de compra automaticamente.
 
 P07 propõe mesma origem para frontend/API; o proxy Vite encaminha /api/v1 ao backend no desenvolvimento. Em origens distintas, revisar cookies/CSRF/CORS antes de implantar; não usar origem universal com credenciais. Hospedagem e transporte HTTP seguro de produção permanecem pendentes.
 
@@ -96,7 +96,7 @@ Erro: `{ "error": { "code": "CODIGO_ESTAVEL", "message": "Mensagem segura", "det
 | GET `/health` | 200 `{ "data": { "status": "ok" } }` | Processo HTTP operacional, sem consultar banco |
 | GET `/health/database` | 200 `{ "data": { "status": "available" } }` ou 503 DATABASE_UNAVAILABLE | SELECT 1 com timeout; não garante esquema de negócio |
 
-Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. As próximas seções são contratos de negócio planejados.
+Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. Identidade, catálogo e pesquisa têm contratos executáveis; contratos comerciais continuam planejados.
 
 ### 4.1 Identidade implementada
 
@@ -111,15 +111,15 @@ Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define en
 
 E-mail ASCII válido com trim/lowercase e índice único ascii_bin, sem remover pontos/sufixos. [Identidade](IDENTIDADE.md) registra hashing, expiração, CSRF, origem e limites. Recuperação/e-mail verificado continuam fora deste incremento; controles fictícios foram retirados.
 
-### 4.2 Pesquisa e prévia
+### 4.2 Pesquisa e prévia implementadas
 
-GET `/taxonomies`: sete coleções de termos ativos com id/código/nome; normas incluem identificador, emissor e edição, quando verificados. Não inclui contagem dinâmica nem conteúdo pago. GET `/methodologies`: sessão obrigatória; parâmetros `q`, `techniqueIds`, `technologyIds`, `equipmentIds`, `matrixIds`, `analyteIds`, `standardIds`, `segmentIds`, `page`, `pageSize`, `sort`. Arrays por parâmetro repetido, sem CSV ambíguo.
+[Pesquisa de metodologias](PESQUISA-METODOLOGIAS.md) detalha semântica, contratos, isolamento e testes. GET /taxonomies retorna sete coleções ativas. GET /methodologies exige sessão e aceita q, techniqueIds, technologyIds, equipmentIds, matrixIds, analyteIds, standardIds, segmentIds, page, pageSize e sort. Arrays usam parâmetros repetidos, sem CSV. IDs inexistentes/inativos ou parâmetros inválidos retornam 400.
 
-P02: OR dentro de uma faceta; AND entre facetas e entre palavras do termo. Cada palavra deve ocorrer em algum campo autorizado da **mesma versão publicada**: título, resumo, descrição gratuita, rótulos técnicos ou referência bibliográfica permitida. Comparação proposta case/acento-insensível, substring literal, preservando demais símbolos e escapando `%`/`_`; V01 deve validar regras para fórmulas e termos curtos. Não pesquisar procedimento completo, nem usar hits do conteúdo pago para alterar resultados/contagens. Índice full-text só pode acelerar sem mudar esse contrato; não ignorar palavras curtas/stopwords silenciosamente.
+P02 foi adotada em A12: OR dentro da faceta, AND entre facetas/palavras. Cada palavra precisa ocorrer em campo gratuito da mesma versão publicada corrente e permitida. Comparação case/acento-insensível, substring literal, sem stopwords; símbolos não recebem interpretação química. q tem até 200 caracteres/12 palavras; cada faceta até 20 IDs distintos. sort aceita title_asc (padrão) e updated_desc (publicação da versão corrente), com desempate por ID crescente. pageSize padrão 20 e máximo 100; resposta data/total/page/pageSize. Total e página compartilham snapshot de leitura.
 
-`sort`: `title_asc` (padrão), `updated_desc`, `price_asc`, `price_desc`; desempate por ID ascendente. IDs desconhecidos/inativos de filtro causam 400. Termo/filtros vazios listam catálogo publicado e disponível; ausência de resultado retorna 200 com lista vazia. Preços comparados no banco como inteiros, nunca lexicalmente.
+Listagem e GET /methodologies/:id retornam apenas MethodologyPreview: id, versionId, versionLabel, title, freeSummary, publicDescription, technicalMetadata, contributors e references. Não há procedimento, evidência privada, nota editorial, oferta, preço ou direito de compra. Detalhe indisponível retorna 404. Elegibilidade editorial é independente de produto: versão corrente PUBLISHED/ALLOWED, metodologia publicada não excluída/arquivada e condições de fontes aprovadas. Rascunhos e histórico não são pesquisáveis.
 
-GET `/methodologies/:id` devolve somente `MethodologyPreview`, mesmo para comprador; rascunho nunca publicado retorna 404. DTO proposto: `id`, `versionId`, `versionLabel`, `title`, `freeSummary`, `publicDescription`, `technicalMetadata` (sete facetas), `contributors`, `references` (referência/edição/localizador autorizado), `offer` (`productId`, `priceId`, `amountCentavos`, `currency`, `available`), `owned`, `purchasable`. Sem procedimento, prova privada de licença ou registro de outro usuário. `owned` considera aquisição prévia inclusive direito revogado; `offer.available` informa disponibilidade geral e `purchasable` também considera o usuário. `purchasable=false` se já adquirido, mesmo após atualização: o CTA abre a biblioteca, sem nova compra. Prévia retirada de venda pode informar indisponibilidade; a pesquisa lista ofertas disponíveis e a biblioteca resolve original/histórico/atualizações conforme P03/P06.
+RF07 continua parcial. Campos comerciais propostos (offer/productId/priceId/amountCentavos/currency/available, owned e purchasable) dependem da Etapa 07 e das regras de direitos ainda não implementadas. A interface informa indisponibilidade comercial sem valor fictício. P03/P06 continuam propostas; a pesquisa atual não presume compra, biblioteca ou preço aprovado.
 
 ### 4.3 Carrinho, pedidos e direitos
 
@@ -191,6 +191,6 @@ O ambiente é validado antes de iniciar. Segredos são externos ao código; erro
 
 Migrações usam lock por banco e registro APPLYING/APPLIED. Arquivos aplicados são imutáveis e verificados por checksum. DDL tem commit implícito: falha exige inspeção e correção progressiva ou restauração, sem rollback automático nem reaplicação cega. A única criação anterior ao ledger é seu próprio bootstrap.
 
-O esquema contém infraestrutura, identidade e catálogo editorial. /admin usa a API real para rascunhos, taxonomias, fontes, revisão e publicação. Não existe corpus real pré-carregado, busca funcional ou comércio. Conteúdo, permissões reais e demais decisões de produto continuam sujeitos à curadoria.
+O esquema contém infraestrutura, identidade e catálogo editorial. /admin usa a API real para rascunhos, taxonomias, fontes, revisão e publicação. Não existe corpus real pré-carregado ou comércio; a pesquisa recupera o catálogo publicado por texto e sete filtros. Conteúdo, permissões reais e demais decisões de produto continuam sujeitos à curadoria.
 
 Referências: [Fastify — validação/serialização](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/), [MySQL2](https://sidorares.github.io/node-mysql2/docs), [MySQL 8.4 — DDL e commit implícito](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html) e [locks de sessão](https://dev.mysql.com/doc/refman/8.4/en/locking-functions.html).

@@ -2,7 +2,7 @@
 
 ## Objetivo e funcionalidades
 
-Implementar o gerenciamento de metodologias de química analítica com sete taxonomias, versões, conteúdo protegido, fontes, autoria, curadoria e revisão. /admin utiliza a interface React e exige ADMIN tanto na navegação quanto no backend. O cliente CUSTOMER pode consultar taxonomias ativas e a prévia de uma metodologia publicada conhecida; não há busca/listagem de pesquisa, oferta ou preço.
+Implementar o gerenciamento de metodologias de química analítica com sete taxonomias, versões, conteúdo protegido, fontes, autoria, curadoria e revisão. /admin utiliza a interface React e exige ADMIN tanto na navegação quanto no backend. O cliente CUSTOMER pode consultar taxonomias ativas e a prévia de uma metodologia publicada conhecida; a [pesquisa autenticada](PESQUISA-METODOLOGIAS.md) lista prévias por texto/sete filtros. Não há oferta ou preço.
 
 A implementação não carrega corpus científico, as candidatas da EPA ou permissões de reprodução. Vocabulário, aplicabilidade das candidatas e condições reais de uso continuam sujeitos à curadoria. Isso não impede o cadastro funcional de rascunhos e a construção da estrutura.
 
@@ -75,7 +75,7 @@ Os testes verificam CRUD lógico, classificação múltipla nos sete eixos, FKs/
 
 Há testes de formulário, carregamento, conflito, campos acessíveis, publicação somente do conteúdo salvo, teclado e responsividade. A integração usa MySQL real e navegador, preservando os testes anteriores. Resultados executados devem ser distinguidos da validação científica das metodologias.
 
-Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. Busca, preços, direitos, pedidos, biblioteca e pagamentos são incrementos próprios; IA/RAG permanece integralmente fora do MVP.
+Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. A busca gratuita está implementada em recorte próprio; preços, direitos, pedidos, biblioteca e pagamentos permanecem futuros; IA/RAG permanece integralmente fora do MVP.
 
 ### Resultados experimentais
 

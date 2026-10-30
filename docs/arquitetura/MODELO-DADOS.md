@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. Entidades comerciais continuam planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A11 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. Entidades comerciais continuam planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A12 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -138,9 +138,9 @@ Os estados e controles comerciais estão detalhados em [ECOMMERCE](ECOMMERCE.md)
 
 ## 6. Índices e consistência de pesquisa
 
-Propor índices por usuário/data/ID em pedidos e direitos, token_hash para sessão, chave idempotente composta, product/methodology/version para joins e índices inversos `(term_id, version_id)` nas sete associações. Para paginação/ordenação, medir plano de execução com o conjunto V01/V08. Não prometer performance ou selecionar mecanismo de busca antes dos volumes aprovados.
+As sete associações já possuem PKs compostas e índices inversos (term_id, version_id), usados por EXISTS na pesquisa. A consulta reutiliza o esquema editorial e não exige nova migração. Índices por usuário/data/ID em pedidos/direitos e chave idempotente composta continuam propostos para comércio. Para paginação/ordenação, medir plano de execução com o conjunto V01/V08. Não prometer performance ou selecionar mecanismo de busca antes dos volumes aprovados.
 
-Busca considera apenas campos gratuitos autorizados da versão corrente. As colações e a normalização devem ser verificadas com termos curtos, acentos e símbolos do conjunto aprovado. FULLTEXT, se usado, não pode suprimir silenciosamente esses casos; LIKE parametrizado com escape literal pode ser necessário no recorte inicial. Não há embedding, vetor ou índice de procedimento pago.
+[Pesquisa implementada](PESQUISA-METODOLOGIAS.md) considera apenas campos gratuitos autorizados da versão corrente. LIKE literal parametrizado trata acentos/caixa e termos curtos, sem índice no conteúdo integral. As colações e a normalização devem ser verificadas com termos curtos, acentos e símbolos do conjunto aprovado. FULLTEXT, se usado, não pode suprimir silenciosamente esses casos; LIKE parametrizado com escape literal pode ser necessário no recorte inicial. Não há embedding, vetor ou índice de procedimento pago.
 
 ## 7. Questões de modelagem que precisam de aprovação
 

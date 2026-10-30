@@ -34,9 +34,10 @@ export function acquireConnection(pool: Pool, timeoutMs = 5000): Promise<PoolCon
   })
 }
 
-export async function withTransaction<T>(pool: Pool, work: (connection: PoolConnection) => Promise<T>): Promise<T> {
+export async function withTransaction<T>(pool: Pool, work: (connection: PoolConnection) => Promise<T>, consistentRead = false): Promise<T> {
   const connection = await acquireConnection(pool)
   try {
+    if (consistentRead) await connection.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
     await connection.beginTransaction()
     const result = await work(connection)
     await connection.commit()

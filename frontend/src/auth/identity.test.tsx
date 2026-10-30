@@ -66,7 +66,7 @@ describe('integração da interface com contratos de identidade', () => {
     await user.type(screen.getByPlaceholderText('••••••••'), 'Senha de teste longa')
     await user.click(screen.getByRole('button', { name: 'Entrar no Wiki-Chem' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha inválidos.')
-    expect(screen.queryByRole('heading', { name: /Olá, que descoberta/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Pesquisar metodologias' })).not.toBeInTheDocument()
   })
   it('perfil envia somente nome e CSRF; 401 remove estado e solicita login', async () => {
     mockFetch().mockImplementation(async (url, options) => {

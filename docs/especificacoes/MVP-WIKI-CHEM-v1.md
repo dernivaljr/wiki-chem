@@ -1,6 +1,6 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade e administração editorial estão implementadas; pesquisa efetiva e comércio permanecem planejados.
+**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade, administração editorial e pesquisa autenticada estão implementadas; comércio permanece planejado. RF07 está parcial, sem oferta/preço.
 
 ## 1. Contexto e metodologia
 
@@ -8,7 +8,7 @@ O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenhar
 
 A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas e /perfil exigem sessão; pesquisa/filtros estão identificados como indisponíveis. O catálogo editorial tem taxonomias, versões e publicação; não há pedidos ou pesquisa funcional.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas, /metodologias/:id e /perfil exigem sessão. Texto e sete filtros consultam o catálogo publicado corrente, com prévia gratuita e referências permitidas; não há ofertas, preços ou pedidos. A exibição comercial completa de RF07 será concluída na Etapa 07.
 
 Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
@@ -30,12 +30,14 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | A10 | Identidade real autorizada: Argon2id, sessão opaca revogável, CSRF, perfil próprio e bootstrap operacional seguro; recuperação, e-mail verificado e publicação comercial fora do incremento |
 | A11 | Catálogo editorial e /admin autorizados: sete taxonomias N:N por versão, fontes, autoria/curadoria, revisão explícita e publicação imutável; sem pesquisa, preços ou comércio |
 
+| A12 | Pesquisa autenticada autorizada: texto, sete filtros com OR interno/AND entre categorias, paginação, ordenação e detalhes gratuitos; independente de produtos. Oferta comercial completa de RF07 na Etapa 07; sem preços fictícios |
+
 ### Propostas transversais e adoções identificadas
 
 | ID | Proposta (P), com adoção explicitada quando aplicável |
 | --- | --- |
 | P01 | Adotada no recorte de A10: CUSTOMER/ADMIN, sessão opaca revogável, cookie seguro e CSRF; políticas em [Identidade](../arquitetura/IDENTIDADE.md) |
-| P02 | AND entre facetas e OR entre valores da mesma faceta; busca somente em informações de prévia |
+| P02 | Adotada no recorte A12: AND entre facetas/palavras e OR entre valores da mesma faceta; busca somente em informações de prévia. Semântica científica do vocabulário permanece em V01 |
 | P03 | Aquisição por metodologia: direito ativo permite a versão original, o histórico publicado e novas atualizações publicadas da mesma metodologia, sem recompra; versão/preço originais permanecem no pedido. Política proposta, pendente de V03 |
 | P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
 | P05 | Pedido em duas etapas: prévia persistida e confirmação de demonstração; revalidar oferta/preço/versão antes de concluir |
@@ -44,7 +46,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
 | P09 | Fluxo editorial mínimo adotado no recorte A11: rascunho e publicação com revisão explícita; autoria, condições verificadas e histórico preservados. Demais decisões de governança em V09 |
 
-As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. P01 e o recorte de perfil de P08 foram adotados em A10, e o fluxo editorial mínimo P09 em A11; propostas comerciais/editoriais não são aprovadas por essa adoção. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
+As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. P01 e o recorte de perfil de P08 foram adotados em A10, o fluxo editorial mínimo P09 em A11 e a busca P02 no recorte A12; propostas comerciais não são aprovadas por essa adoção. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
 
 ## 3. Objetivo, usuários e limite do MVP
 

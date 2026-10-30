@@ -7,6 +7,7 @@ O Wiki-Chem é desenvolvido no curso de Desenvolvimento de Software Multiplatafo
 - [Especificação do MVP](especificacoes/MVP-WIKI-CHEM-v1.md): problema, objetivos, usuários, requisitos e critérios de aceitação.
 - [Arquitetura](arquitetura/ARQUITETURA-MVP.md): estrutura, decisões técnicas, integração e contratos.
 - [Catálogo editorial](arquitetura/CATALOGO-EDITORIAL.md): gestão administrativa, classificação, versões, revisão e proteção do procedimento.
+- [Pesquisa de metodologias](arquitetura/PESQUISA-METODOLOGIAS.md): consulta autenticada, filtros, prévias, URL e verificação.
 - [Identidade](arquitetura/IDENTIDADE.md): decisões mínimas, contratos, proteção de rotas e verificação da autenticação.
 - [Modelo de dados](arquitetura/MODELO-DADOS.md): entidades, relacionamentos e invariantes, distinguindo modelo planejado de esquema implementado.
 - [E-commerce](arquitetura/ECOMMERCE.md): regras e propostas comerciais da demonstração, ainda não implementadas.

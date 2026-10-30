@@ -8,6 +8,7 @@ import Home from './pages/Home/Home'
 import About from './pages/About/About.tsx'
 import Login from './pages/Login/Login'
 import Consultas from './pages/Consultas/Consultas'
+import MethodologyDetail from './pages/Consultas/MethodologyDetail'
 import './App.css'
 
 function AppContent() {
@@ -20,6 +21,7 @@ function AppContent() {
         <Route path="/sobre" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/consultas" element={<ProtectedRoute><Consultas /></ProtectedRoute>} />
+        <Route path="/metodologias/:id" element={<ProtectedRoute><MethodologyDetail /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><Admin /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>

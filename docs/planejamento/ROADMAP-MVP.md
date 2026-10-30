@@ -1,12 +1,12 @@
 # Roadmap de implementação proposto — MVP Wiki-Chem
 
-**Estado:** planejamento incremental do MVP; infraestrutura, identidade e catálogo editorial implementados; pesquisa/comércio pendentes. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
+**Estado:** planejamento incremental do MVP; infraestrutura, identidade, catálogo editorial e pesquisa implementados; comércio pendente. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
 
 ## 1. Método incremental e estado
 
-O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; catálogo editorial está implementado; pesquisa e comércio permanecem planejados.
+O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; catálogo editorial e pesquisa estão implementados; comércio permanece planejado.
 
-P03, P09, candidatas C01–C05, permissões de conteúdo e preços comerciais continuam em validação. As tecnologias da fundação foram adotadas conforme A09. Fixtures FX01–FX05 serão implementadas somente nos incrementos comerciais pertinentes.
+P03, candidatas C01–C05, permissões de conteúdo e preços comerciais continuam em validação. As tecnologias da fundação foram adotadas conforme A09. Fixtures FX01–FX05 serão implementadas somente nos incrementos comerciais pertinentes.
 
 Não se pressupõem calendário, esforço, corpus autorizado ou infraestrutura de produção pronta. Mudanças de comportamento exigem revisão dos requisitos antes das tarefas dependentes.
 
@@ -21,7 +21,8 @@ flowchart TD
   I04 --> I05["I05: metodologias e versoes"]
   I05 --> I06["I06: fontes e revisao"]
   I06 --> I07["I07: oferta e publicacao"]
-  I07 --> I08["I08: pesquisa e previas"]
+  I06 --> I08["I08: pesquisa e previas sem oferta"]
+  I07 --> I09
   I08 --> I09["I09: carrinho"]
   I09 --> I10["I10: pedido pendente"]
   I10 --> I11["I11: confirmacao atomica"]
@@ -57,7 +58,7 @@ Artefatos citados são destinos de implementação; a seção 6 distingue o que 
 | I06.02 | Revisão no ato de publicar — RF08/17/P09 | Apenas DRAFT/PUBLISHED/SUPERSEDED; publish exige revisão explícita, nota, responsável, expectedRevision e condições válidas na mesma transação; rascunho incompleto/sem permissão ou edição concorrente é rejeitado; não há submit-review/approve separados | I06.01, V09 |
 | I07.01 | Produto e preços — RF09/MD03 | Produto único por metodologia, preço imutável BRL, ponteiro corrente e revision; valores inválidos/cliente sem papel rejeitados; valores reais só após aprovação | I05, V05 |
 | I07.02 | Oferta/publicação/retirada — RF08/09/15 | Publicação aponta versão própria permitida; atualização fica elegível aos titulares da metodologia sem alterar direitos/pedidos; publicar não reativa venda automaticamente; desativar preserva histórico e atualiza revisão; concorrência com compra exercitada | I06, I07.01 |
-| I08.01 | Consulta e filtros REST — RF04–RF07 | Texto/sete filtros, OR/AND na mesma versão, termo curto, acento, wildcard literal, vazio, paginação e desempate testados; marcador pago não participa de busca/contagem | I03, I04, I07, V01 |
+| I08.01 | Consulta e filtros REST — RF04–RF07 | Texto/sete filtros, OR/AND na mesma versão, termo curto, acento, wildcard literal, vazio, paginação e desempate testados; marcador pago não participa de busca/contagem | I03, I04, I06; curadoria real V01 |
 | I08.02 | Pesquisa React e prévias — RF07/16 | Painel existente recebe estado real; URL reproduz filtros, resposta obsoleta descartada; loading/vazio/falha e prévia informativa sem procedimento validados | I08.01 |
 | I09.01 | Carrinho persistente — RF10/MD04 | Um carrinho por usuário, item único, revision, validação de propriedade, total corrente e conflitos por item; recarga/login recuperam estado | I03, I07 |
 | I09.02 | UI de carrinho/adquirido — RF10/16 | CTA distingue adquirido/indisponível; revisão concorrente não sobrescreve; remoção é explícita, sem compra ou descarte silencioso de itens | I08, I09.01 |
@@ -112,9 +113,10 @@ O recorte proposto tem cinco candidatas reais, com sete eixos exemplificados na 
 | I01.04 | Pendente, antes de I07/I10 | Nenhuma fixture comercial carregada; não bloqueia identidade |
 | I02/I03 | Implementados no recorte de identidade | Cadastro/login/sessão/logout/perfil e bootstrap inicial; Argon2id, CSRF, origem, limites, expiração, MySQL e navegador. Recuperação/e-mail verificado fora do incremento |
 | I04–I06 | Implementados no recorte A11 | Taxonomias N:N, rascunhos, conteúdo separado, fontes/autoria, revisão e publicação; vocabulário e permissões reais continuam pendentes |
-| I07–I13 | Pendentes | Ofertas, pesquisa, comércio, biblioteca e validação integrada |
+| I08 | Implementado no recorte A12 | Texto, sete filtros, prévias, URL e paginação; RF07 parcial, sem preço/oferta |
+| I07, I09–I13 | Pendentes | Oferta comercial (Etapa 07), comércio, biblioteca e liberação demonstrativa |
 
-A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04 não está completo: pesquisa efetiva depende de I08. Apresentação com respostas controladas não substitui integração real. [Catálogo editorial](../arquitetura/CATALOGO-EDITORIAL.md) acrescenta os critérios estruturais/editoriais de RF05/08/15/17 e MD02/08. A filtragem real de RF05 e a pesquisa dependem de I08; direitos e checkout permanecem futuros.
+A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04–RF06 têm pesquisa real no recorte A12, descrita em [Pesquisa de metodologias](../arquitetura/PESQUISA-METODOLOGIAS.md). Apresentação com respostas controladas não substitui integração real. [Catálogo editorial](../arquitetura/CATALOGO-EDITORIAL.md) acrescenta os critérios estruturais/editoriais de RF05/08/15/17 e MD02/08. RF07 permanece parcial: sua exibição comercial será concluída na Etapa 07. Direitos e checkout permanecem futuros; ofertas não bloqueiam a pesquisa editorial.
 
 ## 7. Evolução posterior
 
