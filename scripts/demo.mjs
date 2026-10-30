@@ -43,9 +43,9 @@ try {
   } else if (action === 'down') await run(['down'])
   else if (action === 'status') await run(['ps'])
   else if (action === 'diagnose') {
-    // Somente MySQL deste projeto; sanitizar antes de escrever qualquer log.
+    // Somente serviços deste projeto; sanitizar antes de escrever qualquer log.
     const secrets = (await readFile(envFile, 'utf8')).split('\n').map(line => line.slice(line.indexOf('=') + 1)).filter(Boolean)
-    const child = spawnSync('docker', [...args, 'logs', '--no-color', '--tail', '100', 'mysql'], { cwd: root, shell: false, encoding: 'utf8', maxBuffer: 1000000 })
+    const child = spawnSync('docker', [...args, 'logs', '--no-color', '--tail', '100', 'mysql', 'api', 'frontend'], { cwd: root, shell: false, encoding: 'utf8', maxBuffer: 1000000 })
     let text = (child.stdout ?? '') + (child.stderr ?? '')
     for (const secret of secrets) text = text.replaceAll(secret, '[REDACTED]')
     console.log(text)
