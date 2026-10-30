@@ -85,3 +85,11 @@ A implementação acrescenta 25 migrações SQL de estrutura (28 no total), sem 
 Verificações locais executadas: npm run build:backend; npm run build:frontend; npm run lint; npm test. Passaram 65 testes backend de unidade/contrato e 35 frontend. MySQL real, migrações completas e navegador serão confirmados pelos checks do PR; não se atribui sucesso local a testes sem servidor MySQL/Chromium disponível neste Windows.
 
 Fixtures são texto original sintético DEMO, sem instruções laboratoriais nem licença de fonte externa. O setup integrado reseta somente banco descartável wikichem_test_<sufixo> com NODE_ENV=test e MYSQL_TEST_ALLOW=true, cria ADMIN com senha aleatória não gravada e mantém cookie efêmero em .test-fixtures/ ignorado no Git. Nunca executar suíte contra dados a preservar. Não são criados usuários ou conteúdos de produção.
+
+### Validação integrada e correção de interoperabilidade dos controles
+
+Execução 41059600718: 28 migrações aplicadas/repetidas e 66 testes de integração aprovados (20 catálogo, 22 identidade, 16 MySQL, seis processo e dois proxy). Job frontend aprovado, incluindo as regressões anteriores. Dos 12 percursos reais de navegador, 11 passaram; a edição completa parou no seletor nativo de tipo de fonte, cujo rótulo envolvia também as opções.
+
+A revisão usa associação explícita label/for/id nos selects de fonte, situação de uso, contribuições e taxonomia, mantendo as seleções exatas e os critérios do teste. Acrescentada checagem dos nomes acessíveis desses controles. Não foram removidas verificações de publicação, integridade ou permissão. Build/lint foram repetidos para essa correção; os checks da revisão corrente precisam ser aprovados antes do merge.
+
+O primeiro envio por ferramenta GitHub expirou no controle automático sem criar PR. A única repetição por gh pr create, dentro da autorização existente, criou o PR #6: https://github.com/dernivaljr/wiki-chem/pull/6 . Não houve rejeição de mérito nem bloqueio de permissão remanescente.

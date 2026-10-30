@@ -101,4 +101,15 @@ describe('administração editorial na interface', () => {
     await user.click(screen.getByRole('button', { name: 'Adicionar contribuição' }))
     expect(screen.getByLabelText('Nome da contribuição 1')).toHaveValue('')
   })
+  it('seletores de fonte e contribuição têm rótulos exatos sem o texto das opções', async () => {
+    mockFetch().mockImplementation(async () => success(adminSession()))
+    editor()
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar fonte' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar contribuição' }))
+    expect(screen.getByLabelText('Tipo da fonte 1', { exact: true })).toHaveAccessibleName('Tipo da fonte 1')
+    expect(screen.getByLabelText('Situação da condição de uso 1', { exact: true })).toHaveAccessibleName('Situação da condição de uso 1')
+    expect(screen.getByLabelText('Tipo da contribuição 1', { exact: true })).toHaveAccessibleName('Tipo da contribuição 1')
+    expect(screen.getByLabelText('Papel da contribuição 1', { exact: true })).toHaveAccessibleName('Papel da contribuição 1')
+  })
+
 })
