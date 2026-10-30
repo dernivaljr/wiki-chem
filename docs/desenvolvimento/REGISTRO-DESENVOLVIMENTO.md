@@ -113,3 +113,11 @@ Sete migrações de estrutura foram acrescentadas (35 no total), incluindo FKs d
 Comandos locais executados: npm run install:clean; npm run build; npm run lint; npm test; npm run audit:deps; npm run audit:prod. Passaram 92 testes backend e 67 frontend; auditorias completas/produção reportaram zero vulnerabilidades. Bundle frontend inspecionado sem marcadores de fixtures comerciais. Validação documental: 11 documentos UTF-8, 62 links locais existentes e 12 blocos Mermaid com cercas completas. MySQL real, migrações iniciais/repetidas e navegador serão confirmados nos checks do PR; não se atribui execução local ao MySQL/Chromium indisponível neste Windows.
 
 As fixtures FX são originais DEMO da suíte e recusam produção. Não há associação às candidatas EPA nem autorização de terceiros inventada. O material acadêmico fica em OFERTAS-CARRINHO.md e documentos associados, com linguagem de funcionalidades, modelo, testes e resultados; este registro mantém operações separadas.
+
+### Verificação integrada de ofertas e carrinho
+
+A execução 41083952208 aprovou ambos os jobs na revisão e0a87050e92344008c0408694c88bd0c7045808b: 92 testes backend, 67 frontend, 114 integrações (22 comerciais), 13 regressões e 19 jornadas reais de navegador (quatro comerciais), totalizando 305. As 35 migrações foram aplicadas/repetidas, com checks de FKs e triggers. Instalação limpa, builds, lint e auditorias passaram; zero vulnerabilidades reportadas.
+
+A primeira execução 41083277379 encontrou três falhas de remoção: Fastify apresenta ausência de corpo como null ao validador, incompatível com z.undefined. A correção mantém origem/CSRF, aceita somente ausência de corpo normalizada e rejeita corpo explícito por framing/schema. Uma regressão adicional verifica DELETE vazio válido e rejeição de JSON explícito, inclusive null. As verificações de revisão, isolamento, privacidade e indisponibilidade foram preservadas.
+
+Resultados acadêmicos estão em OFERTAS-CARRINHO.md, sem identificadores Git/CI. A revisão documental corrente precisa passar pelos checks antes do merge, seguida da verificação da main.

@@ -97,4 +97,14 @@ Permanecem pendentes: corpus autorizado, vocabulário/curadoria científicos, pr
 
 ### Resultados observados
 
-A validação local aprovou 92 testes de unidade/contrato do backend e 67 testes de componentes/rotas do frontend. Build e análise estática passaram. Integração MySQL e navegador têm cobertura separada, sem presumir aprovação científica, comercial ou jurídica do corpus.
+A validação executada aprovou **305 testes**, preservando as verificações anteriores de identidade, catálogo e pesquisa:
+
+| Categoria | Aprovados | Evidência funcional |
+| --- | ---: | --- |
+| Unidade e contrato do backend | 92 | Validação monetária exata, moeda, campos permitidos, segurança e bloqueio das fixtures em produção |
+| Componentes e rotas React | 67 | Oferta, preço, envio de precondições, carrinho, remoção, conflito, rede e sessão |
+| Integração MySQL/processos/proxy | 114 | Inclui 22 casos comerciais: somas FX, precisão, imutabilidade por trigger, FKs, revalidação, concorrência, autorização, isolamento e persistência |
+| Regressões de navegador | 13 | Navegação, responsividade, foco e contraste |
+| Jornadas com API e MySQL reais | 19 | Inclui quatro jornadas comerciais de administração e cliente, com persistência, mudanças de oferta, falhas e tela de 320 px |
+
+As 35 migrações foram aplicadas e executadas novamente sem reaplicação. Instalação limpa, build e análise estática passaram; auditorias completas/de produção reportaram zero vulnerabilidades. O bundle frontend foi verificado sem marcadores das fixtures comerciais. Integração e navegador utilizaram Linux, MySQL 8.4 isolado e Chromium, sem depender de testes manuais. Esses resultados não constituem validação científica, aprovação de preços reais ou autorização jurídica de um corpus.
