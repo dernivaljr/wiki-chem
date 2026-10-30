@@ -35,4 +35,21 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 
 Base confirmada: merge do PR #3 em c161fd0889e0d5a0bf85075a14857fe153fd5cf5; CI main aprovado em https://github.com/dernivaljr/wiki-chem/actions/runs/40990012819 . PRs #1 e #2 integrados. Branch: feat/backend-foundation.
 
-Escopo: infraestrutura e saúde; sem autenticação, catálogo, comércio ou IA/RAG. As tecnologias da fundação foram explicitamente autorizadas, sem aprovação comercial implícita. Resultados finais serão acrescentados após as verificações. Não registrar segredos nem logs brutos de driver.
+Escopo: infraestrutura e saúde; sem autenticação, catálogo, comércio ou IA/RAG. As tecnologias da fundação foram explicitamente autorizadas, sem aprovação comercial implícita. Resultados verificados constam abaixo; a revisão final permanece vinculada aos checks correntes do PR. Não registrar segredos nem logs brutos de driver.
+
+## Verificações da fundação
+
+- Instalação limpa: `npm run install:clean`, reproduzida pelos lockfiles dos dois pacotes.
+- `npm run build`, `npm run lint` e `npm test`: aprovados localmente; 10 testes frontend e 36 testes unitários/de contrato backend. Build/lint backend repetidos após as correções.
+- `npm run audit:deps` e `npm run audit:prod`: zero vulnerabilidades nos dois pacotes.
+- Checagem documental somente de leitura: oito documentos, 42 links locais existentes, oito blocos Mermaid, cercas/encoding válidos e remoção de registros operacionais do material acadêmico.
+- `npm run test:e2e` no Windows: Chromium não iniciou (`spawn UNKNOWN`); não se atribuiu sucesso aos 13 casos locais. No CI Linux, os mesmos 13 testes passaram.
+- Não há MySQL/Docker disponível neste ambiente Windows. As migrações e a integração real são executadas automaticamente pelo serviço MySQL 8.4 do CI, sem solicitar testes manuais ao usuário.
+
+### Diagnóstico e correção durante a validação
+
+Na execução [40992342032](https://github.com/dernivaljr/wiki-chem/actions/runs/40992342032), o frontend passou por todas as etapas; o backend passou por instalação/build/lint/unidade, mas o status de migrações detectou MIGRATION_LOCKED. A origem foi a comparação do retorno GET_LOCK com número: a preservação de BIGINT pode entregá-lo como string. A comparação de aquisição/liberação foi normalizada; o lock não foi removido nem desabilitado. A integração exige execução positiva, repetida, concorrente e com falhas de migração para confirmar a correção.
+
+A verificação HTTP local do binário compilado confirmou liveness 200, banco ausente 503 e query inválida 400. A primeira asserção sobre encerramento supunha semântica POSIX; no Windows, child.kill termina diretamente o processo. A suíte de integração inclui verificação do processo compilado, ambiente inválido e saída limpa por SIGTERM no CI Linux.
+
+O PR [#4](https://github.com/dernivaljr/wiki-chem/pull/4) concentra as revisões e os checks correntes. A aprovação final deve considerar o commit mais recente e os dois jobs completos; esta anotação não declara integração real aprovada antes de sua execução.

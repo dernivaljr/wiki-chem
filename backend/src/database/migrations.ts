@@ -36,7 +36,7 @@ export async function runMigrations(pool: Pool, database: string, migrations: re
     if (versions[0]?.database_name !== database) throw new MigrationError('MIGRATION_DATABASE_MISMATCH')
     if (!/^8\.4\./.test(String(versions[0]?.version))) throw new MigrationError('MYSQL_84_REQUIRED')
     const [lock] = await connection.execute<RowDataPacket[]>('SELECT GET_LOCK(?, 0) AS acquired', [lockName])
-    if (lock[0]?.acquired !== 1) throw new MigrationError('MIGRATION_LOCKED')
+    if (String(lock[0]?.acquired) !== '1') throw new MigrationError('MIGRATION_LOCKED')
     locked = true
     await connection.query("SET SESSION time_zone = '+00:00'")
     await connection.query('SET SESSION autocommit = 1')
@@ -84,7 +84,7 @@ export async function runMigrations(pool: Pool, database: string, migrations: re
     if (locked) {
       try {
         const [released] = await connection.execute<RowDataPacket[]>('SELECT RELEASE_LOCK(?) AS released', [lockName])
-        if (released[0]?.released !== 1) connection.destroy()
+        if (String(released[0]?.released) !== '1') connection.destroy()
       } catch { connection.destroy() }
     }
     connection.release()
