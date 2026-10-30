@@ -11,6 +11,7 @@
   --color-primary-light: #d6e9ff;
   --color-background-light: #f2f6ff;
   --color-white: #ffffff;
+  --header-height: 88px;
 
   --color-text: #172033;
   --color-text-secondary: #526071;
@@ -27,7 +28,7 @@ html {
 
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
   min-height: 100vh;
   background-color: var(--color-white);
 }
@@ -47,4 +48,21 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --header-height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --header-height: 120px;
+  }
 }
