@@ -1,5 +1,6 @@
 import { createCatalogRepository } from './modules/catalog/catalog.repository.js'
 import { createCommerceRepository } from './modules/commerce/commerce.repository.js'
+import { createCheckoutRepository } from './modules/checkout/checkout.repository.js'
 import { createIdentityRepository } from './modules/identity/identity.repository.js'
 import { buildApp } from './app.js'
 import { ConfigurationError, loadConfig } from './config/env.js'
@@ -13,6 +14,7 @@ async function main() {
     identity: createIdentityRepository(pool),
     catalog: createCatalogRepository(pool),
     commerce: createCommerceRepository(pool),
+    checkout: createCheckoutRepository(pool, { ttlSeconds: config.CHECKOUT_TTL_SECONDS }),
     checkDatabase: createHealthRepository(pool, config.DB_TIMEOUT_MS).checkDatabase,
     closeDatabase: () => pool.end(),
   })

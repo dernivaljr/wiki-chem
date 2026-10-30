@@ -2,8 +2,8 @@ import type { Pool, PoolConnection, RowDataPacket } from 'mysql2/promise'
 import { withTransaction } from '../../database/pool.js'
 import { AppError } from '../../shared/errors.js'
 import type { Actor } from '../identity/access.js'
-import { placeholders, previewColumns, publishedFrom, publishedWhere } from '../catalog/catalog.search.js'
-import { loadOffers, lockProductForMethod, rows } from './commerce.offers.js'
+import { placeholders } from '../catalog/catalog.search.js'
+import { currentVersions, loadOffers, lockProductForMethod, ownedMethods, rows } from './commerce.offers.js'
 import type { Cart, Offer, Product } from './commerce.contracts.js'
 
 type Row = RowDataPacket
@@ -27,12 +27,6 @@ async function boundary<T>(work: () => Promise<T>): Promise<T> {
 async function audit(db: PoolConnection, actor: Actor, action: string, type: string, id: string) {
   await db.execute('INSERT INTO audit_events (actor_user_id, action, target_type, target_id, request_id, occurred_at) VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(6))', [actor.userId, action, type, id, actor.requestId])
 }
-async function currentVersions(db: PoolConnection, ids: string[], lock = false) {
-  if (!ids.length) return new Map<string, Row>()
-  if (lock) await rows(db, 'SELECT id FROM methodologies WHERE id IN (' + placeholders(ids.length) + ') ORDER BY id FOR SHARE', ids)
-  const found = await rows(db, 'SELECT ' + previewColumns + publishedFrom + ' WHERE m.id IN (' + placeholders(ids.length) + ') AND ' + publishedWhere + ' ORDER BY m.id' + (lock ? ' FOR SHARE' : ''), ids)
-  return new Map(found.map(row => [String(row.methodology_id), row]))
-}
 function effective(offer: Offer, availableContent: boolean): Offer {
   return availableContent ? offer : { ...offer, available: false, reason: 'CONTENT_UNAVAILABLE' }
 }
@@ -51,9 +45,13 @@ async function productDto(db: PoolConnection, row: Row, lock = false): Promise<P
 async function cartView(db: PoolConnection, userId: string, lock = false): Promise<Cart> {
   const [cart] = await rows(db, 'SELECT id, revision FROM carts WHERE user_id = ?' + (lock ? ' FOR UPDATE' : ''), [userId])
   if (!cart) return { revision: 1, items: [], currency: 'BRL', totalCentavos: '0', unavailableCount: 0 }
-  const items = await rows(db, 'SELECT ci.*, pp.amount_centavos AS observed_amount FROM cart_items ci JOIN product_prices pp ON pp.id = ci.observed_price_id AND pp.product_id = ci.product_id WHERE ci.cart_id = ? ORDER BY ci.product_id' + (lock ? ' FOR SHARE' : ''), [String(cart.id)])
+  // O usuário/carrinho já serializa suas mutações. Não reservar gaps de itens:
+  // carrinhos vazios de compradores distintos podem compartilhar o mesmo gap.
+  // Preços são imutáveis e as próprias escritas ficam visíveis à transação.
+  const items = await rows(db, 'SELECT ci.*, pp.amount_centavos AS observed_amount FROM cart_items ci JOIN product_prices pp ON pp.id = ci.observed_price_id AND pp.product_id = ci.product_id WHERE ci.cart_id = ? ORDER BY ci.product_id', [String(cart.id)])
   const methodIds = items.map(item => String(item.methodology_id))
   const versions = await currentVersions(db, methodIds, lock), offers = await loadOffers(db, methodIds, lock)
+  const owned = await ownedMethods(db, userId, methodIds, lock)
   let total = 0n, unavailableCount = 0
   const mapped = items.map(item => {
     const methodId = String(item.methodology_id), version = versions.get(methodId)
@@ -63,8 +61,9 @@ async function cartView(db: PoolConnection, userId: string, lock = false): Promi
     if (version && String(version.id) !== String(item.observed_version_id)) issues.push('VERSION_CHANGED')
     if (offer.revision !== Number(item.observed_offer_revision)) issues.push('OFFER_CHANGED')
     if (!offer.available) { issues.push('UNAVAILABLE'); unavailableCount++ }
-    else total += BigInt(offer.amountCentavos!)
-    return { productId: String(item.product_id), methodologyId: methodId, title: version?.title ?? item.title_snapshot, quantity: 1 as const,
+    else if (!owned.has(methodId)) total += BigInt(offer.amountCentavos!)
+    if (owned.has(methodId)) { issues.push('ALREADY_OWNED'); if (offer.available) unavailableCount++ }
+    return { owned: owned.has(methodId), productId: String(item.product_id), methodologyId: methodId, title: version?.title ?? item.title_snapshot, quantity: 1 as const,
       observedPriceId: String(item.observed_price_id), observedAmountCentavos: String(item.observed_amount), observedVersionId: String(item.observed_version_id), observedVersionLabel: item.version_label_snapshot,
       currentVersionId: version ? String(version.id) : null, currentVersionLabel: version?.version_label ?? null, offer, issues }
   })
@@ -139,13 +138,14 @@ export function createCommerceRepository(pool: Pool) {
         const [cart] = await rows(db, 'SELECT id, revision FROM carts WHERE user_id = ? FOR UPDATE', [actor.userId])
         if (!cart) throw new Error('CART_MISSING')
         expected(cart, expectedRevision)
-        const existing = await rows(db, 'SELECT product_id FROM cart_items WHERE cart_id = ? ORDER BY product_id FOR UPDATE', [String(cart.id)])
+        const existing = await rows(db, 'SELECT product_id FROM cart_items WHERE cart_id = ? ORDER BY product_id', [String(cart.id)])
         const ids = [...new Set([...existing.map(item => String(item.product_id)), productId])].sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1)
         const locked = await rows(db, 'SELECT * FROM products WHERE id IN (' + placeholders(ids.length) + ') ORDER BY id FOR UPDATE', ids)
         const present = existing.some(item => String(item.product_id) === productId)
         if (addition) {
           const product = locked.find(row => String(row.id) === productId)
           if (!product) throw missing()
+          if ((await ownedMethods(db, actor.userId, [String(product.methodology_id)], true)).size) throw new AppError(409, 'ALREADY_OWNED', 'Aquisição simulada já registrada para esta metodologia. Consulte seus pedidos.')
           const versions = await currentVersions(db, locked.map(row => String(row.methodology_id)), true)
           const offer = (await loadOffers(db, [String(product.methodology_id)], true)).get(String(product.methodology_id))!
           const version = versions.get(String(product.methodology_id))

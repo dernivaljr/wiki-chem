@@ -1,3 +1,4 @@
+import DemoBanner from '../checkout/DemoBanner'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -19,8 +20,9 @@ export default function OfferSection({ preview }: { preview: Preview }) {
     finally { setBusy(false) }
   }
   return <section className="search-offer" aria-label="Oferta da metodologia">
+    {(offer?.available || preview.owned) && <DemoBanner />}
     {offer?.amountCentavos && <p><strong>{brl(offer.amountCentavos)}</strong> · versão {preview.versionLabel}{!offer.available && ' · Oferta indisponível'}</p>}
-    {preview.purchasable && offer?.available && offer.amountCentavos ? <>
+    {preview.owned ? <p>Aquisição simulada já registrada. <Link to="/pedidos">Consultar pedidos</Link></p> : preview.purchasable && offer?.available && offer.amountCentavos ? <>
       {added ? <p role="status">Produto no carrinho. <Link to="/carrinho">Ver carrinho</Link></p> : <button type="button" disabled={busy} onClick={() => { void add() }}>{busy ? 'Adicionando…' : 'Adicionar ao carrinho'}</button>}
       <p>O carrinho não reserva preço nem concede acesso ao procedimento.</p>
     </> : <p>Oferta comercial ainda não disponível.</p>}

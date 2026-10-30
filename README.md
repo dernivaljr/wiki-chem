@@ -12,7 +12,8 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 | Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Sem corpus científico ou permissões pré-carregados |
 | Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
 | Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada; ofertas e preços quando cadastrados, carrinho autenticado |
-| Ofertas, histórico imutável de preços BRL e carrinho por usuário | Sem checkout, pedidos ou liberação de conteúdo; valores comerciais reais exigem definição |
+| Ofertas, histórico imutável de preços BRL e carrinho por usuário | Valores comerciais reais exigem definição |
+| Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; leitura integral da biblioteca fica para a próxima etapa |
 | Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem somente nas suítes de teste |
 
 A identidade visual React foi preservada. /consultas pesquisa prévias por texto e sete filtros; /metodologias/:id apresenta detalhes gratuitos. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
@@ -128,7 +129,7 @@ São exercitados migração inicial/repetida, status sem escrita, checksum/hist�
 
 Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste. O setup desse comando recria todas as tabelas conhecidas no banco descartável e prepara uma sessão ADMIN com senha aleatória, usada apenas para preparar testes de administração e pesquisa. Exige MIGRATION_DB_USER/MIGRATION_DB_PASSWORD; cookie temporário fica em frontend/.test-fixtures/ ignorado pelo Git. Não contém senha padrão nem semente de produção.
 
-O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação, administração, pesquisa e carrinho no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
+O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação, administração, pesquisa, carrinho e checkout demonstrativo no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
 
 ## Organização e documentação
 
@@ -166,4 +167,12 @@ Projeto licenciado sob a [GNU GPL v2](LICENSE).
 
 Selecione uma metodologia em /admin e abra “Gerenciar oferta e preços”. Crie produto inativo, cadastre preço em centavos BRL e ative somente após publicação revisada. Novo preço preserva o histórico; arquivamento desativa a oferta e restauração exige ativação explícita. A pesquisa funciona sem produto/preço.
 
-Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. Não há checkout, pedido ou direito concedido. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
+Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. O checkout demonstrativo cria revisão e exige confirmação explícita, com pedidos e direitos persistidos. Não libera leitura integral da biblioteca. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
+
+## Checkout demonstrativo
+
+Em /carrinho, avance para criar pedido pendente; /checkout/:id exibe snapshots, prazo e aceite obrigatório. Confirme ou cancele explicitamente. /pedidos e /pedidos/:id consultam registros persistidos. Todas as etapas identificam DEMONSTRAÇÃO — SEM COBRANÇA. Não existe pagamento real ou biblioteca integral.
+
+CHECKOUT_TTL_SECONDS=900 (5–3600) e CHECKOUT_RATE_LIMIT_MAX=60 definem prazo e mutações/minuto por usuário. Copie somente nomes/defaults seguros do exemplo de ambiente. As migrações continuam pelo comando db:migrate e conta operacional; a API não executa DDL. CREATE TRIGGER com BEGIN/END é um statement SQL, sem DELIMITER no arquivo e sem habilitar multipleStatements.
+
+Os comandos existentes install:clean, build, lint, test, test:integration, test:e2e, test:auth, audit:deps e audit:prod verificam o incremento. Integração/navegador exigem banco descartável e credenciais operacionais conforme seção de testes. Falhas e relógio de checkout são injetados somente por composição dos testes, sem flags HTTP de produção. Nenhuma fixture comercial é carregada pela aplicação. [Regras e contratos](docs/arquitetura/CHECKOUT-DEMONSTRATIVO.md).

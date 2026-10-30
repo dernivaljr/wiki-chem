@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; pedidos, direitos e idempotência continuam planejados. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A13 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; orders, order_items, entitlements e idempotency_records estão implementadas, com snapshots imutáveis e concessão transacional. Biblioteca integral permanece futura. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A14 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -44,12 +44,12 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 | `products` | id, methodology_id, active, current_price_id nullable, revision, created_at, updated_at | UNIQUE(methodology_id); ponteiro de preço deve pertencer ao próprio produto; inativo até oferta válida |
 | `product_prices` | id, product_id, amount_centavos, currency, created_by, created_at | Preço imutável; currency BRL; histórico append-only; ativação do ponteiro é transacional |
 | `orders` | id, user_id, status, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at, completed_at nullable, cancelled_at nullable | mode SIMULATED; status PENDING_CONFIRMATION/COMPLETED_SIMULATED/CANCELLED/EXPIRED; total igual à soma dos itens |
-| `order_items` | id, order_id, product_id, methodology_version_id, price_id, title_snapshot, version_label_snapshot, unit_amount_centavos, quantity, line_total_centavos | UNIQUE(order_id, product_id); quantity=1; line_total=unit_amount; preço/versão pertencem ao produto/metodologia; campos comerciais imutáveis |
+| `order_items` | id, order_id, user_id, product_id, methodology_id, methodology_version_id, price_id, offer_revision_snapshot, title_snapshot, version_label_snapshot, unit_amount_centavos, quantity, line_total_centavos | UNIQUE(order_id, product_id); quantity=1; line_total=unit_amount; preço/versão pertencem ao produto/metodologia; campos comerciais imutáveis |
 | `entitlements` | id, user_id, methodology_id, order_item_id, status, granted_at, revoked_at nullable, reason nullable | UNIQUE(user_id, methodology_id); UNIQUE(order_item_id); direito metodológico, sem FK que o fixe a uma versão; origem/versão original derivadas do item imutável; ACTIVE/REVOKED; P03/V03 ainda pendentes |
 | `idempotency_records` | id, user_id, operation, key_hash, request_hash, order_id, response_status, created_at | UNIQUE(user_id, operation, key_hash); somente efeitos concluídos da operação ficam persistidos; rollback remove reserva nova; não guardar conteúdo pago ou credencial na resposta |
 | `audit_events` | id, actor_user_id, action, target_type, target_id, request_id, safe_metadata, occurred_at | Trilha de escrita relevante e acesso editorial integral; sem senha/token/procedimento; retenção em V06/V09 |
 
-Índices compostos/FKs devem garantir o pertencimento de preço ao produto e versão à metodologia quando possível. Demais invariantes entre pedido/item/usuário/direito exigem checagem e escrita no caso de uso transacional: **uma FK isolada não prova que o dono do pedido é o dono do direito**. V07 deve traduzir essas invariantes para constraints compostas e testes de integração.
+Índices compostos/FKs devem garantir o pertencimento de preço ao produto e versão à metodologia quando possível. Demais invariantes entre pedido/item/usuário/direito exigem checagem e escrita no caso de uso transacional: **uma FK isolada não prova que o dono do pedido é o dono do direito**. O recorte A14 implementa constraints compostas e testes de integração para essas invariantes.
 
 ## 3. Entidades e relacionamentos — conhecimento editorial
 
@@ -138,7 +138,7 @@ Os estados e controles comerciais estão detalhados em [ECOMMERCE](ECOMMERCE.md)
 
 ## 6. Índices e consistência de pesquisa
 
-As sete associações já possuem PKs compostas e índices inversos (term_id, version_id), usados por EXISTS na pesquisa. A consulta reutiliza o esquema editorial e não exige nova migração. Índices por usuário/data/ID em pedidos/direitos e chave idempotente composta continuam propostos para comércio. Para paginação/ordenação, medir plano de execução com o conjunto V01/V08. Não prometer performance ou selecionar mecanismo de busca antes dos volumes aprovados.
+As sete associações já possuem PKs compostas e índices inversos (term_id, version_id), usados por EXISTS na pesquisa. A consulta reutiliza o esquema editorial e não exige nova migração. Índices por proprietário/data/ID e unicidade idempotente composta estão implementados nas tabelas comerciais. Para paginação/ordenação, medir plano de execução com o conjunto V01/V08. Não prometer performance ou selecionar mecanismo de busca antes dos volumes aprovados.
 
 [Pesquisa implementada](PESQUISA-METODOLOGIAS.md) considera apenas campos gratuitos autorizados da versão corrente. LIKE literal parametrizado trata acentos/caixa e termos curtos, sem índice no conteúdo integral. As colações e a normalização devem ser verificadas com termos curtos, acentos e símbolos do conjunto aprovado. FULLTEXT, se usado, não pode suprimir silenciosamente esses casos; LIKE parametrizado com escape literal pode ser necessário no recorte inicial. Não há embedding, vetor ou índice de procedimento pago.
 
@@ -159,3 +159,7 @@ Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADM
 ## 10. Persistência de ofertas e carrinho implementada
 
 [Ofertas e carrinho](OFERTAS-CARRINHO.md) descreve products, product_prices, carts e cart_items, relações compostas, triggers de imutabilidade e revisões. O ponteiro de preço é do próprio produto; o item referencia preço e versão pertencentes à mesma identidade. Quantidade é implicitamente um. Os valores observados não são snapshots de compra, pois ainda não há pedidos. A soma informativa usa BigInt no servidor e não é persistida como total do carrinho; indisponíveis permanecem visíveis e não integram o total disponível. FX01–FX05 são exclusivamente fixtures sintéticas, sem migração de dados de produção.
+
+## Esquema implementado de pedidos e direitos
+
+As migrações 0036–0047 acrescentam as quatro tabelas e oito triggers, totalizando 47 migrações SQL. [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md) detalha colunas efetivas, FKs compostas de propriedade/origem, checks, unicidade e fronteiras transacionais. ID, título, versão e preço do item nunca são recalculados a partir do catálogo. O direito referencia usuário/metodologia/item original; não recebe version_id. ACTIVE e REVOKED são persistidos, sem API de revogação neste recorte. Atualizações futuras de catálogo não alteram pedido nem direito. MD04–MD09 têm cobertura de aquisição demonstrativa; autorização de leitura de versões e políticas de retenção continuam futuras.

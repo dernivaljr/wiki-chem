@@ -52,7 +52,7 @@ test('CUSTOMER adiciona FX01–FX05, conserva carrinho após login e remove sem 
     await expect(page.getByRole('article')).toHaveCount(4)
     await expect(page.getByText('R$ 110,00', { exact: true })).toBeVisible()
     expect((await (await other.context.request.get('/api/v1/cart')).json()).data.items).toHaveLength(0)
-    await expect(page.getByRole('button', { name: /checkout|confirmar/i })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Avançar para checkout demonstrativo' })).toBeEnabled()
   } finally { await user.context.close(); await other.context.close() }
 })
 

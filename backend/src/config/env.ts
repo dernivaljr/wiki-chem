@@ -10,6 +10,8 @@ const envSchema = z.object({
   SESSION_ABSOLUTE_SECONDS: z.coerce.number().int().min(60).max(2592000).default(28800),
   SESSION_IDLE_SECONDS: z.coerce.number().int().min(60).max(86400).default(1800),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100).default(10),
+  CHECKOUT_TTL_SECONDS: z.coerce.number().int().min(5).max(3600).default(900),
+  CHECKOUT_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(10000).default(60),
   DB_HOST: z.string().min(1).default('127.0.0.1'),
   DB_PORT: port.default(3306),
   DB_NAME: z.string().regex(/^[a-zA-Z0-9_]{1,64}$/),

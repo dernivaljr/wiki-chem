@@ -1,12 +1,12 @@
 # E-commerce de conteúdo digital — proposta para o MVP
 
-**Estado:** ofertas, preços e carrinho implementados no recorte A13; checkout, pedidos, direitos e demais políticas continuam propostos, sem integração financeira. Regras A/P/V: [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Complementos: [modelo](MODELO-DADOS.md), [API](ARQUITETURA-MVP.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
+**Estado:** ofertas, preços e carrinho implementados em A13; checkout demonstrativo, pedidos e registro de direitos implementados em A14. Biblioteca e condições comerciais definitivas continuam propostas, sem integração financeira. Regras A/P/V: [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Complementos: [modelo](MODELO-DADOS.md), [API](ARQUITETURA-MVP.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
 
 ## 1. Unidade comercial e significado da demonstração
 
 A metodologia individual é a unidade comercial principal. Produto único por metodologia e quantidade um foram adotados em A13; a regra de aquisição por usuário/metodologia permanece proposta em P04 para pedidos/direitos. Pacotes, assinaturas, upgrade pago e pagamento real não são alternativas já implementadas.
 
-O checkout deve exibir **“DEMONSTRAÇÃO — SEM COBRANÇA”** na revisão, confirmação, resultado e histórico. O botão proposto é “Confirmar aquisição de demonstração”. O pedido usa mode SIMULATED e conclusão COMPLETED_SIMULATED, nunca PAID. Não coletar cartão, documento financeiro, endereço de faturamento ou chave de pagamento, nem escolher/chamar gateway. O acesso concedido é real dentro da demonstração; a cobrança não existe.
+O checkout deve exibir **“DEMONSTRAÇÃO — SEM COBRANÇA”** na revisão, confirmação, resultado e histórico. O botão implementado é “Confirmar aquisição de demonstração”. O pedido usa mode SIMULATED e conclusão COMPLETED_SIMULATED, nunca PAID. Não coletar cartão, documento financeiro, endereço de faturamento ou chave de pagamento, nem escolher/chamar gateway. O acesso concedido é real dentro da demonstração; a cobrança não existe.
 
 BRL e preços individuais são orientações A03/A05. Valores comerciais, faixas e condições só poderão ser cadastrados após V05; números de fixtures não são oferta real. Total do MVP é a soma de itens de quantidade um, sem frete, cupom ou parcelamento. Questões tributárias/contratuais para eventual operação comercial real exigem validação específica e não estão aprovadas aqui.
 
@@ -43,7 +43,7 @@ Referências e condições de uso são revisadas antes de publicar. Não inferir
 
 Na biblioteca, a leitura padrão resolve a versão corrente publicada; selecionar `versionId` permite versão já publicada da mesma metodologia. O pedido sempre preserva a versão originalmente adquirida, inclusive seu rótulo, data e valor de compra. A proposta abrange também o histórico publicado; rascunhos e versões de outra metodologia não são atualizações elegíveis. Atualização suspensa continua bloqueada, e o backend não troca silenciosamente para outra versão. Seleção explícita de uma histórica ALLOWED continua possível com direito ativo. Revogação do direito/bloqueio da conta impede todas as versões. Aprovar escopo, duração e exceções em V03 antes de implementar.
 
-## 3. Fluxo de compra em duas etapas (P05)
+## 3. Fluxo de compra em duas etapas (P05 adotado em A14)
 
 ```mermaid
 sequenceDiagram
@@ -74,7 +74,7 @@ sequenceDiagram
 
 1. Cliente autenticado edita carrinho próprio; cada alteração efetiva incrementa revision. Exibir preço atual e problemas de disponibilidade; valores ainda não estão reservados.
 2. POST `/checkout/simulations` recebe cartRevision e chave idempotente. O servidor valida todos os itens e cria, na mesma transação, um pedido PENDING_CONFIRMATION e seus snapshots. Não há direito de acesso nesta etapa.
-3. Revisão mostra exatamente os itens do pedido, suas versões, valores, prazo e indicação de demonstração. P05 propõe prazo inicial de 15 minutos, sujeito a V04. O relógio do servidor é a referência; usuário não define expiresAt.
+3. Revisão mostra exatamente os itens do pedido, suas versões, valores, prazo e indicação de demonstração. A14 adota prazo técnico padrão de 15 minutos, configurável; política comercial definitiva continua sujeita a V04. O relógio do servidor é a referência; usuário não define expiresAt.
 4. Confirmação envia demoAcknowledged=true e outra chave idempotente. O servidor revalida e conclui de forma atômica. Nenhum reconhecimento no navegador concede direitos sozinho.
 5. UI consulta o pedido persistido e a biblioteca; conteúdo completo é obtido por endpoint próprio autorizado, não vem na resposta da compra.
 
@@ -95,11 +95,11 @@ stateDiagram-v2
 
 Pedido concluído não volta a pendente/cancelado por este contrato; não existe reembolso financeiro no MVP. Falha de validação/infraestrutura na confirmação não cria um estado de “pago” nem direito parcial. Conflito de preço deixa a prévia não confirmável até ser cancelada/expirar; a UI oferece nova revisão, sem substituir valores.
 
-`expires_at` é a autoridade para impedir confirmação mesmo se o estado EXPIRED ainda não tiver sido materializado. Leitura apresenta estado efetivo e prazo encerrado; a próxima operação de escrita pode registrar EXPIRED e evento, sem direito. GET não concede acesso nem executa compra. Não é necessário configurar scheduler externo para que um prazo vencido seja respeitado. A implementação deverá testar essa diferença temporal e a materialização idempotente.
+`expires_at` é a autoridade para impedir confirmação mesmo se o estado EXPIRED ainda não tiver sido materializado. Leitura apresenta estado efetivo e prazo encerrado; a próxima operação de escrita pode registrar EXPIRED e evento, sem direito. GET não concede acesso nem executa compra. Não é necessário configurar scheduler externo para que um prazo vencido seja respeitado. A suíte testa essa diferença temporal e a materialização idempotente.
 
 ## 5. Limites transacionais e ordem de bloqueios
 
-Proposta técnica sob V07: todas as mutações do carrinho/compra do mesmo usuário passam pelo bloqueio de sua linha em `users`, serializando sua aquisição. Após isso, ordem consistente: carrinho, pedido existente, produtos em ID crescente, metodologias em ID crescente e versões em ID crescente. Operações administrativas que afetem oferta/publicação usam a mesma ordem relativa produto → metodologia → versão. Preços publicados e itens históricos são imutáveis.
+Estratégia implementada no recorte A14: todas as mutações do carrinho/compra do mesmo usuário passam pelo bloqueio de sua linha em `users`, serializando sua aquisição. Após isso, ordem consistente: carrinho, pedido existente, produtos em ID crescente, metodologias em ID crescente e versões em ID crescente. Operações administrativas que afetem oferta/publicação usam a mesma ordem relativa produto → metodologia → versão. Preços publicados e itens históricos são imutáveis.
 
 Bloqueios não substituem UNIQUE/FKs nem a revisão de deadlocks. A implementação deve demonstrar a estratégia em MySQL e usar retry limitado de transação quando apropriado. Não manter transação aberta enquanto o usuário lê/decide; as duas etapas acima são transações separadas.
 
@@ -126,7 +126,7 @@ Invariantes: item do direito pertence ao pedido do usuário; versão pertence à
 
 ## 6. Idempotência, concorrência e repetição
 
-`Idempotency-Key` é obrigatório em T1/T2, com escopo `(user_id, operation, key_hash)`; formato/tamanho final em V07. `request_hash` deriva de representação canônica da rota/alvo/payload permitido; corpo com preço/userId arbitrário é inválido, não parte de uma compra autorizada.
+`Idempotency-Key` é obrigatório em T1/T2, com escopo `(user_id, operation, key_hash)`; UUID normalizado no recorte A14. `request_hash` deriva de representação canônica da rota/alvo/payload permitido; corpo com preço/userId arbitrário é inválido, não parte de uma compra autorizada.
 
 | Caso | Comportamento proposto |
 | --- | --- |
@@ -169,3 +169,7 @@ Em ambiente isolado, com conteúdo original/autorizado de V02 e valores apenas d
 Testar ainda: v3 DRAFT ausente da lista/retorno integral; versão publicada de outra metodologia negada; versão atual SUSPENDED negada por padrão sem fallback silencioso; seleção explícita de v1 ALLOWED permitida; direito REVOKED ou usuário bloqueado negando todas as versões. Esses cenários são critérios de implementação futura, não testes de backend executados na fundação técnica. P03 e P09 continuam pendentes de aprovação.
 
 Conjunto editorial, preços reais, duração/escopo do direito, atualizações, suspensão, limites e textos de demonstração ainda precisam de V02–V06/V09. Os valores fictícios da seção 1.1 são exclusivamente fixtures; não são política comercial. Este documento não cria referências ou autorizações fictícias nem aprova regras legais; o [roadmap](../planejamento/ROADMAP-MVP.md) transforma os cenários aprovados em tarefas pequenas.
+
+## Aquisição implementada e fronteira da biblioteca
+
+[Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md) consolida contratos e comportamento executável deste recorte. As seções de autorização de leitura de biblioteca seguem especificação futura, sem endpoints atuais. A política de direito por metodologia é usada exclusivamente para a demonstração autorizada; P03/V03 continuam pendentes quanto a condições comerciais. Nas prévias, aquisição já registrada direciona a pedidos e impede nova adição ao carrinho; não promete biblioteca ainda inexistente.

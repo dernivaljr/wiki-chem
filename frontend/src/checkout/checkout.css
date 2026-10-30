@@ -1,0 +1,9 @@
+.demo-banner { margin: 18px 0; padding: 14px 16px; border: 2px solid var(--color-primary-dark); border-radius: 6px; color: var(--color-primary-dark); background: var(--color-primary-light); line-height: 1.6; overflow-wrap: anywhere; }
+.checkout-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 22px; }
+.checkout-actions > p { flex-basis: 100%; }
+.checkout-actions a { color: var(--color-primary-dark); text-decoration: underline; }
+.checkout-ack { display: flex; align-items: flex-start; gap: 10px; margin: 22px 0; line-height: 1.6; }
+.checkout-ack input { flex-shrink: 0; margin-top: 5px; accent-color: var(--color-primary-dark); }
+.order-metadata { display: flex; flex-wrap: wrap; gap: 16px; line-height: 1.6; }
+.order-metadata dt { font-weight: 700; color: var(--color-primary-dark); }
+.order-metadata dd { margin: 0; }

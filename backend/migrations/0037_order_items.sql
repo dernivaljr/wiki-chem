@@ -1,0 +1,23 @@
+CREATE TABLE order_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT UNSIGNED NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  methodology_id BIGINT UNSIGNED NOT NULL,
+  methodology_version_id BIGINT UNSIGNED NOT NULL,
+  price_id BIGINT UNSIGNED NOT NULL,
+  offer_revision_snapshot INT UNSIGNED NOT NULL,
+  title_snapshot VARCHAR(200) NOT NULL,
+  version_label_snapshot VARCHAR(40) NOT NULL,
+  unit_amount_centavos BIGINT UNSIGNED NOT NULL,
+  quantity TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  line_total_centavos BIGINT UNSIGNED GENERATED ALWAYS AS (unit_amount_centavos) STORED,
+  UNIQUE KEY order_product (order_id, product_id),
+  UNIQUE KEY order_methodology (order_id, methodology_id),
+  UNIQUE KEY item_owner_methodology (id, user_id, methodology_id),
+  CONSTRAINT unit_order_item CHECK (quantity = 1 AND unit_amount_centavos BETWEEN 1 AND 9223372036854775807),
+  FOREIGN KEY (order_id, user_id) REFERENCES orders(id, user_id) ON DELETE RESTRICT,
+  FOREIGN KEY (methodology_id, product_id) REFERENCES products(methodology_id, id) ON DELETE RESTRICT,
+  FOREIGN KEY (methodology_id, methodology_version_id) REFERENCES methodology_versions(methodology_id, id) ON DELETE RESTRICT,
+  FOREIGN KEY (product_id, price_id) REFERENCES product_prices(product_id, id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

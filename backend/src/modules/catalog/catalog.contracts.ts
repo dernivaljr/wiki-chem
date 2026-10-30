@@ -98,7 +98,7 @@ export const taxonomiesSchema = z.strictObject({
 })
 export type Taxonomies = z.infer<typeof taxonomiesSchema>
 export const previewSchema = z.strictObject({
-  offer: offerSchema.nullable(), purchasable: z.boolean(),
+  offer: offerSchema.nullable(), purchasable: z.boolean(), owned: z.boolean(),
   id, versionId: id, versionLabel: z.string(), title: z.string(), freeSummary: z.string(), publicDescription: z.string(),
   technicalMetadata: taxonomiesSchema,
   contributors: z.array(contributorInput),
