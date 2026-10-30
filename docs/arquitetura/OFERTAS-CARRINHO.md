@@ -6,7 +6,7 @@ O sistema associa um produto digital a cada metodologia e apresenta preço BRL e
 
 A administração comercial está integrada à metodologia em /admin. ADMIN cria produto inativo, cadastra novo preço, consulta histórico e ativa/desativa oferta. O cliente usa /carrinho para consultar valores atuais, identificar alterações e remover itens. Cabeçalho, retorno após login, carregamento, erros, revisão concorrente e navegação por teclado preservam os padrões de identidade e apresentação existentes.
 
-Este recorte implementa a apresentação comercial de RF07, a estrutura de ofertas de RF09 e o carrinho de RF10. O recorte A13 isolado não inclui checkout; o recorte A14 acrescenta confirmação, pedidos e registro de direitos conforme a seção final. Não há pagamento ou leitura integral de biblioteca. Adicionar ao carrinho não reserva valores nem libera o procedimento. Preços reais, condições comerciais e direitos propostos continuam sujeitos a validação; a existência da estrutura não aprova conteúdo ou permissões reais das fontes.
+Este recorte implementa a apresentação comercial de RF07, a estrutura de ofertas de RF09 e o carrinho de RF10. O recorte A13 isolado não inclui checkout; o recorte A14 acrescenta confirmação, pedidos e registro de direitos conforme a seção final. Não há pagamento; a leitura integral autorizada existe no módulo separado de biblioteca A15. Adicionar ao carrinho não reserva valores nem libera o procedimento. Preços reais, condições comerciais e direitos propostos continuam sujeitos a validação; a existência da estrutura não aprova conteúdo ou permissões reais das fontes.
 
 ## Modelo físico e invariantes
 
@@ -93,7 +93,7 @@ Testes de contrato e interface verificam centavos exatos, limites, moeda, campos
 
 FX01–FX05 são textos e valores originais sintéticos de teste, claramente DEMO, sem associação às candidatas EPA ou fontes de terceiros. A função de fixtures é exclusiva dos testes/desenvolvimento e recusa produção; não há seed comercial ou importação pelo código da aplicação. Publicação das fixtures passa pela revisão editorial real, com declaração de origem do próprio material de teste, sem forjar autorização científica externa.
 
-Permanecem pendentes: corpus autorizado, vocabulário/curadoria científicos, preços reais e condições comerciais, política de aquisição/atualizações, tratamento de direitos revogados, limites de pedido e implantação/backup. A confirmação demonstrativa com pedidos e direitos transacionais está implementada em A14. O próximo incremento é a biblioteca autorizada. Pagamentos, gateway e IA/RAG permanecem fora do MVP.
+Permanecem pendentes: corpus autorizado, vocabulário/curadoria científicos, preços reais e condições comerciais, política de aquisição/atualizações, tratamento de direitos revogados, limites de pedido e implantação/backup. A confirmação demonstrativa com pedidos e direitos transacionais está implementada em A14. A biblioteca autorizada está implementada em A15. Pagamentos, gateway e IA/RAG permanecem fora do MVP.
 
 ### Resultados observados
 
@@ -111,4 +111,4 @@ As 35 migrações foram aplicadas e executadas novamente sem reaplicação. Inst
 
 ## Integração com aquisição demonstrativa
 
-O recorte A14 acrescenta checkout demonstrativo, histórico próprio e direitos registrados, conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md). Ofertas e carrinho identificam metodologia já adquirida, impedem recompra e não expõem procedimento. A biblioteca integral ainda não existe; condições comerciais definitivas continuam pendentes.
+O recorte A14 acrescenta checkout demonstrativo, histórico próprio e direitos registrados, conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md). Ofertas e carrinho identificam metodologia já adquirida, impedem recompra e não expõem procedimento. A biblioteca integral está implementada em A15; condições comerciais definitivas continuam pendentes.

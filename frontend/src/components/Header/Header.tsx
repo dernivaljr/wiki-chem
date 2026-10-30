@@ -44,6 +44,7 @@ function Header() {
             <NavLink to="/perfil">Perfil</NavLink>
             <NavLink to="/carrinho">Carrinho</NavLink>
             <NavLink to="/pedidos">Pedidos</NavLink>
+            <NavLink to="/biblioteca">Minha biblioteca</NavLink>
             {auth.user.role === 'ADMIN' && <NavLink to="/admin">Administração</NavLink>}
             <button className="header__login" type="button" disabled={pending} onClick={() => { void logout() }}>{pending ? 'Saindo…' : 'Sair'}</button>
           </> : <NavLink className="header__login" to="/login">Entrar <span aria-hidden="true">→</span></NavLink>}

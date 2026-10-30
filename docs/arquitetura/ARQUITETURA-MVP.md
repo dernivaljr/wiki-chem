@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; checkout, pedidos e direitos registrados implementados; biblioteca integral planejada. A01–A14 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
+**Estado:** infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; checkout, pedidos e direitos registrados implementados; biblioteca integral implementada no recorte A15. A01–A15 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P09 está adotada no recorte A11; P03 e demais políticas comerciais continuam pendentes.
 
 ## 1. Estrutura e limites de confiança
 
-Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade, conhecimento editorial e pesquisa estão implementados; ofertas e carrinho estão implementados; confirmação, pedidos e registro de direitos estão implementados; resolução e leitura integral pela biblioteca permanecem futuras.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade, conhecimento editorial e pesquisa estão implementados; ofertas e carrinho estão implementados; confirmação, pedidos e registro de direitos estão implementados; resolução e leitura integral pela biblioteca estão implementadas em A15.
 
 ```mermaid
 flowchart LR
@@ -46,7 +46,7 @@ P07 propõe mesma origem para frontend/API; o proxy Vite encaminha /api/v1 ao ba
 
 ## 3. Identidade, autorização e segurança
 
-[Identidade](IDENTIDADE.md) registra as decisões implementadas de hash, sessão, origem, CSRF, limites e bootstrap. Controle de acesso integral à biblioteca continua planejado; catálogo, ofertas e aquisição demonstrativa estão implementados.
+[Identidade](IDENTIDADE.md) registra as decisões implementadas de hash, sessão, origem, CSRF, limites e bootstrap. Controle de acesso integral à biblioteca está implementado em A15; catálogo, ofertas e aquisição demonstrativa estão implementados.
 
 - Sessão opaca aleatória, somente hash do token no banco, revogável; cookie de produção proposto `__Host-wikichem_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, sem Domain. Prazos configuráveis: oito horas absolutas e 30 minutos por inatividade; “manter conectado” foi retirado; sessão é rotacionada no login e revogada no logout/bloqueio.
 - Senha Argon2id (19 MiB, duas iterações, paralelismo um), 12–128 caracteres, sem trim ou truncamento. Respostas de login genéricas e limitação de tentativas; sem registrar senha/token.
@@ -96,7 +96,7 @@ Erro: `{ "error": { "code": "CODIGO_ESTAVEL", "message": "Mensagem segura", "det
 | GET `/health` | 200 `{ "data": { "status": "ok" } }` | Processo HTTP operacional, sem consultar banco |
 | GET `/health/database` | 200 `{ "data": { "status": "available" } }` ou 503 DATABASE_UNAVAILABLE | SELECT 1 com timeout; não garante esquema de negócio |
 
-Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. Identidade, catálogo e pesquisa têm contratos executáveis; ofertas/carrinho têm contratos executáveis e checkout/pedidos têm contratos executáveis; direitos estão registrados e sua leitura integral permanece futura.
+Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. Identidade, catálogo e pesquisa têm contratos executáveis; ofertas/carrinho têm contratos executáveis e checkout/pedidos têm contratos executáveis; direitos estão registrados e sua leitura integral está implementada em A15.
 
 ### 4.1 Identidade implementada
 
@@ -121,19 +121,19 @@ Listagem e GET /methodologies/:id retornam apenas MethodologyPreview: id, versio
 
 RF07 apresenta preço e disponibilidade quando cadastrados. offer é nullable e contém productId, revision, active, priceId/amountCentavos nullable, currency, available e reason; purchasable reflete elegibilidade de inclusão. Não existe owned nem compra presumida. Oferta ausente/inativa não bloqueia pesquisa. Direitos e regras de aquisição P03/P06 continuam propostas. [Ofertas e carrinho](OFERTAS-CARRINHO.md) define os contratos executáveis.
 
-### 4.3 Carrinho, checkout e pedidos implementados; biblioteca futura
+### 4.3 Carrinho, checkout, pedidos e biblioteca implementados
 
 | Método/rota | Entrada/retorno essencial | Regras |
 | --- | --- | --- |
 | GET `/cart` | `revision`, itens com prévia/preço atual, total atual e problemas por item | Carrinho próprio; total informativo recalculado, sem congelar oferta |
-| PUT `/cart/items/:productId` | `expectedRevision`, `offerRevision`, `priceId` e `versionId`; quantidade implicitamente um | 200 com carrinho; inclusão repetida não duplica; 409 em revisão/oferta divergente; não aceita valor/total. Compra anterior será validada quando existirem direitos |
+| PUT `/cart/items/:productId` | `expectedRevision`, `offerRevision`, `priceId` e `versionId`; quantidade implicitamente um | 200 com carrinho; inclusão repetida não duplica; 409 em revisão/oferta divergente; não aceita valor/total. Aquisição anterior é validada pelos direitos persistidos e rejeitada com ALREADY_OWNED |
 | DELETE `/cart/items/:productId` | Query `expectedRevision`, sem body | 200 com carrinho; item ausente sem divergência de revisão é no-op |
 | POST `/checkout/simulations` | `cartRevision`; header `Idempotency-Key` | 201 `OrderDetail` pendente, snapshots e `expiresAt`; modo somente `SIMULATED`; contrato transacional em ECOMMERCE |
 | POST `/orders/:id/confirm-simulation` | `demoAcknowledged: true`; `Idempotency-Key` | 200 `OrderDetail` concluído simulado; 409 nas revalidações; sem dados financeiros |
 | POST `/orders/:id/cancel` | Sessão + CSRF | 200 pedido cancelado se pendente; cancelamento repetido é no-op; concluído não é cancelável por este contrato |
 | GET `/orders` e GET `/orders/:id` | Listagem paginada/detalhe próprios | Snapshots de itens/valores e estado de demonstração; nunca filtrar por userId recebido do cliente |
-| GET `/library` e GET `/library/:methodologyId` | `methodologyId`, `acquiredVersionId`, `currentPublishedVersionId`, origem do direito, `accessAllowed` e motivo seguro de indisponibilidade | Aquisição é por metodologia; original vem do item do pedido, atual vem do catálogo; não cria nova aquisição ao publicar atualização |
-| GET `/library/:methodologyId/versions` | Lista paginada de versões já publicadas da metodologia, rótulo/data, indicadores de original/atual e `accessAllowed` | Exige direito próprio; não lista DRAFT; versões suspensas podem ter metadados seguros com acesso negado |
+| GET `/library` e GET `/library/:methodologyId` | `methodologyId`, `originalVersionId`, `originalVersionLabel`, `currentVersionId`, `currentVersionLabel`, `entitlementStatus`, `orderId` e `accessState` | Aquisição é por metodologia; original vem do item do pedido, atual vem do catálogo; não cria nova aquisição ao publicar atualização |
+| GET `/library/:methodologyId/versions` | Lista paginada de versões publicadas elegíveis, id/rótulo/título/data e flags original/current | Exige direito próprio ACTIVE; não lista DRAFT, versões suspensas ou fontes pendentes/recusadas. A indisponibilidade atual é informada no detalhe do direito |
 | GET `/library/:methodologyId/content` | Query opcional `versionId`; resposta inclui `selectedVersionId` e procedimento autorizado | Sem query resolve a atual publicada; com query permite histórico publicado da mesma metodologia; validar sessão, direito metodológico e versão a cada acesso; 403 `PURCHASE_REQUIRED` sem direito |
 
 `OrderDetail`: id, status, mode, currency, createdAt/expiresAt/completedAt, totalCentavos e itens com productId, methodologyId, methodologyVersionId, titleSnapshot, versionLabelSnapshot, unitAmountCentavos, quantity=1 e lineTotalCentavos. `methodologyVersionId` é a versão originalmente adquirida, não o ponteiro corrente; snapshots nunca são atualizados por novas publicações. `OrderDetail` não contém procedimento. Cabeçalho idempotente não substitui sessão/CSRF/autorização; escopo, replay e falhas estão em [ECOMMERCE](ECOMMERCE.md).
@@ -142,7 +142,7 @@ A autorização integral usa direito ACTIVE à metodologia e usuário/sessão at
 
 ### 4.4 Administração editorial e ofertas implementadas
 
-[Catálogo editorial](CATALOGO-EDITORIAL.md) define os contratos executáveis deste recorte, limites e separação de conteúdo. Rotas de produto/preço estão implementadas; suspensão/restauração expressa de conteúdo e direitos da tabela abaixo permanecem futuras. Todas as rotas administrativas exigem papel admin, sessão e CSRF em escrita; leitura editorial integral é auditada. Não há endpoint de autoatribuição de papel.
+[Catálogo editorial](CATALOGO-EDITORIAL.md) define os contratos executáveis deste recorte, limites e separação de conteúdo. Rotas de produto/preço estão implementadas; suspensão/restauração por versão está implementada em A15; administração de revogação de direitos da tabela abaixo permanece futura. Todas as rotas administrativas exigem papel admin, sessão e CSRF em escrita; leitura editorial integral é auditada. Não há endpoint de autoatribuição de papel.
 
 P09, adotada no recorte A11, utiliza apenas um formulário de rascunho e uma ação de publicação com revisão explícita. Texto, conteúdo, fontes, autoria/curadoria e vínculos técnicos só podem ser editados em DRAFT; publicada/superseded exige novo rascunho. Não existem fila ou estados intermediários de revisão/aprovação. No ato de publicar, conferir expectedRevision e completude/permissões, exigir `reviewAcknowledged=true` e `reviewNote`, e registrar revisor obtido da sessão, data e reviewed_revision na mesma transação. O administrador pode ser também curador/revisor no recorte mínimo A11; isso não dispensa revisão nem autoria. Suspensão/restauração e disponibilidade permanecem separadas e auditadas.
 
@@ -154,10 +154,10 @@ P09, adotada no recorte A11, utiliza apenas um formulário de rascunho e uma aç
 | POST `/admin/versions/:id/publish` | `expectedRevision`, `reviewAcknowledged=true`, `reviewNote`; valida condições de uso, registra revisão e publica/atualiza ponteiro atomicamente; edição concorrente causa 409, sem publicar revisão antiga. Atualização é acessível aos titulares de P03, sem reescrever pedidos |
 | POST `/admin/products/:id/prices` | `amountCentavos`, currency BRL, `expectedRevision`; cria preço imutável e ativa ponteiro corrente em transação |
 | PATCH `/admin/products/:id` | `active`, `expectedRevision`; desativar não apaga histórico/direitos |
-| POST `/admin/versions/:id/suspend` e `/restore` | Motivo/evidência e revisão; controla impedimento expresso de uso, sem reescrever pedidos |
+| PATCH `/admin/versions/:id/access` | expectedRevision, accessState ALLOWED/SUSPENDED e justificativa; controla a versão publicada e audita atomicamente, sem reescrever conteúdo ou pedidos |
 | GET/POST/PATCH `/admin/taxonomies/:type` (PATCH em `/:termId`) | `type` em enum das sete facetas; criar/deprecar termo, sem reutilizar identidade/edição histórica |
 
-DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; checkout/pedidos também têm contratos executáveis; biblioteca e condições comerciais definitivas exigem implementação/aprovação. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a aquisição demonstrativa concorrente usa os bloqueios descritos no documento comercial.
+DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; checkout/pedidos também têm contratos executáveis; biblioteca possui contratos executáveis em A15; condições comerciais definitivas continuam pendentes de aprovação. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a aquisição demonstrativa concorrente usa os bloqueios descritos no documento comercial.
 
 ## 5. Persistência, testes e operação proposta
 
@@ -198,3 +198,7 @@ Referências: [Fastify — validação/serialização](https://fastify.dev/docs/
 ## Contratos implementados de aquisição demonstrativa
 
 As rotas de checkout/pedidos da seção comercial estão implementadas conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md), que especifica DTOs executáveis, TTL, códigos, locks e recuperação. O módulo checkout usa Fastify/Zod e mysql2, sem nova dependência. Idempotency-Key é UUID e demoAcknowledged deve ser literal true. OrderDetail também contém cancelledAt, cartRevisionSnapshot, itemCount, serverTime e IDs de itens/preços. A listagem usa total/page/pageSize no nível superior. Todas as leituras são do proprietário; escritas usam sessão/CSRF/origem. Rotas /library continuam apenas propostas e não existem na implementação. O direito por metodologia fica registrado para consumo posterior, sujeito às condições de P03/V03.
+
+## Biblioteca implementada
+
+O módulo library reutiliza tabelas de aquisição e conhecimento, sem novas dependências. [Biblioteca digital](BIBLIOTECA-DIGITAL.md) define os quatro contratos executáveis, validações por leitura, ausência de privilégio implícito para ADMIN, locks, política de cache e estado do leitor React. A aquisição é demonstrativa; condições comerciais definitivas de P03 não estão aprovadas.

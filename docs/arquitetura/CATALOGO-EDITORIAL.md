@@ -42,7 +42,7 @@ Copiar versão da mesma metodologia cria outro DRAFT; confirmações de condiç�
 
 DELETE de rascunho usa expectedRevision e marca deleted_at. Metodologia sem histórico publicado pode ser removida logicamente; identidade/slug/rótulo da versão não são reutilizados. Metodologia com histórico é arquivada/restaurada por PATCH, preservando versões. Arquivamento retira a prévia e impede novas publicações até restauração.
 
-Não há exclusão física por API, edição de versão publicada ou sobrescrita global de fonte atribuída ao histórico. Retenção/limpeza de registros desativados e órfãos é uma decisão operacional posterior. Arquivamento editorial não define política de direitos de compra; ofertas/carrinho estão implementados, enquanto pedidos, direitos e biblioteca permanecem futuros.
+Não há exclusão física por API, edição de versão publicada ou sobrescrita global de fonte atribuída ao histórico. Retenção/limpeza de registros desativados e órfãos é uma decisão operacional posterior. Arquivamento editorial não define política de direitos de compra; ofertas/carrinho estão implementados, e pedidos, direitos e biblioteca estão implementados em A14/A15.
 
 ## Contratos REST implementados
 
@@ -75,10 +75,14 @@ Os testes verificam CRUD lógico, classificação múltipla nos sete eixos, FKs/
 
 Há testes de formulário, carregamento, conflito, campos acessíveis, publicação somente do conteúdo salvo, teclado e responsividade. A integração usa MySQL real e navegador, preservando os testes anteriores. Resultados executados devem ser distinguidos da validação científica das metodologias.
 
-Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. A busca gratuita está implementada em recorte próprio; ofertas/preços/carrinho estão implementados e direitos, pedidos, biblioteca e pagamentos permanecem futuros; IA/RAG permanece integralmente fora do MVP.
+Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. A busca gratuita está implementada em recorte próprio; ofertas/preços/carrinho estão implementados e direitos, pedidos e biblioteca estão implementados em A14/A15; pagamentos permanecem fora do escopo; IA/RAG permanece integralmente fora do MVP.
 
 ### Resultados experimentais
 
 A validação automatizada executada aprovou 65 testes de unidade/contrato do backend, 36 testes de componentes e rotas React, 13 regressões de navegador e 12 jornadas com API e MySQL reais. As jornadas verificaram criação, edição, publicação, leitura imutável, autorização, navegação por teclado e formulário em largura de 320 px.
 
 A integração com MySQL 8.4 aprovou CRUD, os sete relacionamentos múltiplos, restrições referenciais, conflitos de revisão, publicação incompleta, imutabilidade e isolamento do procedimento. As 28 migrações de estrutura foram aplicadas e executadas novamente sem reaplicação. Instalação limpa, builds, análise estática e auditorias completas/de produção foram aprovados, com zero vulnerabilidades reportadas. Esses resultados demonstram comportamento do software com fixtures sintéticas; não constituem validação científica de métodos nem comprovação de direitos sobre fontes reais.
+
+## Disponibilidade de versões publicadas
+
+[Biblioteca digital](BIBLIOTECA-DIGITAL.md) acrescenta PATCH /admin/versions/:id/access, com ADMIN, CSRF, expectedRevision, estado e justificativa obrigatória. Suspensão/restauração e evento são atômicos; conteúdo, fontes e revisão editorial original não são alterados. Restauração não aprova condições de fontes pendentes. O controle está disponível em /admin para versões publicadas e históricas.

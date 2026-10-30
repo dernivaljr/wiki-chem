@@ -25,7 +25,7 @@ describe('checkout demonstrativo integrado aos contratos HTTP', () => {
     expect(confirm).toBeDisabled(); expect(completed).toBe(false)
     await userEvent.click(screen.getByRole('checkbox')); await userEvent.click(confirm)
     expect(await screen.findByRole('heading', { name: 'Aquisição simulada concluída' })).toBeInTheDocument()
-    expect(screen.getByText(/A leitura pela biblioteca ainda não está disponível/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ler DEMO original na minha biblioteca' })).toHaveAttribute('href', '/biblioteca/10')
   })
   it('recupera confirmação de resposta perdida por consulta, sem outra operação de escrita', async () => {
     let completed = false, writes = 0

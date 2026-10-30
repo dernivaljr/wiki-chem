@@ -13,7 +13,7 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 | Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
 | Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada; ofertas e preços quando cadastrados, carrinho autenticado |
 | Ofertas, histórico imutável de preços BRL e carrinho por usuário | Valores comerciais reais exigem definição |
-| Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; leitura integral da biblioteca fica para a próxima etapa |
+| Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; biblioteca integral autenticada está implementada |
 | Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem somente nas suítes de teste |
 
 A identidade visual React foi preservada. /consultas pesquisa prévias por texto e sete filtros; /metodologias/:id apresenta detalhes gratuitos. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
@@ -167,12 +167,16 @@ Projeto licenciado sob a [GNU GPL v2](LICENSE).
 
 Selecione uma metodologia em /admin e abra “Gerenciar oferta e preços”. Crie produto inativo, cadastre preço em centavos BRL e ative somente após publicação revisada. Novo preço preserva o histórico; arquivamento desativa a oferta e restauração exige ativação explícita. A pesquisa funciona sem produto/preço.
 
-Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. O checkout demonstrativo cria revisão e exige confirmação explícita, com pedidos e direitos persistidos. Não libera leitura integral da biblioteca. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
+Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. O checkout demonstrativo cria revisão e exige confirmação explícita, com pedidos e direitos persistidos. A leitura integral depende de autorização na biblioteca. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
 
 ## Checkout demonstrativo
 
-Em /carrinho, avance para criar pedido pendente; /checkout/:id exibe snapshots, prazo e aceite obrigatório. Confirme ou cancele explicitamente. /pedidos e /pedidos/:id consultam registros persistidos. Todas as etapas identificam DEMONSTRAÇÃO — SEM COBRANÇA. Não existe pagamento real ou biblioteca integral.
+Em /carrinho, avance para criar pedido pendente; /checkout/:id exibe snapshots, prazo e aceite obrigatório. Confirme ou cancele explicitamente. /pedidos e /pedidos/:id consultam registros persistidos. Todas as etapas identificam DEMONSTRAÇÃO — SEM COBRANÇA. Não existe pagamento real; a leitura autorizada está disponível em /biblioteca.
 
 CHECKOUT_TTL_SECONDS=900 (5–3600) e CHECKOUT_RATE_LIMIT_MAX=60 definem prazo e mutações/minuto por usuário. Copie somente nomes/defaults seguros do exemplo de ambiente. As migrações continuam pelo comando db:migrate e conta operacional; a API não executa DDL. CREATE TRIGGER com BEGIN/END é um statement SQL, sem DELIMITER no arquivo e sem habilitar multipleStatements.
 
 Os comandos existentes install:clean, build, lint, test, test:integration, test:e2e, test:auth, audit:deps e audit:prod verificam o incremento. Integração/navegador exigem banco descartável e credenciais operacionais conforme seção de testes. Falhas e relógio de checkout são injetados somente por composição dos testes, sem flags HTTP de produção. Nenhuma fixture comercial é carregada pela aplicação. [Regras e contratos](docs/arquitetura/CHECKOUT-DEMONSTRATIVO.md).
+
+## Biblioteca digital
+
+/biblioteca lista aquisições e /biblioteca/:methodologyId consulta a versão publicada atual, com seleção explícita de histórico elegível. Direito próprio ACTIVE e condições de fontes são verificados no backend em cada leitura; ADMIN não recebe acesso de cliente sem aquisição. Suspensão/restauração por versão exige justificativa em /admin, com revisão concorrente e auditoria. Execute db:migrate pela conta operacional para aplicar a migração 0048 antes de utilizar o novo controle editorial. Os comandos de testes existentes incluem biblioteca, navegador integrado e inspeção de ativos de produção. [Regras e contratos](docs/arquitetura/BIBLIOTECA-DIGITAL.md).

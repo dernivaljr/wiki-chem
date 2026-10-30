@@ -23,7 +23,7 @@ const methodDto = (row: Row): Methodology => ({
 const iso = (value: string | null): string | null => value === null ? null : new Date(value.replace(' ', 'T') + (value.endsWith('Z') ? '' : 'Z')).toISOString()
 const summary = (row: Row) => ({
   id: String(row.id), methodologyId: String(row.methodology_id), versionLabel: row.version_label, title: row.title,
-  editorialStatus: row.editorial_status as Version['editorialStatus'], revision: Number(row.revision),
+  editorialStatus: row.editorial_status as Version['editorialStatus'], accessState: row.access_state as Version['accessState'], revision: Number(row.revision),
   publishedAt: iso(row.published_at), reviewedBy: row.reviewed_by === null ? null : String(row.reviewed_by),
   reviewedAt: iso(row.reviewed_at), reviewedRevision: row.reviewed_revision === null ? null : Number(row.reviewed_revision),
   reviewNote: row.review_note as string | null,
@@ -324,6 +324,24 @@ export function createCatalogRepository(pool: Pool) {
         await db.execute('UPDATE products SET revision = revision + 1, updated_at = UTC_TIMESTAMP(6) WHERE methodology_id = ?', [String(method.id)])
         await audit(db, actor, 'VERSION_PUBLISHED', 'version', id)
         return { ...summary(await versionRow(db, id)), ...editor }
+      })
+    },
+    async setVersionAccess(id: string, input: { expectedRevision: number; accessState: 'ALLOWED' | 'SUSPENDED'; reason: string }, actor: Actor): Promise<Version> {
+      return write(actor, async db => {
+        const initial = await versionRow(db, id)
+        await methodRow(db, String(initial.methodology_id), true)
+        const row = await versionRow(db, id, true)
+        sameRevision(row, input.expectedRevision)
+        if (row.editorial_status === 'DRAFT' || !row.published_at) throw new AppError(409, 'VERSION_NOT_PUBLISHED', 'O controle de acesso se aplica somente a versões publicadas.')
+        if (row.access_state === input.accessState) throw new AppError(409, 'ACCESS_STATE_UNCHANGED', 'A versão já possui esse estado. Recarregue antes de continuar.')
+        if (Number(row.revision) >= 2147483647) throw new AppError(409, 'REVISION_LIMIT', 'Limite técnico de revisões atingido.')
+        // Restaurar não altera permissões de fontes nem equivale a revisão nova.
+        await db.execute('UPDATE methodology_versions SET access_state = ?, revision = revision + 1 WHERE id = ?', [input.accessState, id])
+        await db.execute('UPDATE products SET revision = revision + 1, updated_at = UTC_TIMESTAMP(6) WHERE methodology_id = ?', [String(row.methodology_id)])
+        await db.execute('INSERT INTO version_access_events (version_id, actor_user_id, previous_state, access_state, reason, resulting_revision, request_id, occurred_at) VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(6))', [id, actor.userId, row.access_state, input.accessState, input.reason, Number(row.revision) + 1, actor.requestId])
+        await audit(db, actor, input.accessState === 'SUSPENDED' ? 'VERSION_SUSPENDED' : 'VERSION_RESTORED', 'version', id)
+        const updated = await versionRow(db, id)
+        return { ...summary(updated), ...await readEditor(db, updated) }
       })
     },
     async search(query: SearchQuery, userId?: string) {

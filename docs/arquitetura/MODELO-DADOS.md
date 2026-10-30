@@ -1,10 +1,10 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; orders, order_items, entitlements e idempotency_records estão implementadas, com snapshots imutáveis e concessão transacional. Biblioteca integral permanece futura. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A14 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
+**Estado:** modelo relacional implementado no recorte demonstrativo; políticas comerciais definitivas pendentes. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. products, product_prices, carts e cart_items estão implementadas; orders, order_items, entitlements e idempotency_records estão implementadas, com snapshots imutáveis e concessão transacional. Biblioteca integral está implementada em A15. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A15 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
-MySQL relacional, mecanismo transacional com FKs, datas UTC e migrações versionadas na implementação futura. Proposta: PKs BIGINT UNSIGNED, serializadas como strings na API; nomes abaixo são lógicos. MySQL 8.4, mysql2/promise e migrações SQL controladas são decisões adotadas. Colações, tipos e constraints dos futuros agregados serão detalhados nas migrações correspondentes.
+MySQL relacional, mecanismo transacional com FKs, datas UTC e migrações versionadas implementadas. PKs BIGINT UNSIGNED, serializadas como strings na API; nomes abaixo são lógicos. MySQL 8.4, mysql2/promise e migrações SQL controladas são decisões adotadas. Colações, tipos e constraints dos agregados atuais estão definidos nas migrações versionadas.
 
 Valores monetários em BIGINT de centavos e currency fixa BRL, serializados como strings decimais para evitar perda de precisão em JavaScript. Soma/cálculo no servidor com aritmética inteira e validação de overflow. Proposta de ofertas MVP: valor positivo, sem descontos/quantidade variável; gratuidade/faixa e preços reais dependem de V05. Os valores FX01–FX05 em [ECOMMERCE](ECOMMERCE.md) são apenas fixtures monetárias de desenvolvimento, sem vincular preços às candidatas reais. A fundação não carrega dados de catálogo.
 
@@ -57,6 +57,8 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 erDiagram
   METHODOLOGIES ||--o{ METHODOLOGY_VERSIONS : versiona
   METHODOLOGY_VERSIONS ||--o| METHODOLOGY_CONTENTS : separa
+  METHODOLOGY_VERSIONS ||--o{ VERSION_ACCESS_EVENTS : registra
+  USERS ||--o{ VERSION_ACCESS_EVENTS : justifica
   METHODOLOGY_VERSIONS ||--o{ VERSION_SOURCES : documenta
   SOURCES ||--o{ VERSION_SOURCES : referencia
   METHODOLOGY_VERSIONS ||--o{ VERSION_CONTRIBUTIONS : registra
@@ -122,7 +124,7 @@ Deprecar termo impede novas seleções, mas preserva vínculos históricos. Alte
 
 ## 5. Invariantes de integridade
 
-| ID | Invariante e evidência futura necessária |
+| ID | Invariante e critério de verificação |
 | --- | --- |
 | MD01 | E-mail normalizado único e papel de registro sempre cliente; concorrência de dois cadastros não duplica conta |
 | MD02 | Somente versão própria, completa e com origens autorizadas pode ser publicada com revisão explícita registrada na mesma transação; rascunho incompleto ou revisão concorrente divergente falha; versão/sources/taxonomias históricas não são sobrescritas |
@@ -162,4 +164,8 @@ Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADM
 
 ## Esquema implementado de pedidos e direitos
 
-As migrações 0036–0047 acrescentam as quatro tabelas e oito triggers, totalizando 47 migrações SQL. [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md) detalha colunas efetivas, FKs compostas de propriedade/origem, checks, unicidade e fronteiras transacionais. ID, título, versão e preço do item nunca são recalculados a partir do catálogo. O direito referencia usuário/metodologia/item original; não recebe version_id. ACTIVE e REVOKED são persistidos, sem API de revogação neste recorte. Atualizações futuras de catálogo não alteram pedido nem direito. MD04–MD09 têm cobertura de aquisição demonstrativa; autorização de leitura de versões e políticas de retenção continuam futuras.
+As migrações 0036–0047 acrescentam as quatro tabelas e oito triggers, totalizando 47 migrações SQL. [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md) detalha colunas efetivas, FKs compostas de propriedade/origem, checks, unicidade e fronteiras transacionais. ID, título, versão e preço do item nunca são recalculados a partir do catálogo. O direito referencia usuário/metodologia/item original; não recebe version_id. ACTIVE e REVOKED são persistidos, sem API de revogação neste recorte. Atualizações futuras de catálogo não alteram pedido nem direito. MD04–MD09 têm cobertura de aquisição demonstrativa; autorização de leitura está implementada em A15; políticas de retenção continuam pendentes.
+
+## Biblioteca e disponibilidade editorial implementadas
+
+O recorte A15 reutiliza direitos e itens históricos para leitura integral autorizada, conforme [Biblioteca digital](BIBLIOTECA-DIGITAL.md). A migração 0048 acrescenta version_access_events: versão/administrador, estado anterior/novo, justificativa, revisão resultante, requestId e data, com FKs e índice por versão/ID. São 48 migrações no esquema. A biblioteca não cria direitos e não altera snapshots. Retirada de venda/arquivamento preserva direitos; suspensão da versão, fonte não permitida ou revogação do direito bloqueiam leitura. Política comercial definitiva e retenção continuam pendentes.

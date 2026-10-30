@@ -1,10 +1,10 @@
 # Roadmap de implementação proposto — MVP Wiki-Chem
 
-**Estado:** planejamento incremental do MVP; infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; confirmação, pedidos, histórico e registro de direitos implementados; biblioteca integral pendente. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
+**Estado:** planejamento incremental do MVP; infraestrutura, identidade, catálogo editorial e pesquisa implementados; ofertas/preços/carrinho implementados; confirmação, pedidos, histórico e registro de direitos implementados; biblioteca integral implementada em A15. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
 
 ## 1. Método incremental e estado
 
-O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; catálogo editorial e pesquisa estão implementados; ofertas/preços/carrinho estão implementados e checkout, pedidos, histórico e registro de direitos estão implementados; leitura integral da biblioteca permanece planejada.
+O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; catálogo editorial e pesquisa estão implementados; ofertas/preços/carrinho estão implementados e checkout, pedidos, histórico e registro de direitos estão implementados; leitura integral da biblioteca está implementada em A15.
 
 P03, candidatas C01–C05, permissões de conteúdo e preços comerciais continuam em validação. As tecnologias da fundação foram adotadas conforme A09. Fixtures FX01–FX05 estão isoladas nas suítes comerciais, bloqueadas em produção e não carregadas automaticamente.
 
@@ -107,7 +107,7 @@ O recorte proposto tem cinco candidatas reais, com sete eixos exemplificados na 
 | Tarefa | Situação | Artefatos e evidência de aceitação |
 | --- | --- | --- |
 | I00.01/02 | Parcial | A09 resolve tecnologias; decisões de negócio e formalização SDD permanecem explícitas |
-| I01.01 | Parcial | Contratos Zod de saúde, identidade e perfil; DTOs editoriais, ofertas e carrinho implementados; contratos de pedidos/direitos planejados |
+| I01.01 | Parcial | Contratos Zod de saúde, identidade e perfil; DTOs editoriais, ofertas e carrinho implementados; contratos de checkout/pedidos/biblioteca implementados |
 | I01.02 | Implementada no recorte autorizado | backend/src/: rota/serviço/repositório, requestId, pool, validação e proxy; testes de unidade/contrato/MySQL |
 | I01.03 | Parcial | Migração controlada e teste de falha DDL; backup/restauração e implantação em V08 |
 | I01.04 | Implementado no recorte A13 | FX01–FX05 originais em testes, bloqueadas em produção, com somas verificáveis; nenhuma semente comercial real |
@@ -115,16 +115,20 @@ O recorte proposto tem cinco candidatas reais, com sete eixos exemplificados na 
 | I04–I06 | Implementados no recorte A11 | Taxonomias N:N, rascunhos, conteúdo separado, fontes/autoria, revisão e publicação; vocabulário e permissões reais continuam pendentes |
 | I08 | Implementado no recorte A12/A13 | Texto, sete filtros, prévias, URL, paginação e oferta/preço quando cadastrados |
 | I07/I09 | Implementados no recorte A13 | Produto/preço BRL, imutabilidade, disponibilidade e carrinho persistente por usuário, sem direito adquirido |
-| I10–I13 | Pendentes | Confirmação demonstrativa, pedidos, direitos, biblioteca e liberação demonstrativa |
+| I10/I11 | Implementados em A14 | Checkout demonstrativo em duas transações, pedidos, direitos e histórico |
+| I12 | Implementado em A15 | Biblioteca própria, versões elegíveis e leitura integral; suspensão/restauração auditadas |
+| I13 | Parcial | Jornada funcional demonstrativa automatizada; curadoria real, condições de fontes, implantação e consolidação acadêmica ainda pendentes |
 
-A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04–RF06 têm pesquisa real no recorte A12, descrita em [Pesquisa de metodologias](../arquitetura/PESQUISA-METODOLOGIAS.md). Apresentação com respostas controladas não substitui integração real. [Catálogo editorial](../arquitetura/CATALOGO-EDITORIAL.md) acrescenta os critérios estruturais/editoriais de RF05/08/15/17 e MD02/08. RF07 recebe apresentação comercial no recorte A13, descrita em [Ofertas e carrinho](../arquitetura/OFERTAS-CARRINHO.md). Aquisição demonstrativa e direitos registrados estão implementados em A14, conforme [Checkout demonstrativo](../arquitetura/CHECKOUT-DEMONSTRATIVO.md). Biblioteca integral permanece futura; ofertas não bloqueiam a pesquisa editorial.
+A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04–RF06 têm pesquisa real no recorte A12, descrita em [Pesquisa de metodologias](../arquitetura/PESQUISA-METODOLOGIAS.md). Apresentação com respostas controladas não substitui integração real. [Catálogo editorial](../arquitetura/CATALOGO-EDITORIAL.md) acrescenta os critérios estruturais/editoriais de RF05/08/15/17 e MD02/08. RF07 recebe apresentação comercial no recorte A13, descrita em [Ofertas e carrinho](../arquitetura/OFERTAS-CARRINHO.md). Aquisição demonstrativa e direitos registrados estão implementados em A14, conforme [Checkout demonstrativo](../arquitetura/CHECKOUT-DEMONSTRATIVO.md). Biblioteca integral está implementada em A15; ofertas não bloqueiam a pesquisa editorial.
 
 ## 7. Evolução posterior
 
 Somente após plataforma funcional: avaliar pacotes/assinaturas, pagamentos reais e outros recursos comerciais em especificações próprias, sem mudar silenciosamente a proposta de atualizações incluídas P03. IA/RAG permanece integralmente fora do MVP e de todas as decisões/dependências técnicas deste roadmap. Eventual estudo posterior exige escopo próprio para viabilidade, custo, qualidade, rastreabilidade e permissões; não selecionar provedores, SDKs, embeddings ou banco vetorial agora.
 
-## Próximo incremento: biblioteca autorizada
+## Biblioteca autorizada e próximo incremento
 
-I10/I11 e a parcela de I12.02 referente ao histórico estão implementados no recorte A14. A execução de I12 deve ocorrer em passos pequenos: (1) consulta de direitos ACTIVE do titular; (2) listagem segura de biblioteca sem procedimento; (3) resolução de versão atual/histórica publicada da mesma metodologia; (4) endpoint integral com autorização por acesso e condições de fonte; (5) interface responsiva e estados indisponível/suspenso/revogado; (6) testes MySQL e navegador de isolamento, original/atualizações, fontes e não exposição. Nenhuma etapa assume publicação comercial aprovada. Decisões V03/V06 e curadoria permanecem explícitas; IA/RAG fica fora das dependências.
+I10/I11 e histórico estão implementados em A14; I12 está implementado em A15. O próximo incremento deve consolidar testes de aceitação, curadoria e condições de fontes, limitações, requisitos não funcionais e evidências acadêmicas do sistema. Não pressupor relatório final, hospedagem pública ou nova funcionalidade sem escopo aprovado. Condições comerciais V03/V06 e curadoria permanecem pendentes; IA/RAG fica fora das dependências.
 
-A aquisição demonstrativa foi verificada por 30 novos cenários MySQL e quatro jornadas de navegador integradas. A suíte consolidada tem 361 testes aprovados (95 backend, 86 frontend, 144 MySQL, 13 navegador de apresentação e 23 navegador integrado). Migrações iniciais/repetidas, build, análise estática e auditorias de dependências foram aprovados; nenhuma vulnerabilidade foi detectada. Isso não encerra RF14 nem valida corpus científico ou política comercial.
+A aquisição demonstrativa foi verificada por 30 novos cenários MySQL e quatro jornadas de navegador integradas. O recorte de aquisição A14 foi verificado por 361 testes (95 backend, 86 frontend, 144 MySQL, 13 navegador de apresentação e 23 navegador integrado). Migrações iniciais/repetidas, build, análise estática e auditorias de dependências foram aprovados; nenhuma vulnerabilidade foi detectada. RF14 está implementado em A15, com evidências próprias; nenhum resultado valida corpus científico ou política comercial.
+
+A biblioteca A15 completa o percurso funcional de aquisição e leitura demonstrativa, com 15 cenários adicionais MySQL e quatro jornadas integradas. A verificação consolidada atual aprovou 396 testes (98 backend, 98 frontend, 159 MySQL, 14 navegador de apresentação/ativos e 27 navegador integrado), além de 48 migrações, instalação limpa, build, análise estática e auditorias sem vulnerabilidades detectadas. O próximo incremento deve consolidar aceitação, curadoria, requisitos não funcionais e evidências acadêmicas; não pressupõe liberação comercial, hospedagem ou funcionalidades adicionais.
