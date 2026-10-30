@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém somente controle de migrações; nenhuma entidade de negócio foi migrada. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A09 orientam o escopo; P01–P09/V01–V10 ainda requerem aprovação.
+**Estado:** modelo de negócio planejado. O esquema implementado contém ledger, users e auth_sessions; demais entidades são planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A10 orientam o escopo; P03/P09 e demais decisões comerciais/editoriais continuam pendentes; identidade mínima está adotada em A10.
 
 ## 1. Convenções e limites
 
@@ -37,8 +37,8 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 
 | Entidade | Campos essenciais propostos | Chaves/regras |
 | --- | --- | --- |
-| `users` | id, display_name, email_normalized, password_hash, role, status, created_at, updated_at | UNIQUE(email_normalized); role CUSTOMER/ADMIN; status ACTIVE/BLOCKED; cliente não edita papel |
-| `auth_sessions` | id, user_id, token_hash, csrf_token interno, issued_at, last_seen_at, expires_at, revoked_at | UNIQUE(token_hash); FK user; token de autenticação original não armazenado; CSRF associado à sessão e nunca em logs; inatividade/absoluto conforme V06 |
+| `users` | id, display_name, email_normalized, password_hash, role, status, provisioned_by nullable, created_at, updated_at | UNIQUE(email_normalized); role CUSTOMER/ADMIN; status ACTIVE/BLOCKED; cliente não edita papel |
+| `auth_sessions` | id, user_id, token_hash, issued_at, last_seen_at, expires_at, revoked_at | UNIQUE(token_hash); FK user; token de autenticação original não armazenado; CSRF derivado por HMAC do segredo da sessão, sem persistência em claro; prazos em [Identidade](IDENTIDADE.md) |
 | `carts` | id, user_id, revision, created_at, updated_at | UNIQUE(user_id); um carrinho reutilizável por usuário; revision incrementa em alteração efetiva |
 | `cart_items` | cart_id, product_id, added_at | PK(cart_id, product_id); quantidade implicitamente um; sem preço confiado ao cliente |
 | `products` | id, methodology_id, active, current_price_id nullable, revision, created_at, updated_at | UNIQUE(methodology_id); ponteiro de preço deve pertencer ao próprio produto; inativo até oferta válida |
@@ -148,4 +148,6 @@ P03/V03: direito metodológico com histórico/atualizações e duração; P04/V0
 
 ## 8. Esquema físico implementado
 
-A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. As entidades e diagramas anteriores descrevem o destino do MVP, não tabelas existentes.
+A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users e auth_sessions estão migradas. Entidades de catálogo/comércio descrevem o destino do MVP, não tabelas existentes.
+
+Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADMIN, estado ACTIVE/BLOCKED, token_hash único, FK restritiva e timestamps UTC. provisioned_by registra o responsável pelo bootstrap. Hash Argon2id contém salt/parâmetros, sem senha em claro; token original e CSRF não são persistidos. Detalhes em [Identidade](IDENTIDADE.md).

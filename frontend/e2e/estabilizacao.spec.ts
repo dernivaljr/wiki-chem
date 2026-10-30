@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test'
 
+// Respostas controladas somente para regressão visual; auth.spec.ts testa identidade real.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/v1/auth/session', route => {
+    const ref = route.request().headers().referer ?? ''
+    const protectedPage = new URL(ref || 'http://127.0.0.1').pathname === '/consultas'
+    return route.fulfill({ status: protectedPage ? 200 : 401, contentType: 'application/json', body: JSON.stringify(protectedPage
+      ? { data: { user: { id: '1', displayName: 'Fixture visual', email: 'visual@example.test', role: 'CUSTOMER', status: 'ACTIVE' }, csrfToken: 'a'.repeat(64), expiresAt: new Date(Date.now() + 600000).toISOString() } }
+      : { error: { code: 'SESSION_REQUIRED', message: 'Entre novamente.' } }) })
+  })
+})
+
 const routes = ['/', '/sobre', '/login', '/consultas']
 
 for (const width of [320, 375, 480, 481, 600, 601, 700, 701, 768, 1280]) {
@@ -47,14 +58,15 @@ test('links e CTA navegam entre as páginas existentes', async ({ page }) => {
   await page.getByRole('link', { name: 'Explorar conteúdos' }).click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
-  // Não submete o formulário: o redirecionamento simulado não é autenticação.
+  // Este caso cobre navegação; a autenticação real é exercitada na suíte integrada.
 })
 
 test('campo de consulta tem realce de foco ao navegar por teclado', async ({ page }) => {
   await page.goto('/consultas')
-  await page.getByRole('tab', { name: 'Conceitos', exact: true }).focus()
-  await page.keyboard.press('Tab')
   const input = page.getByRole('searchbox', { name: 'Termo de consulta' })
+  await input.focus()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
   await expect(input).toBeFocused()
 
   const focus = await input.evaluate(element => {

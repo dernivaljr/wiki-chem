@@ -1,8 +1,18 @@
+import { useState } from 'react'
+import { useAuth } from '../../auth/AuthContext'
 import wikiChemSymbol from '../../assets/wiki-chem-symbol.png'
 import './Header.css'
 import { NavLink } from 'react-router-dom'
 
 function Header() {
+  const auth = useAuth()
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState('')
+  async function logout() {
+    setPending(true); setError('')
+    try { await auth.logout() } catch (error) { setError(error instanceof Error ? error.message : 'Não foi possível sair.') }
+    finally { setPending(false) }
+  }
   return (
     <header className="header">
       <div className="header__container">
@@ -29,8 +39,13 @@ function Header() {
         <nav className="header__nav" aria-label="Navegação principal">
           <NavLink to="/">Home</NavLink>
           <NavLink to="/sobre">Sobre</NavLink>
-          <NavLink className="header__login" to="/login">Entrar <span aria-hidden="true">→</span></NavLink>
+          {auth.user ? <>
+            <NavLink to="/consultas">Consultas</NavLink>
+            <NavLink to="/perfil">Perfil</NavLink>
+            <button className="header__login" type="button" disabled={pending} onClick={() => { void logout() }}>{pending ? 'Saindo…' : 'Sair'}</button>
+          </> : <NavLink className="header__login" to="/login">Entrar <span aria-hidden="true">→</span></NavLink>}
         </nav>
+        {error && <p className="header__error" role="alert">{error}</p>}
       </div>
     </header>
   )

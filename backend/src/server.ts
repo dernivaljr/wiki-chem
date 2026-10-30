@@ -1,3 +1,4 @@
+import { createIdentityRepository } from './modules/identity/identity.repository.js'
 import { buildApp } from './app.js'
 import { ConfigurationError, loadConfig } from './config/env.js'
 import { createDatabasePool } from './database/pool.js'
@@ -7,6 +8,7 @@ async function main() {
   const config = loadConfig(process.env)
   const pool = createDatabasePool(config)
   const app = buildApp(config, {
+    identity: createIdentityRepository(pool),
     checkDatabase: createHealthRepository(pool, config.DB_TIMEOUT_MS).checkDatabase,
     closeDatabase: () => pool.end(),
   })

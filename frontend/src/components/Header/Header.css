@@ -139,3 +139,9 @@
     gap: 24px;
   }
 }
+
+.header__container { height: auto; min-height: var(--header-height); padding-block: 12px; gap: 12px; flex-wrap: wrap; }
+.header__nav { flex-wrap: wrap; gap: 16px; max-width: 100%; }
+.header__nav button { border: 0; cursor: pointer; font-family: inherit; }
+.header__error { width: 100%; color: #a32121; font-size: .85rem; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .header__nav { gap: 12px; } .header__nav a { font-size: .82rem; } }

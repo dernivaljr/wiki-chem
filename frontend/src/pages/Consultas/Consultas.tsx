@@ -8,7 +8,7 @@ function Consultas() {
         <div className="consultas__heading">
           <p className="consultas__eyebrow">ÁREA DE CONSULTA</p>
           <h1 id="consultas-title">Olá, que descoberta vamos fazer hoje?</h1>
-          <p>Pesquise na base de conhecimento do Wiki-Chem e encontre o conteúdo que precisa.</p>
+          <p>Sua conta está ativa. A pesquisa será disponibilizada em um próximo incremento.</p>
         </div>
 
         <div className="consultas__search-panel">
@@ -20,18 +20,18 @@ function Consultas() {
             <span className="consultas__counter">CONSULTA 01</span>
           </div>
 
-          <div className="consultas__segments" role="tablist" aria-label="Categorias de consulta">
-            <button className="is-active" type="button" role="tab" aria-selected="true"><Atom size={20} />Substâncias</button>
-            <button type="button" role="tab" aria-selected="false"><FlaskConical size={20} />Técnicas</button>
-            <button type="button" role="tab" aria-selected="false"><BookOpen size={20} />Conceitos</button>
+          <div className="consultas__segments" role="group" aria-label="Categorias de consulta indisponíveis">
+            <button className="is-active" type="button" disabled><Atom size={20} />Substâncias</button>
+            <button type="button" disabled><FlaskConical size={20} />Técnicas</button>
+            <button type="button" disabled><BookOpen size={20} />Conceitos</button>
           </div>
 
           <div className="consultas__input">
             <Search size={22} aria-hidden="true" />
-            <input type="search" placeholder="Digite um nome, fórmula ou palavra-chave" aria-label="Termo de consulta" />
-            <button type="button">Pesquisar</button>
+            <input aria-describedby="search-unavailable" type="search" placeholder="Digite um nome, fórmula ou palavra-chave" aria-label="Termo de consulta" />
+            <button type="button" disabled>Pesquisar — indisponível</button>
           </div>
-          <p className="consultas__suggestions">Sugestões populares: ácido acético · titulação · pH</p>
+          <p className="consultas__suggestions" id="search-unavailable">Pesquisa e filtros ainda indisponíveis. Nenhuma consulta é executada nesta etapa.</p>
         </div>
       </section>
     </main>

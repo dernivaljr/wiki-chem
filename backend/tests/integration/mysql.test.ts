@@ -15,7 +15,7 @@ if (config.NODE_ENV !== 'test' || !/^wikichem_test_[a-z0-9_]+$/.test(config.DB_N
 }
 const pool: Pool = createDatabasePool(config)
 const apps: FastifyInstance[] = []
-const baseline = await loadMigrations()
+const baseline = (await loadMigrations()).slice(0, 1)
 const lockName = 'wikichem:migrate:' + createHash('sha256').update(config.DB_NAME).digest('hex').slice(0, 40)
 
 function migration(version: string, sql: string): Migration {
@@ -34,8 +34,10 @@ beforeAll(async () => {
   const version = await rows('SELECT VERSION() AS version')
   expect(version[0]?.version).toMatch(/^8\.4\./)
   const tables = await rows('SELECT TABLE_NAME AS name FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()')
-  if (tables.some(row => row.name !== 'schema_migrations')) throw new Error('Banco de testes contém tabelas inesperadas; limpeza recusada.')
+  if (tables.some(row => !['schema_migrations', 'auth_sessions', 'users'].includes(row.name))) throw new Error('Banco de testes contém tabelas inesperadas; limpeza recusada.')
   // Limpeza restrita ao ledger no banco exclusivo, após a verificação acima.
+  await pool.query('DROP TABLE IF EXISTS auth_sessions')
+  await pool.query('DROP TABLE IF EXISTS users')
   await pool.query('DROP TABLE IF EXISTS schema_migrations')
 }, 30000)
 afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())) })

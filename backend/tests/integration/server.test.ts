@@ -72,3 +72,20 @@ it('recusa ambiente inválido sem expor valor de segredo', async () => {
   expect(output).toContain('DB_PASSWORD')
   expect(output).not.toContain('bad-secret-value')
 })
+
+it.each([
+  { enabled: 'false', args: [] },
+  { enabled: 'true', args: [] },
+  { enabled: 'true', args: ['--password', 'fixture-secret-never-accepted'] },
+])('bootstrap recusa execução sem terminal seguro: %j', async ({ enabled, args }) => {
+  const command = fileURLToPath(new URL('../../dist/commands/bootstrap-admin.js', import.meta.url))
+  const invalid = spawn(process.execPath, [command, ...args], {
+    env: { ...process.env, ADMIN_BOOTSTRAP_ENABLED: enabled }, stdio: ['ignore', 'ignore', 'pipe'],
+  })
+  let output = ''
+  invalid.stderr.on('data', chunk => { output += String(chunk) })
+  const [code] = await once(invalid, 'exit')
+  expect(code).toBe(1)
+  expect(output).toContain('terminal interativo')
+  expect(output).not.toContain('fixture-secret-never-accepted')
+})

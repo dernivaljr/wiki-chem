@@ -1,6 +1,6 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** requisitos do MVP e propostas de produto em validação. A fundação técnica está implementada; identidade, catálogo e comércio permanecem planejados.
+**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura e identidade estão implementadas; catálogo, pesquisa efetiva e comércio permanecem planejados.
 
 ## 1. Contexto e metodologia
 
@@ -8,7 +8,7 @@ O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenhar
 
 A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa somente saúde, validação, erros e migrações de infraestrutura. Login/cadastro e consulta da interface continuam simulados; não há persistência de usuários, catálogo ou pedidos.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas e /perfil exigem sessão; pesquisa/filtros estão identificados como indisponíveis. Não há catálogo ou pedidos.
 
 Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
@@ -27,12 +27,13 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | A07 | IA/RAG, provedores, pacotes, assinaturas e pagamentos reais fora do MVP |
 | A08 | Implementação incremental: a fundação não antecipa identidade, catálogo ou comércio; distinguir requisitos e propostas |
 | A09 | Fundação adotada: Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4, mysql2/promise, SQL parametrizado, migrações SQL controladas e Vitest |
+| A10 | Identidade real autorizada: Argon2id, sessão opaca revogável, CSRF, perfil próprio e bootstrap operacional seguro; recuperação, e-mail verificado e publicação comercial fora do incremento |
 
-### Propostas transversais
+### Propostas transversais e adoções identificadas
 
-| ID | Proposta (P), ainda sujeita à aprovação |
+| ID | Proposta (P), com adoção explicitada quando aplicável |
 | --- | --- |
-| P01 | Dois papéis: cliente e administrador; sessão opaca revogável no servidor, cookie seguro e proteção CSRF |
+| P01 | Adotada no recorte de A10: CUSTOMER/ADMIN, sessão opaca revogável, cookie seguro e CSRF; políticas em [Identidade](../arquitetura/IDENTIDADE.md) |
 | P02 | AND entre facetas e OR entre valores da mesma faceta; busca somente em informações de prévia |
 | P03 | Aquisição por metodologia: direito ativo permite a versão original, o histórico publicado e novas atualizações publicadas da mesma metodologia, sem recompra; versão/preço originais permanecem no pedido. Política proposta, pendente de V03 |
 | P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
@@ -42,7 +43,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
 | P09 | Administração editorial mínima por um administrador: salvar rascunho e publicar com revisão explícita registrada; sem etapas intermediárias ou papéis editoriais adicionais obrigatórios. Autoria, fontes, permissões e proteção continuam exigidas; validar em V09 |
 
-As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
+As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. P01 e o recorte de perfil de P08 foram adotados em A10; propostas comerciais/editoriais não são aprovadas por essa adoção. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
 
 ## 3. Objetivo, usuários e limite do MVP
 
@@ -162,8 +163,8 @@ MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por 
 | V03 | Aprovar P03: aquisição por metodologia, original/histórico/atualizações publicadas sem recompra; duração, limites, suspensão e critérios para distinguir atualização de metodologia realmente distinta continuam pendentes | Produto + curadoria/responsável por condições de uso; antes de biblioteca/compra |
 | V04 | Rejeição integral de repetição, prévia/expiração/cancelamento, preço alterado e preservação do carrinho | Produto; antes de checkout |
 | V05 | Preços reais, responsável, faixa/gratuidade e condições de oferta; FX01–FX05 são valores fictícios isolados de desenvolvimento e não decidem política comercial | Responsável comercial; antes de ativar produto real; nenhum preço final proposto |
-| V06 | Campos do perfil, política de senha/sessão, recuperação, verificação/mudança de e-mail, retenção/eliminação de dados e textos de privacidade/uso | Produto + segurança + responsável pelas condições aplicáveis; antes de exposição pública; nada é parecer jurídico aprovado |
-| V07 | Fundação resolvida por A09; pendentes hashing, autenticação/sessão e restrições físicas dos futuros agregados | Mantenedor técnico; resolver decisões de identidade antes dos comportamentos dependentes |
+| V06 | Identidade mínima adotada em A10; recuperação, e-mail verificado/mudança de e-mail, retenção/eliminação e textos jurídicos continuam fora do recorte | Produto + segurança; antes das funcionalidades dependentes e exposição pública |
+| V07 | Fundação e identidade resolvidas por A09/A10; tipos/constraints dos futuros agregados e operação continuam pendentes | Mantenedor técnico; antes dos incrementos dependentes |
 | V08 | Hospedagem, mesma origem, segredos, backup/restore, observabilidade, volumes/SLO e navegadores suportados | Mantenedor/operação; antes de liberação; sem contratação/configuração nesta etapa |
 | V09 | Aprovar P09 (admin único e revisão no ato de publicar), provisionamento seguro/idempotente do primeiro admin, responsáveis, suspensão/restauração e auditoria; matriz técnica na arquitetura | Produto + curadoria + segurança; antes da administração |
 | V10 | Constituição própria, adoção formal do SDD e aprovação destes cinco documentos como baseline de implementação | Mantenedor; antes de iniciar incrementos dependentes |
