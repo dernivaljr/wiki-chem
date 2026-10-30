@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** proposta, não implementação aprovada. Base `main@6f48aecbca3fce10518e6224731086ec74c48d5c`. As orientações A01–A08, propostas P01–P09 e validações V01–V10 são definidas na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Nenhum serviço é configurado nesta etapa.
+**Estado:** fundação técnica implementada; módulos funcionais e propostas P01–P09 sujeitos às validações aplicáveis. A01–A09 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md).
 
 ## 1. Estrutura e limites de confiança
 
-Propõe-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. Framework HTTP, biblioteca de validação, driver/ORM, migrações e versão MySQL continuam em V07.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Os módulos funcionais do diagrama permanecem planejados.
 
 ```mermaid
 flowchart LR
@@ -42,7 +42,7 @@ Manter Header, Hero, Home, About, estilos/tokens, Inter, ativos e correções de
 
 Substituir o submit fictício de Login e o painel inerte de Consultas por estados reais de API. Implementar carregamento, falha e ausência de resultados; estado de consulta por URL e cancelamento/descarte de resposta obsoleta. Sessão em contexto React representa estado de UI, não credencial persistida em localStorage. Em 401, limpar dados sensíveis e retornar ao acesso sem repetir operação de compra automaticamente.
 
-P07 propõe mesma origem para frontend/API, com proxy de desenvolvimento definido na futura implementação. Em origens distintas, revisar cookies/CSRF/CORS antes de implantar; não usar origem universal com credenciais. Nenhum ajuste de proxy ou hospedagem é feito neste PR.
+P07 propõe mesma origem para frontend/API; o proxy Vite encaminha /api/v1 ao backend no desenvolvimento. Em origens distintas, revisar cookies/CSRF/CORS antes de implantar; não usar origem universal com credenciais. Hospedagem e transporte HTTP seguro de produção permanecem pendentes.
 
 ## 3. Identidade, autorização e segurança
 
@@ -86,6 +86,15 @@ Erro: `{ "error": { "code": "CODIGO_ESTAVEL", "message": "Mensagem segura", "det
 | 409 | Conflito de revisão, duplicidade, preço/versão/disponibilidade alterados, pedido não confirmável ou chave idempotente incompatível |
 | 429 | Limite de tentativas/requisições, com orientação segura para retentativa |
 | 500/503 | Falha interna/temporária, sem confirmar compra parcialmente; requestId para suporte |
+
+### 4.0 Contratos implementados de infraestrutura
+
+| Método/rota | Resposta | Critério |
+| --- | --- | --- |
+| GET `/health` | 200 `{ "data": { "status": "ok" } }` | Processo HTTP operacional, sem consultar banco |
+| GET `/health/database` | 200 `{ "data": { "status": "available" } }` ou 503 DATABASE_UNAVAILABLE | SELECT 1 com timeout; não garante esquema de negócio |
+
+Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. As próximas seções são contratos de negócio planejados.
 
 ### 4.1 Identidade
 
@@ -150,24 +159,36 @@ DTOs finais e validação detalhada deverão ser consolidados em contrato execut
 
 ## 5. Persistência, testes e operação proposta
 
-O [modelo](MODELO-DADOS.md) define chaves/constraints e separação de conteúdo; [ECOMMERCE](ECOMMERCE.md) define limites transacionais. Leituras bloqueantes devem ocorrer dentro de transação; locking reads e unicidade são mecanismos a verificar em MySQL, conforme a [documentação InnoDB](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html). Essa referência não escolhe a versão final do banco em V07.
+O [modelo](MODELO-DADOS.md) define chaves/constraints e separação de conteúdo; [ECOMMERCE](ECOMMERCE.md) define limites transacionais. Leituras bloqueantes devem ocorrer dentro de transação; locking reads e unicidade são mecanismos a verificar em MySQL, conforme a [documentação InnoDB](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html). A versão adotada na fundação é MySQL 8.4.
 
-Testar unidade para regras puras, contrato para DTOs/erros, integração com MySQL para relações/rollback/idempotência/concorrência e navegador para fluxo/UX e tentativas de acesso indevido. Não considerar SQLite/mock suficiente para provar as garantias de MySQL. O CI existente continua como base; mudanças futuras de testes/serviços serão propostas no incremento correspondente, não neste PR.
+Testar unidade para regras puras, contrato para DTOs/erros, integração com MySQL para relações/rollback/idempotência/concorrência e navegador para fluxo/UX e tentativas de acesso indevido. Não considerar SQLite/mock suficiente para provar as garantias de MySQL. A fundação verifica contratos, configuração, migrações e transações em MySQL real; regras comerciais exigem testes próprios quando implementadas.
 
 V08 deve aprovar implantação, limites de carga, migração/rollback, backup/restauração, segregação de segredos, logs e alertas. A configuração futura precisa garantir que somente a API acesse MySQL e que arquivos técnicos não escapem por servidor estático. Não há seleção de nuvem, domínio, gateway, provedor de identidade ou IA nesta documentação.
 
-## 6. Matriz consolidada de decisões técnicas pendentes
+## 6. Decisões adotadas e pendências
 
-Esta matriz detalha V06/V07/V09; **nenhuma opção abaixo foi instalada, selecionada definitivamente ou considerada aprovada**. O frontend e a versão de Node de referência da Etapa 01 permanecem preservados. V10 aprova a baseline antes das tarefas dependentes.
+As tecnologias da fundação foram expressamente autorizadas. Sua adoção não aprova propostas comerciais, editoriais ou de identidade. V10 permanece referente à formalização metodológica e às decisões dependentes.
 
 | Tema | Proposta/opções para decisão | Aprovação e evidência necessárias |
 | --- | --- | --- |
-| Framework backend — V07 | Framework HTTP TS com validação, erros e middleware centralizados; Express ou Fastify são opções, não escolhas realizadas | Mantenedor registra escolha/compatibilidade com runtime, contratos e testes; não adicionar camadas sem caso de uso |
-| MySQL e acesso — V07 | Definir versão MySQL, driver SQL parametrizado versus query builder/ORM e estratégia transacional única | Demonstrar BIGINT monetário, FKs/UNICIDADE, isolamento, locks e rollback em MySQL; escolher uma abordagem compatível, sem misturar implementações |
-| Migrações — V07/V08 | Uma ferramenta alinhada ao acesso escolhido, scripts versionados e execução controlada; sem sincronização destrutiva automática em produção | Aprovar fluxo de aplicação/reversão/backup, testar banco vazio e atualização; distinguir fixtures de desenvolvimento de dados reais |
+| Framework/contratos — A09, adotado | Fastify em Node.js 24/TypeScript strict, Zod e erros centralizados | Testes de entrada, saída, limites e mensagens seguras |
+| MySQL/acesso — A09, adotado | MySQL 8.4, mysql2/promise, pool, SQL parametrizado e helper transacional DML, sem ORM | Integração verifica BIGINT, FKs, unicidade, concorrência e rollback em tabelas genéricas; integridade comercial continua futura |
+| Migrações — A09, adotado; operação V08 | Executor pequeno: um statement por arquivo, sequência contígua, SHA-256, lock exclusivo e ledger APPLYING/APPLIED; conta operacional distinta | Banco vazio/repetição, status sem escrita, checksum/histórico e falha DDL verificados; backup/restauração de produção pendentes |
 | Autenticação — V06/V07 | P01 mantém proposta de contas locais e sessão opaca revogável no MySQL; definir biblioteca de sessão, hashing/custo, TTL absoluto/inatividade e CSRF | Testar rotação, logout, expiração, abuso e isolamento; aprovar política de senha/recuperação/e-mail; sem credencial no frontend ou provedor externo escolhido |
 | Primeiro administrador — V07/V09 | Futuro comando operacional local protegido, fora de cadastro/HTTP público, executado por responsável autorizado | Sem senha padrão/seed de admin; segredo por entrada segura, nunca argumentos/logs/repositório; hash no serviço; repetição não cria conta duplicada nem promove outro usuário silenciosamente; registrar responsável/ação e desabilitar execução não autorizada |
 | Administração editorial — V09 | P09: admin único, DRAFT → PUBLISHED e SUPERSEDED ao substituir; revisão no publish com autoria/fontes/condições | Aprovar que a mesma pessoa pode curar/revisar/publicar, campos mínimos e suspensão/restauração; papéis, filas e dupla aprovação não são dependências do MVP |
 | Conteúdo e atualização — V02/V03 | Direito metodológico com original/histórico/atualizações e validação da versão por requisição | Confirmar duração/limites/condições e candidatas; não inferir autorização de uso a partir de link público nem de fixture |
 
 IA/RAG, fornecedores, SDKs, embeddings e bancos vetoriais estão integralmente fora do MVP, de sua autenticação/pesquisa e da lista de dependências técnicas a escolher. Eventual estudo só ocorrerá após a plataforma funcional, em escopo próprio.
+
+## 7. Implementação da fundação e limites
+
+A composição em backend/src/app.ts não abre porta e permite injeção de dependências. server.ts gerencia HTTP e encerramento do pool. O módulo health separa rota, serviço e repositório; configuração, banco e erros são compartilhados. A conta da API não aplica DDL. O pool limita conexões/fila, preserva BIGINT como string e não habilita múltiplos statements. Aquisição de conexão e consulta de saúde têm timeout.
+
+O ambiente é validado antes de iniciar. Segredos são externos ao código; erros identificam campos sem seus valores. Logs contêm requestId, método e status, sem URL/query, corpo, cookie, token ou erro bruto do driver. TLS MySQL verificado é obrigatório em produção. HTTP seguro, backup/restauração e demais controles de implantação continuam em V08.
+
+Migrações usam lock por banco e registro APPLYING/APPLIED. Arquivos aplicados são imutáveis e verificados por checksum. DDL tem commit implícito: falha exige inspeção e correção progressiva ou restauração, sem rollback automático nem reaplicação cega. A única criação anterior ao ledger é seu próprio bootstrap.
+
+O esquema contém somente o ledger. Não há corpus, tabelas de negócio, autenticação, administração funcional ou compra. A interface preserva seu comportamento e identidade. A próxima evolução é identidade real, com políticas ainda explicitadas em V06/V07.
+
+Referências: [Fastify — validação/serialização](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/), [MySQL2](https://sidorares.github.io/node-mysql2/docs), [MySQL 8.4 — DDL e commit implícito](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html) e [locks de sessão](https://dev.mysql.com/doc/refman/8.4/en/locking-functions.html).
