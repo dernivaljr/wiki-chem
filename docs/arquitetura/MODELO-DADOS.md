@@ -57,6 +57,8 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 erDiagram
   METHODOLOGIES ||--o{ METHODOLOGY_VERSIONS : versiona
   METHODOLOGY_VERSIONS ||--o| METHODOLOGY_CONTENTS : separa
+  METHODOLOGY_VERSIONS ||--o{ VERSION_ACCESS_EVENTS : registra
+  USERS ||--o{ VERSION_ACCESS_EVENTS : justifica
   METHODOLOGY_VERSIONS ||--o{ VERSION_SOURCES : documenta
   SOURCES ||--o{ VERSION_SOURCES : referencia
   METHODOLOGY_VERSIONS ||--o{ VERSION_CONTRIBUTIONS : registra

@@ -126,14 +126,14 @@ RF07 apresenta preço e disponibilidade quando cadastrados. offer é nullable e 
 | Método/rota | Entrada/retorno essencial | Regras |
 | --- | --- | --- |
 | GET `/cart` | `revision`, itens com prévia/preço atual, total atual e problemas por item | Carrinho próprio; total informativo recalculado, sem congelar oferta |
-| PUT `/cart/items/:productId` | `expectedRevision`, `offerRevision`, `priceId` e `versionId`; quantidade implicitamente um | 200 com carrinho; inclusão repetida não duplica; 409 em revisão/oferta divergente; não aceita valor/total. Compra anterior será validada quando existirem direitos |
+| PUT `/cart/items/:productId` | `expectedRevision`, `offerRevision`, `priceId` e `versionId`; quantidade implicitamente um | 200 com carrinho; inclusão repetida não duplica; 409 em revisão/oferta divergente; não aceita valor/total. Aquisição anterior é validada pelos direitos persistidos e rejeitada com ALREADY_OWNED |
 | DELETE `/cart/items/:productId` | Query `expectedRevision`, sem body | 200 com carrinho; item ausente sem divergência de revisão é no-op |
 | POST `/checkout/simulations` | `cartRevision`; header `Idempotency-Key` | 201 `OrderDetail` pendente, snapshots e `expiresAt`; modo somente `SIMULATED`; contrato transacional em ECOMMERCE |
 | POST `/orders/:id/confirm-simulation` | `demoAcknowledged: true`; `Idempotency-Key` | 200 `OrderDetail` concluído simulado; 409 nas revalidações; sem dados financeiros |
 | POST `/orders/:id/cancel` | Sessão + CSRF | 200 pedido cancelado se pendente; cancelamento repetido é no-op; concluído não é cancelável por este contrato |
 | GET `/orders` e GET `/orders/:id` | Listagem paginada/detalhe próprios | Snapshots de itens/valores e estado de demonstração; nunca filtrar por userId recebido do cliente |
-| GET `/library` e GET `/library/:methodologyId` | `methodologyId`, `acquiredVersionId`, `currentPublishedVersionId`, origem do direito, `accessAllowed` e motivo seguro de indisponibilidade | Aquisição é por metodologia; original vem do item do pedido, atual vem do catálogo; não cria nova aquisição ao publicar atualização |
-| GET `/library/:methodologyId/versions` | Lista paginada de versões já publicadas da metodologia, rótulo/data, indicadores de original/atual e `accessAllowed` | Exige direito próprio; não lista DRAFT; versões suspensas podem ter metadados seguros com acesso negado |
+| GET `/library` e GET `/library/:methodologyId` | `methodologyId`, `originalVersionId`, `originalVersionLabel`, `currentVersionId`, `currentVersionLabel`, `entitlementStatus`, `orderId` e `accessState` | Aquisição é por metodologia; original vem do item do pedido, atual vem do catálogo; não cria nova aquisição ao publicar atualização |
+| GET `/library/:methodologyId/versions` | Lista paginada de versões publicadas elegíveis, id/rótulo/título/data e flags original/current | Exige direito próprio ACTIVE; não lista DRAFT, versões suspensas ou fontes pendentes/recusadas. A indisponibilidade atual é informada no detalhe do direito |
 | GET `/library/:methodologyId/content` | Query opcional `versionId`; resposta inclui `selectedVersionId` e procedimento autorizado | Sem query resolve a atual publicada; com query permite histórico publicado da mesma metodologia; validar sessão, direito metodológico e versão a cada acesso; 403 `PURCHASE_REQUIRED` sem direito |
 
 `OrderDetail`: id, status, mode, currency, createdAt/expiresAt/completedAt, totalCentavos e itens com productId, methodologyId, methodologyVersionId, titleSnapshot, versionLabelSnapshot, unitAmountCentavos, quantity=1 e lineTotalCentavos. `methodologyVersionId` é a versão originalmente adquirida, não o ponteiro corrente; snapshots nunca são atualizados por novas publicações. `OrderDetail` não contém procedimento. Cabeçalho idempotente não substitui sessão/CSRF/autorização; escopo, replay e falhas estão em [ECOMMERCE](ECOMMERCE.md).
@@ -154,10 +154,10 @@ P09, adotada no recorte A11, utiliza apenas um formulário de rascunho e uma aç
 | POST `/admin/versions/:id/publish` | `expectedRevision`, `reviewAcknowledged=true`, `reviewNote`; valida condições de uso, registra revisão e publica/atualiza ponteiro atomicamente; edição concorrente causa 409, sem publicar revisão antiga. Atualização é acessível aos titulares de P03, sem reescrever pedidos |
 | POST `/admin/products/:id/prices` | `amountCentavos`, currency BRL, `expectedRevision`; cria preço imutável e ativa ponteiro corrente em transação |
 | PATCH `/admin/products/:id` | `active`, `expectedRevision`; desativar não apaga histórico/direitos |
-| POST `/admin/versions/:id/suspend` e `/restore` | Motivo/evidência e revisão; controla impedimento expresso de uso, sem reescrever pedidos |
+| PATCH `/admin/versions/:id/access` | expectedRevision, accessState ALLOWED/SUSPENDED e justificativa; controla a versão publicada e audita atomicamente, sem reescrever conteúdo ou pedidos |
 | GET/POST/PATCH `/admin/taxonomies/:type` (PATCH em `/:termId`) | `type` em enum das sete facetas; criar/deprecar termo, sem reutilizar identidade/edição histórica |
 
-DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; checkout/pedidos também têm contratos executáveis; biblioteca e condições comerciais definitivas exigem implementação/aprovação. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a aquisição demonstrativa concorrente usa os bloqueios descritos no documento comercial.
+DTOs e validação de identidade, catálogo, pesquisa, ofertas e carrinho têm contratos executáveis; checkout/pedidos também têm contratos executáveis; biblioteca possui contratos executáveis em A15; condições comerciais definitivas continuam pendentes de aprovação. Publicação, preço e disponibilidade incrementam revisão de oferta; o carrinho já valida revisão/versão/preço, e a aquisição demonstrativa concorrente usa os bloqueios descritos no documento comercial.
 
 ## 5. Persistência, testes e operação proposta
 
