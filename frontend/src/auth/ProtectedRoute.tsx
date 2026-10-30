@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
@@ -12,5 +13,5 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     if (auth.expired) query.set('expired', '1')
     return <Navigate to={'/login?' + query.toString()} replace />
   }
-  return children
+  return <Fragment key={auth.user.id}>{children}</Fragment>
 }

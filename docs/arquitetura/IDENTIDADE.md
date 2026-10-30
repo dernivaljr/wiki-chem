@@ -46,3 +46,13 @@ Testes devem cobrir hash e limites, validação, origem, CSRF, cadastro duplicad
 Retenção/limpeza de sessões expiradas, implantação HTTPS, recuperação, verificação de e-mail e textos jurídicos exigem incrementos próprios. Políticas comerciais/editoriais e permissões de conteúdo permanecem propostas pendentes.
 
 Referências: [OWASP — armazenamento de senhas](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html), [CSRF](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [node-argon2](https://github.com/ranisalt/node-argon2), [cookies Fastify](https://github.com/fastify/fastify-cookie).
+
+## Resultados da verificação funcional
+
+A verificação automatizada confirmou cadastro persistente com papel CUSTOMER, rejeição de campos privilegiados, normalização/duplicidade e conflito entre cadastros simultâneos. Os hashes usam Argon2id com salts distintos; senha incorreta, conta ausente e conta bloqueada não autenticam.
+
+No MySQL real, sessão sobreviveu à recriação da instância da API; rotação e logout invalidaram o token anterior. Foram comprovadas expiração absoluta e por inatividade, ausência de renovação pelo bootstrap, isolamento de perfil, edição exclusiva do nome e rejeição de CSRF/origem inválidos. A rotina de provisionamento inicial foi idempotente e recusou promoção de cliente e criação de outro primeiro administrador.
+
+As jornadas de navegador confirmaram cadastro/login reais, retorno seguro, perfil persistido após recarga e nova aba, cookie HttpOnly, ausência de credenciais em localStorage, logout, revogação, falha de rede e responsividade do cabeçalho autenticado. A troca de identidade remonta o formulário para não reutilizar campos do usuário anterior.
+
+Esses resultados comprovam o recorte de identidade e suas regressões. Não demonstram pesquisa, catálogo, comércio ou conformidade integral de acessibilidade. Recuperação, e-mail verificado, condições jurídicas e implantação pública continuam fora deste incremento.

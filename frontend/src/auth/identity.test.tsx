@@ -103,4 +103,14 @@ describe('integração da interface com contratos de identidade', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sair' }))
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Meu perfil' })).not.toBeInTheDocument())
   })
+  it('troca de conta não reutiliza campos do perfil anterior', async () => {
+    mockFetch().mockImplementation(async () => success(fixtureSession()))
+    render(<MemoryRouter initialEntries={['/perfil']}><App /></MemoryRouter>)
+    expect(await screen.findByLabelText('Nome de exibição')).toHaveValue(fixtureUser.displayName)
+    mockFetch().mockImplementation(async () => success({ ...fixtureSession(), user: { ...fixtureUser, id: '20', displayName: 'Outra pessoa', email: 'outra@example.test' } }))
+    window.dispatchEvent(new Event('focus'))
+    await waitFor(() => expect(screen.getByLabelText('E-mail')).toHaveValue('outra@example.test'))
+    expect(screen.getByLabelText('Nome de exibição')).toHaveValue('Outra pessoa')
+  })
+
 })

@@ -69,3 +69,9 @@ Base main 696de73506d77643356afaa987dec1ac9a90c35f e CI 40993151669 confirmados 
 Decisões acadêmicas de identidade estão em ../arquitetura/IDENTIDADE.md. Os registros de execução ficam neste documento, fora do material acadêmico. Instalação limpa, build/lint e testes de unidade/contrato foram executados localmente; a integração real e as jornadas de navegador serão confirmadas pelo serviço isolado MySQL 8.4 no CI. O ambiente Windows não possui MySQL/Docker e o Chromium local já apresentou spawn UNKNOWN; não se atribui sucesso local a testes não executados.
 
 Comandos: npm run install:clean; npm run build; npm run lint; npm test; npm run audit:deps; npm run audit:prod. Automação adicional: npm run db:status; npm run db:migrate (repetido); npm run test:integration; npm run db:migrate; npm run test:e2e; npm run test:auth. Não registrar credenciais de usuário, cookies, tokens, arquivos .env nem logs brutos do driver.
+
+### Verificação integrada de identidade
+
+Execução [41039975425](https://github.com/dernivaljr/wiki-chem/actions/runs/41039975425) aprovada em ambos os jobs no commit 8ec1c0100a6b01b8cb79e6e286e4ca6852e3702b: 48 testes backend, 26 frontend, 43 integração (22 identidade, 16 infraestrutura MySQL, três processo e dois proxy), 13 regressões visuais e sete jornadas reais de autenticação no navegador. Instalação limpa, builds, lint, migrações iniciais/repetidas e auditorias aprovados; zero vulnerabilidades nas auditorias completas/produção.
+
+A revisão final acrescenta isolamento do formulário ao trocar usuário e testes de recusa do CLI administrativo em execução não interativa. A checagem documental verificou oito documentos, 44 links locais e oito Mermaid preservados. Os checks da revisão corrente do PR #5 devem estar aprovados antes do merge, seguido da verificação da main. Esses registros não integram o material acadêmico.
