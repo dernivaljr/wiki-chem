@@ -66,7 +66,7 @@ function Login() {
 					</p>
 					<div className="auth__note">
 						<span className="auth__note-dot" />
-						<span>Ambiente acadêmico de demonstração. Pesquisa em desenvolvimento.</span>
+						<span>Ambiente acadêmico de demonstração. Sem cobrança.</span>
 					</div>
 				</div>
 

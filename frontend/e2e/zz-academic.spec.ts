@@ -25,7 +25,7 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
   const customer = await browser.newContext({ baseURL: origin, storageState: { cookies: [], origins: [] } }), admin = await browser.newContext({ baseURL: origin, storageState: { cookies: [], origins: [] } })
   const page = await customer.newPage(), adminPage = await admin.newPage(), captured: { file: string; description: string }[] = []
   async function capture(target: Page, file: string, description: string) {
-    await target.screenshot({ path: resolve(output, file), fullPage: true, animations: 'disabled', mask: [target.locator('input[type="password"],input[type="email"],input[name="password"]'), target.getByLabel(/Evidência privada/)] })
+    await target.screenshot({ path: resolve(output, file), fullPage: true, animations: 'disabled', maskColor: '#16395c', mask: [target.locator('input[type="password"],input[type="email"],input[name="password"]'), target.getByLabel(/Evidência privada/)] })
     captured.push({ file, description })
   }
   try {
