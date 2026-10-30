@@ -8,7 +8,7 @@ import { loadConfig } from '../../backend/src/config/env'
 import { createDatabasePool } from '../../backend/src/database/pool'
 import { migrateTestDatabase, resetTestDatabase } from '../../backend/tests/test-database'
 import { seedAcademic, demoOperator } from '../../backend/tests/demo/seed'
-import { academicEditor } from '../../backend/tests/demo/examples'
+import { academicEditor, vocabulary } from '../../backend/tests/demo/examples'
 import { hashPassword } from '../../backend/src/modules/identity/security'
 import { facets, labels } from '../src/catalog/types'
 import { origin, signed } from './commerce.fixture'
@@ -29,9 +29,9 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     captured.push({ file, description })
   }
   try {
-    await page.goto('/'); await capture(page, '01-home.png', 'Página inicial, identidade visual preservada.')
+    await page.goto('/'); await expect(page.getByRole('heading', { level: 1, name: 'Wiki-Chem' })).toBeVisible(); await capture(page, '01-home.png', 'Página inicial, identidade visual preservada.')
     await page.goto('/login'); await page.getByRole('tab', { name: 'Criar conta', exact: true }).click()
-    await capture(page, '02-cadastro.png', 'Cadastro real, sem dados pessoais ou credenciais na captura.')
+    await expect(page.getByLabel('Nome completo', { exact: true })).toBeVisible(); await capture(page, '02-cadastro.png', 'Cadastro real, sem dados pessoais ou credenciais na captura.')
     const email = 'academic-' + randomUUID() + '@example.invalid', password = randomBytes(24).toString('base64url')
     await page.getByLabel('Nome completo', { exact: true }).fill('Conta sintética acadêmica')
     await page.getByLabel('E-mail', { exact: true }).fill(email); await page.getByPlaceholder('••••••••').fill(password)
@@ -42,7 +42,7 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await page.getByRole('button', { name: 'Entrar no Wiki-Chem' }).click()
     await expect(page.getByRole('status')).toContainText('5 metodologias encontradas')
     await capture(page, '04-pesquisa.png', 'Cinco exemplos sintéticos publicados exclusivamente no banco de testes.')
-    for (const facet of facets) await page.getByRole('group', { name: labels[facet], exact: true }).getByRole('checkbox').first().check()
+    for (const facet of facets) await page.getByRole('group', { name: labels[facet], exact: true }).getByRole('checkbox', { name: new RegExp('^DEMO — ' + vocabulary[facet][0]) }).check()
     await page.getByRole('button', { name: 'Pesquisar', exact: true }).click()
     await expect(page.getByRole('status')).toContainText('3 metodologias encontradas')
     await capture(page, '05-sete-filtros.png', 'Combinação real dos sete filtros, OR interno e AND entre categorias.')
@@ -50,14 +50,14 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toBeVisible()
     await capture(page, '06-previa.png', 'Prévia gratuita e oferta de demonstração, sem procedimento integral.')
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click(); await page.getByRole('link', { name: 'Ver carrinho', exact: true }).click()
-    await capture(page, '07-carrinho.png', 'Carrinho persistente com valores de fixture explicitamente demonstrativos.')
+    await expect(page.getByRole('heading', { level: 1, name: 'Meu carrinho' })).toBeVisible(); await expect(page.getByRole('article')).toHaveCount(1); await capture(page, '07-carrinho.png', 'Carrinho persistente com valores de fixture explicitamente demonstrativos.')
     await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
     await expect(page.getByRole('checkbox')).toBeVisible(); await capture(page, '08-revisao-pedido.png', 'Pedido pendente e confirmação explícita obrigatória; sem cobrança.')
     expect((await customer.request.get('/api/v1/library/' + data.methods[0]!.id + '/content')).status()).toBe(403)
     await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar aquisição de demonstração' }).click()
     await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible(); await capture(page, '09-confirmacao.png', 'Confirmação demonstrativa concluída e direito persistido.')
     await page.getByRole('link', { name: 'Ver pedido persistido', exact: true }).click()
-    await expect(page.getByRole('heading', { level: 1, name: 'Detalhes do pedido' })).toBeVisible(); await capture(page, '10-pedido.png', 'Pedido persistido com título, versão e preço originais.')
+    await expect(page.getByRole('heading', { level: 1, name: 'Detalhes do pedido' })).toBeVisible(); await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible(); await capture(page, '10-pedido.png', 'Pedido persistido com título, versão e preço originais.')
     await page.getByRole('link', { name: 'Minha biblioteca', exact: true }).click(); await expect(page.getByRole('heading', { level: 1, name: 'Minha biblioteca' })).toBeVisible()
     await expect(page.getByText('Versão adquirida: v1 · Atual: v1')).toBeVisible(); await capture(page, '11-biblioteca.png', 'Biblioteca do titular, sem procedimento na listagem.')
     await page.getByRole('link', { name: data.methods[0]!.title, exact: true }).click()
@@ -82,7 +82,7 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     for (const width of [320, 375, 768, 1280]) { await page.setViewportSize({ width, height: 800 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true) }
     await page.setViewportSize({ width: 320, height: 800 }); await capture(page, '16-leitura-320.png', 'Leitura responsiva em viewport de 320 px.')
     await page.goto('/consultas'); await expect(page.getByRole('status')).toContainText('5 metodologias encontradas'); await capture(page, '17-pesquisa-320.png', 'Pesquisa, navegação e sete categorias em 320 px.')
-    await adminPage.getByRole('button', { name: 'Classificações', exact: true }).click(); await capture(adminPage, '18-classificacoes.png', 'Gestão de termos sintéticos, sem vigência normativa presumida.')
+    await adminPage.getByRole('button', { name: 'Classificações', exact: true }).click(); await expect(adminPage.getByLabel('Código do termo')).toBeVisible(); await capture(adminPage, '18-classificacoes.png', 'Gestão de termos sintéticos, sem vigência normativa presumida.')
     await writeFile(resolve(output, 'manifest.json'), JSON.stringify({ generatedAt: new Date().toISOString(), notice: data.notice, capture: 'Chromium automatizado com API e MySQL reais; senhas, e-mails e evidências privadas mascarados.', files: captured }, null, 2))
   } finally { await customer.close(); await admin.close(); await pool.end() }
 })
