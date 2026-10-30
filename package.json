@@ -1,6 +1,18 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "npm": ">=11"
+  },
   "scripts": {
-    "dev": "npm --prefix frontend run dev"
+    "dev": "npm --prefix frontend run dev --",
+    "build": "npm --prefix frontend run build --",
+    "lint": "npm --prefix frontend run lint --",
+    "test": "npm --prefix frontend run test --",
+    "test:watch": "npm --prefix frontend run test:watch --",
+    "test:e2e": "npm --prefix frontend run test:e2e --",
+    "preview": "npm --prefix frontend run preview --",
+    "audit:deps": "npm --prefix frontend audit --audit-level=moderate",
+    "audit:prod": "npm --prefix frontend audit --omit=dev --audit-level=moderate"
   }
 }

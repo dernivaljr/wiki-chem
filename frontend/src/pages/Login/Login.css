@@ -1,6 +1,6 @@
 .auth-page {
 	position: relative;
-	min-height: calc(100vh - 88px);
+	min-height: calc(100vh - var(--header-height));
 	overflow: hidden;
 	background: var(--color-background-light);
 }
@@ -49,7 +49,7 @@
 	position: relative;
 	z-index: 1;
 	width: min(1080px, calc(100% - 48px));
-	min-height: calc(100vh - 88px);
+	min-height: calc(100vh - var(--header-height));
 	margin: 0 auto;
 	padding: 72px 0;
 	display: grid;
@@ -137,7 +137,7 @@
 
 .auth__kicker { margin-bottom: 10px; font-size: 0.62rem; }
 .auth__panel h2 { margin: 0; color: var(--color-primary-dark); font-size: 1.65rem; letter-spacing: -0.02em; }
-.auth__step { color: #9aa8ba; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; }
+.auth__step { color: var(--color-text-secondary); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; }
 
 .auth__tabs {
 	display: grid;
@@ -167,7 +167,7 @@
 .auth__input-wrap > svg { position: absolute; left: 13px; color: #8b9ab0; }
 .auth__field input { width: 100%; height: 46px; padding: 0 42px; border: 1px solid #d9e1ec; border-radius: 5px; outline: none; color: var(--color-text); font-size: 0.86rem; transition: border-color 0.2s, box-shadow 0.2s; }
 .auth__field input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30, 102, 255, 0.12); }
-.auth__field input::placeholder { color: #a5afbd; }
+.auth__field input::placeholder { color: var(--color-text-secondary); opacity: 1; }
 .auth__password-toggle { position: absolute; right: 10px; display: grid; place-items: center; padding: 5px; border: 0; background: transparent; color: #8b9ab0; cursor: pointer; }
 .auth__form-options { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .auth__check { display: flex; align-items: flex-start; gap: 8px; color: var(--color-text-secondary); font-size: 0.72rem; font-weight: 500; line-height: 1.4; cursor: pointer; }
@@ -189,8 +189,7 @@
 }
 
 @media (max-width: 600px) {
-	.auth-page { min-height: calc(100vh - 70px); }
-	.auth { width: calc(100% - 32px); min-height: calc(100vh - 70px); padding: 40px 0 56px; }
+	.auth { width: calc(100% - 32px); padding: 40px 0 56px; }
 	.auth__intro h1 { font-size: 2.55rem; }
 	.auth__panel { padding: 26px 20px; }
 	.auth__form-options { align-items: flex-start; flex-direction: column; }
