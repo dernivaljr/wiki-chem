@@ -1,3 +1,9 @@
+import cookie from '@fastify/cookie'
+import rateLimit from '@fastify/rate-limit'
+import type { IdentityRepository } from './modules/identity/identity.repository.js'
+import { createIdentityService } from './modules/identity/identity.service.js'
+import { registerIdentityRoutes } from './modules/identity/identity.routes.js'
+import { AppError } from './shared/errors.js'
 import { randomUUID } from 'node:crypto'
 import Fastify from 'fastify'
 import type { FastifyServerOptions } from 'fastify'
@@ -8,6 +14,8 @@ import { createHealthService } from './modules/health/health.service.js'
 import { registerHealthRoutes } from './modules/health/health.routes.js'
 
 export function buildApp(config: Config, dependencies: {
+  identity?: IdentityRepository
+  now?: () => number
   checkDatabase: () => Promise<void>
   closeDatabase?: () => Promise<void>
   logger?: FastifyServerOptions['logger']
@@ -32,6 +40,13 @@ export function buildApp(config: Config, dependencies: {
   })
   app.register(async api => {
     registerHealthRoutes(api, createHealthService(dependencies.checkDatabase))
+    if (dependencies.identity) {
+      await api.register(cookie)
+      await api.register(rateLimit, { global: false, max: config.AUTH_RATE_LIMIT_MAX, timeWindow: 60000,
+        errorResponseBuilder: () => new AppError(429, 'RATE_LIMITED', 'Muitas tentativas. Aguarde um minuto.') })
+      const service = await createIdentityService(config, dependencies.identity, dependencies.now)
+      registerIdentityRoutes(api, config, service)
+    }
   }, { prefix: '/api/v1' })
   app.addHook('onClose', async () => { await dependencies.closeDatabase?.() })
   return app

@@ -6,6 +6,10 @@ const envSchema = z.object({
   HOST: z.string().min(1).default('127.0.0.1'),
   PORT: port.default(3001),
   LOG_LEVEL: z.enum(['silent', 'fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  APP_ORIGIN: z.url().refine(value => { const u = new URL(value); return ['http:', 'https:'].includes(u.protocol) && u.origin === value }, 'Origem exata obrigatória').default('http://localhost:5173'),
+  SESSION_ABSOLUTE_SECONDS: z.coerce.number().int().min(60).max(2592000).default(28800),
+  SESSION_IDLE_SECONDS: z.coerce.number().int().min(60).max(86400).default(1800),
+  AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100).default(10),
   DB_HOST: z.string().min(1).default('127.0.0.1'),
   DB_PORT: port.default(3306),
   DB_NAME: z.string().regex(/^[a-zA-Z0-9_]{1,64}$/),
@@ -16,6 +20,8 @@ const envSchema = z.object({
   DB_TLS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   DB_TLS_CA_FILE: z.string().default(''),
 }).superRefine((env, ctx) => {
+  if (env.SESSION_IDLE_SECONDS > env.SESSION_ABSOLUTE_SECONDS) ctx.addIssue({ code: 'custom', path: ['SESSION_IDLE_SECONDS'], message: 'Idle exceeds absolute' })
+  if (env.NODE_ENV === 'production' && !env.APP_ORIGIN.startsWith('https://')) ctx.addIssue({ code: 'custom', path: ['APP_ORIGIN'], message: 'HTTPS required' })
   if (env.NODE_ENV === 'production' && !env.DB_TLS) {
     ctx.addIssue({ code: 'custom', path: ['DB_TLS'], message: 'TLS required' })
   }

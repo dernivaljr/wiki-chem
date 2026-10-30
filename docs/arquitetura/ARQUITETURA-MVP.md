@@ -1,10 +1,10 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** fundação técnica implementada; módulos funcionais e propostas P01–P09 sujeitos às validações aplicáveis. A01–A09 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md).
+**Estado:** infraestrutura e identidade implementadas; catálogo/comércio planejados. A01–A10 e V01–V10 estão na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). P03/P09 e demais propostas comerciais/editoriais continuam pendentes.
 
 ## 1. Estrutura e limites de confiança
 
-Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Os módulos funcionais do diagrama permanecem planejados.
+Adota-se um **monólito modular Node.js/TypeScript**, API REST `/api/v1` e MySQL transacional. A separação lógica permite implementar incrementos sem microserviços, filas, motores de busca externos ou infraestrutura de IA. A fundação adota Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4 com mysql2/promise, pool e SQL parametrizado, migrações SQL controladas e Vitest. Identidade está implementada; catálogo, conhecimento editorial e comércio do diagrama permanecem planejados.
 
 ```mermaid
 flowchart LR
@@ -40,20 +40,22 @@ Controladores fazem parsing/validação e devolvem DTOs; casos de uso concentram
 
 Manter Header, Hero, Home, About, estilos/tokens, Inter, ativos e correções de 320 px da Etapa 01. Ampliar navegação com Pesquisa, Carrinho, Minha biblioteca e Perfil após sessão real. Administração aparece somente para papel autorizado, mantendo validação também no backend. Não reescrever a aplicação ou trocar React/Vite.
 
-Substituir o submit fictício de Login e o painel inerte de Consultas por estados reais de API. Implementar carregamento, falha e ausência de resultados; estado de consulta por URL e cancelamento/descarte de resposta obsoleta. Sessão em contexto React representa estado de UI, não credencial persistida em localStorage. Em 401, limpar dados sensíveis e retornar ao acesso sem repetir operação de compra automaticamente.
+Login/cadastro e perfil usam a API real; cabeçalho e rotas refletem a sessão. Consultas exige sessão e sinaliza pesquisa/filtros indisponíveis. A pesquisa real será outro incremento. Implementar carregamento, falha e ausência de resultados; estado de consulta por URL e cancelamento/descarte de resposta obsoleta. Sessão em contexto React representa estado de UI, não credencial persistida em localStorage. Em 401, limpar dados sensíveis e retornar ao acesso sem repetir operação de compra automaticamente.
 
 P07 propõe mesma origem para frontend/API; o proxy Vite encaminha /api/v1 ao backend no desenvolvimento. Em origens distintas, revisar cookies/CSRF/CORS antes de implantar; não usar origem universal com credenciais. Hospedagem e transporte HTTP seguro de produção permanecem pendentes.
 
 ## 3. Identidade, autorização e segurança
 
-- Sessão opaca aleatória, somente hash do token no banco, revogável; cookie de produção proposto `__Host-wikichem_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, sem Domain. Valores de expiração absoluta/inatividade e “manter conectado” exigem V06; sessão é rotacionada no login e revogada no logout/bloqueio.
-- Senha com algoritmo adaptativo adequado, parâmetros definidos por V07 e ensaio de custo; não inventar biblioteca/serviço já aprovado. Proposta inicial de política: 12–128 caracteres, sem truncamento silencioso; aprovar em V06. Respostas de login genéricas e limitação de tentativas; sem registrar senha/token.
+[Identidade](IDENTIDADE.md) registra as decisões implementadas de hash, sessão, origem, CSRF, limites e bootstrap. Controles de conteúdo/comércio abaixo continuam planejados.
+
+- Sessão opaca aleatória, somente hash do token no banco, revogável; cookie de produção proposto `__Host-wikichem_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, sem Domain. Prazos configuráveis: oito horas absolutas e 30 minutos por inatividade; “manter conectado” foi retirado; sessão é rotacionada no login e revogada no logout/bloqueio.
+- Senha Argon2id (19 MiB, duas iterações, paralelismo um), 12–128 caracteres, sem trim ou truncamento. Respostas de login genéricas e limitação de tentativas; sem registrar senha/token.
 - Operações autenticadas de escrita exigem token CSRF associado à sessão, entregue no bootstrap de sessão. Cadastro/login exigem JSON, verificação estrita de origem e limites de abuso; ausência de CORS não é tratada como autorização. Cookies não são retornados em JSON nem tokens em URLs.
 - DTOs de entrada têm lista de campos permitidos, limites e tipos; consultas SQL parametrizadas; ordenação usa allowlist. Papel/userId/total enviados pelo cliente não substituem os valores obtidos da sessão/banco.
 - Conteúdo editorial será renderizado com formato restrito e sanitização apropriada; não executar HTML/script de fonte/administrador. URLs bibliográficas admitem protocolos permitidos e não provocam ingestão/fetch automático pelo servidor.
 - Respostas autenticadas e conteúdo protegido usam `Cache-Control: private, no-store`; o cliente remove dados sensíveis no logout. Logs usam requestId e metadados mínimos, nunca procedimento, senha, cookie ou prova privada de permissão.
 
-Essas propostas são alinhadas às referências [OWASP de sessão](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) e [autorização](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html): negar por padrão, conferir permissões por requisição e revogar sessões. Sua adoção específica ainda depende de revisão, não constitui certificação.
+Essas propostas são alinhadas às referências [OWASP de sessão](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) e [autorização](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html): negar por padrão, conferir permissões por requisição e revogar sessões. A adoção no recorte de identidade está registrada em A10 e não constitui certificação.
 
 ### Matriz de autorização
 
@@ -96,7 +98,7 @@ Erro: `{ "error": { "code": "CODIGO_ESTAVEL", "message": "Mensagem segura", "det
 
 Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define entrada e resposta. O servidor gera UUID próprio, devolvido em X-Request-Id e no erro, ignorando o ID do cliente. Respostas usam Cache-Control: no-store. Falhas de JSON, formato, tamanho, rota e execução têm códigos estáveis sem SQL, credenciais ou stack. As próximas seções são contratos de negócio planejados.
 
-### 4.1 Identidade
+### 4.1 Identidade implementada
 
 | Método/rota | Entrada | Resultado e regras |
 | --- | --- | --- |
@@ -107,7 +109,7 @@ Ambas rejeitam parâmetros desconhecidos com 400 VALIDATION_ERROR. Zod define en
 | GET `/me` | Sessão | 200, id/nome/e-mail/papel/estado próprios, sem hash |
 | PATCH `/me` | `displayName`, sessão + CSRF | 200 com perfil; e-mail/papel/userId não editáveis neste contrato P08 |
 
-Normalização proposta de e-mail: trim e case-fold definido no serviço, com índice único sobre forma normalizada; não remover pontos/sufixos de provedores. Colação/Unicode e efeitos de enumeração/recuperação exigem V06. Nenhum endpoint de senha esquecida é fingido como implementado; decidir e especificar a solução em V06, substituindo o CTA inerte na futura integração.
+E-mail ASCII válido com trim/lowercase e índice único ascii_bin, sem remover pontos/sufixos. [Identidade](IDENTIDADE.md) registra hashing, expiração, CSRF, origem e limites. Recuperação/e-mail verificado continuam fora deste incremento; controles fictícios foram retirados.
 
 ### 4.2 Pesquisa e prévia
 
@@ -174,8 +176,8 @@ As tecnologias da fundação foram expressamente autorizadas. Sua adoção não 
 | Framework/contratos — A09, adotado | Fastify em Node.js 24/TypeScript strict, Zod e erros centralizados | Testes de entrada, saída, limites e mensagens seguras |
 | MySQL/acesso — A09, adotado | MySQL 8.4, mysql2/promise, pool, SQL parametrizado e helper transacional DML, sem ORM | Integração verifica BIGINT, FKs, unicidade, concorrência e rollback em tabelas genéricas; integridade comercial continua futura |
 | Migrações — A09, adotado; operação V08 | Executor pequeno: um statement por arquivo, sequência contígua, SHA-256, lock exclusivo e ledger APPLYING/APPLIED; conta operacional distinta | Banco vazio/repetição, status sem escrita, checksum/histórico e falha DDL verificados; backup/restauração de produção pendentes |
-| Autenticação — V06/V07 | P01 mantém proposta de contas locais e sessão opaca revogável no MySQL; definir biblioteca de sessão, hashing/custo, TTL absoluto/inatividade e CSRF | Testar rotação, logout, expiração, abuso e isolamento; aprovar política de senha/recuperação/e-mail; sem credencial no frontend ou provedor externo escolhido |
-| Primeiro administrador — V07/V09 | Futuro comando operacional local protegido, fora de cadastro/HTTP público, executado por responsável autorizado | Sem senha padrão/seed de admin; segredo por entrada segura, nunca argumentos/logs/repositório; hash no serviço; repetição não cria conta duplicada nem promove outro usuário silenciosamente; registrar responsável/ação e desabilitar execução não autorizada |
+| Autenticação — A10, adotada | Argon2id, sessão opaca MySQL, cookies, CSRF, origem, limites e prazos configuráveis | Recuperação, verificação/mudança de e-mail, retenção e condições jurídicas continuam pendentes em V06 |
+| Primeiro administrador — A10, implementado | Comando local com habilitação explícita, conta operacional, terminal e senha oculta; registra responsável e é idempotente | Sem senha padrão, argumento de segredo, promoção de cliente ou API pública; administração editorial permanece futura |
 | Administração editorial — V09 | P09: admin único, DRAFT → PUBLISHED e SUPERSEDED ao substituir; revisão no publish com autoria/fontes/condições | Aprovar que a mesma pessoa pode curar/revisar/publicar, campos mínimos e suspensão/restauração; papéis, filas e dupla aprovação não são dependências do MVP |
 | Conteúdo e atualização — V02/V03 | Direito metodológico com original/histórico/atualizações e validação da versão por requisição | Confirmar duração/limites/condições e candidatas; não inferir autorização de uso a partir de link público nem de fixture |
 
@@ -189,6 +191,6 @@ O ambiente é validado antes de iniciar. Segredos são externos ao código; erro
 
 Migrações usam lock por banco e registro APPLYING/APPLIED. Arquivos aplicados são imutáveis e verificados por checksum. DDL tem commit implícito: falha exige inspeção e correção progressiva ou restauração, sem rollback automático nem reaplicação cega. A única criação anterior ao ledger é seu próprio bootstrap.
 
-O esquema contém somente o ledger. Não há corpus, tabelas de negócio, autenticação, administração funcional ou compra. A interface preserva seu comportamento e identidade. A próxima evolução é identidade real, com políticas ainda explicitadas em V06/V07.
+O esquema contém ledger, usuários e sessões. Identidade e perfil usam a API real, preservando a identidade visual. Catálogo, corpus, pesquisa e comércio não estão implementados. Administração editorial é futura; somente o bootstrap operacional está disponível.
 
 Referências: [Fastify — validação/serialização](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/), [MySQL2](https://sidorares.github.io/node-mysql2/docs), [MySQL 8.4 — DDL e commit implícito](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html) e [locks de sessão](https://dev.mysql.com/doc/refman/8.4/en/locking-functions.html).

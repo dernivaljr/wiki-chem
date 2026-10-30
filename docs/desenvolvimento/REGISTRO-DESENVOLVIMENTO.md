@@ -61,3 +61,11 @@ A revisão `daa9e52662b519fa4b43a07854fa5226a88d80f7` teve os dois jobs concluí
 O fluxo CLI mostrou PENDING → APPLIED e repetição sem reaplicação. Os negativos de checksum, histórico, lock, DDL incompleto, múltiplos statements, credenciais, banco ausente e pool encerrado passaram. BIGINT, FKs, unicidade, commit/rollback e escrita concorrente foram verificados no MySQL 8.4 real. O processo compilado respondeu via HTTP e encerrou com código zero por SIGTERM no Linux.
 
 Este registro comprova a fundação e a preservação das regressões existentes; não aprova propostas comerciais nem comprova autenticação, pesquisa, catálogo ou compra. A verificação da última revisão documental e da main após integração permanece nos checks do PR.
+
+## Etapa 04 — identidade e perfil (registro interno)
+
+Base main 696de73506d77643356afaa987dec1ac9a90c35f e CI 40993151669 confirmados antes da branch feat/auth-profile. Implementação autorizada: cadastro/login/sessão/logout/perfil e bootstrap inicial; sem catálogo, comércio ou IA/RAG.
+
+Decisões acadêmicas de identidade estão em ../arquitetura/IDENTIDADE.md. Os registros de execução ficam neste documento, fora do material acadêmico. Instalação limpa, build/lint e testes de unidade/contrato foram executados localmente; a integração real e as jornadas de navegador serão confirmadas pelo serviço isolado MySQL 8.4 no CI. O ambiente Windows não possui MySQL/Docker e o Chromium local já apresentou spawn UNKNOWN; não se atribui sucesso local a testes não executados.
+
+Comandos: npm run install:clean; npm run build; npm run lint; npm test; npm run audit:deps; npm run audit:prod. Automação adicional: npm run db:status; npm run db:migrate (repetido); npm run test:integration; npm run db:migrate; npm run test:e2e; npm run test:auth. Não registrar credenciais de usuário, cookies, tokens, arquivos .env nem logs brutos do driver.

@@ -194,3 +194,7 @@
 	.auth__panel { padding: 26px 20px; }
 	.auth__form-options { align-items: flex-start; flex-direction: column; }
 }
+
+.auth__error { color: #a32121; font-size: .85rem; line-height: 1.5; }
+.auth__notice { color: var(--color-text-secondary); font-size: .8rem; line-height: 1.5; }
+.auth button:disabled { cursor: wait; opacity: .75; }

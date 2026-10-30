@@ -105,6 +105,12 @@ jobs:
           npm run db:status
       - name: Integração MySQL, cenários negativos e proxy React/API
         run: npm run test:integration
+      - name: Preparar esquema para navegador integrado
+        run: npm run db:migrate
+      - name: Instalar Chromium para identidade real
+        run: npm exec --prefix frontend -- playwright install --with-deps --no-shell chromium
+      - name: Navegador com autenticação e MySQL reais
+        run: npm run test:auth
       - name: Auditoria de todas as dependências
         run: npm audit --prefix backend --audit-level=moderate
       - name: Auditoria das dependências de produção

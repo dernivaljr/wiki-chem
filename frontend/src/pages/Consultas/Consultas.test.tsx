@@ -8,8 +8,8 @@ describe('apresentação do painel de consultas', () => {
     render(<Consultas />)
 
     expect(screen.getByRole('searchbox', { name: 'Termo de consulta' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Pesquisar' })).toHaveAttribute('type', 'button')
-    expect(screen.getByRole('tablist', { name: 'Categorias de consulta' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pesquisar — indisponível' })).toBeDisabled()
+    expect(screen.getByRole('group', { name: 'Categorias de consulta indisponíveis' })).toBeInTheDocument()
   })
 
   it('permite editar o termo, sem afirmar que a pesquisa foi executada', async () => {

@@ -1,3 +1,4 @@
+import AuthProvider from '../../auth/AuthProvider'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -7,23 +8,23 @@ import Login from './Login'
 // Cobrem apenas a interface local. Não submetem nem validam login/cadastro simulados.
 describe('interface do formulário de acesso', () => {
   it('identifica os campos e suas restrições HTML básicas', () => {
-    render(<MemoryRouter><Login /></MemoryRouter>)
+    render(<MemoryRouter><AuthProvider><Login /></AuthProvider></MemoryRouter>)
 
     expect(screen.getByRole('textbox', { name: 'E-mail' })).toHaveAttribute('type', 'email')
     expect(screen.getByRole('textbox', { name: 'E-mail' })).toBeRequired()
     expect(screen.getByPlaceholderText('••••••••')).toHaveAttribute('type', 'password')
     expect(screen.getByPlaceholderText('••••••••')).toBeRequired()
-    expect(screen.getByPlaceholderText('••••••••')).toHaveAttribute('minlength', '6')
+    expect(screen.getByPlaceholderText('••••••••')).toHaveAttribute('minlength', '12')
   })
 
   it('alterna os campos entre as apresentações de login e cadastro', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><Login /></MemoryRouter>)
+    render(<MemoryRouter><AuthProvider><Login /></AuthProvider></MemoryRouter>)
 
     await user.click(screen.getByRole('tab', { name: 'Criar conta' }))
     expect(screen.getByRole('heading', { name: 'Crie sua conta' })).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: 'Nome completo' })).toBeRequired()
-    expect(screen.getByRole('checkbox', { name: /Concordo com os termos/ })).toBeRequired()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('tab', { name: 'Entrar' }))
     expect(screen.queryByRole('textbox', { name: 'Nome completo' })).not.toBeInTheDocument()
@@ -32,7 +33,7 @@ describe('interface do formulário de acesso', () => {
 
   it('mostra e oculta a senha digitada sem alterar seu valor', async () => {
     const user = userEvent.setup()
-    render(<MemoryRouter><Login /></MemoryRouter>)
+    render(<MemoryRouter><AuthProvider><Login /></AuthProvider></MemoryRouter>)
     const password = screen.getByPlaceholderText('••••••••')
 
     await user.type(password, 'exemplo-local')

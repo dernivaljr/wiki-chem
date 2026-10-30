@@ -25,6 +25,8 @@
     "test:backend": "npm --prefix backend test",
     "test:integration": "npm --prefix backend run test:integration",
     "db:migrate": "npm --prefix backend run migrate",
-    "db:status": "npm --prefix backend run migrate:status"
+    "db:status": "npm --prefix backend run migrate:status",
+    "test:auth": "npm --prefix frontend run test:auth",
+    "admin:bootstrap": "npm --prefix backend run admin:bootstrap"
   }
 }

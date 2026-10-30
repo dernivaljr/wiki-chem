@@ -1,5 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
+import { failure } from './mockApi'
 
-afterEach(cleanup)
+beforeEach(() => { vi.stubGlobal('fetch', vi.fn(async () => failure())) })
+afterEach(() => { cleanup(); vi.unstubAllGlobals() })

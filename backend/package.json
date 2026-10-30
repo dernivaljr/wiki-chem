@@ -15,9 +15,13 @@
     "test": "vitest run",
     "test:integration": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
     "migrate": "tsx --env-file-if-exists=.env src/database/migrate.ts",
-    "migrate:status": "tsx --env-file-if-exists=.env src/database/migrate.ts --status"
+    "migrate:status": "tsx --env-file-if-exists=.env src/database/migrate.ts --status",
+    "admin:bootstrap": "tsx --env-file-if-exists=.env src/commands/bootstrap-admin.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/rate-limit": "^11.2.1",
+    "argon2": "^0.45.1",
     "fastify": "^5.12.7",
     "mysql2": "^3.24.6",
     "zod": "^4.6.7"
