@@ -16,7 +16,7 @@ async function directory() {
 describe('manifesto de migrações', () => {
   it('preserva a baseline de infraestrutura e ordena as migrações de identidade', async () => {
     const migrations = await loadMigrations()
-    expect(migrations.map(item => item.version)).toEqual(['0001_schema_migrations', '0002_users', '0003_auth_sessions'])
+    expect(migrations.slice(0, 3).map(item => item.version)).toEqual(['0001_schema_migrations', '0002_users', '0003_auth_sessions'])
     expect(migrations[0]?.version).toBe('0001_schema_migrations')
     expect(migrations[0]?.checksum).toMatch(/^[a-f0-9]{64}$/)
     expect(migrations[0]?.sql).not.toMatch(/CREATE TABLE (users|orders|products)/)

@@ -1,3 +1,5 @@
+import type { CatalogRepository } from './modules/catalog/catalog.repository.js'
+import { registerCatalogRoutes } from './modules/catalog/catalog.routes.js'
 import cookie from '@fastify/cookie'
 import rateLimit from '@fastify/rate-limit'
 import type { IdentityRepository } from './modules/identity/identity.repository.js'
@@ -14,6 +16,7 @@ import { createHealthService } from './modules/health/health.service.js'
 import { registerHealthRoutes } from './modules/health/health.routes.js'
 
 export function buildApp(config: Config, dependencies: {
+  catalog?: CatalogRepository
   identity?: IdentityRepository
   now?: () => number
   checkDatabase: () => Promise<void>
@@ -46,6 +49,7 @@ export function buildApp(config: Config, dependencies: {
         errorResponseBuilder: () => new AppError(429, 'RATE_LIMITED', 'Muitas tentativas. Aguarde um minuto.') })
       const service = await createIdentityService(config, dependencies.identity, dependencies.now)
       registerIdentityRoutes(api, config, service)
+      if (dependencies.catalog) await registerCatalogRoutes(api, config, service, dependencies.catalog)
     }
   }, { prefix: '/api/v1' })
   app.addHook('onClose', async () => { await dependencies.closeDatabase?.() })

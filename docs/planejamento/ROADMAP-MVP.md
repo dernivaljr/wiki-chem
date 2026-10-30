@@ -1,10 +1,10 @@
 # Roadmap de implementação proposto — MVP Wiki-Chem
 
-**Estado:** planejamento incremental do MVP; infraestrutura e identidade implementadas; catálogo/pesquisa/comércio pendentes. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
+**Estado:** planejamento incremental do MVP; infraestrutura, identidade e catálogo editorial implementados; pesquisa/comércio pendentes. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
 
 ## 1. Método incremental e estado
 
-O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; pesquisa, catálogo e comércio permanecem planejados.
+O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de infraestrutura e identidade persistente. Cadastro/login/sessão/logout/perfil estão conectados à interface; catálogo editorial está implementado; pesquisa e comércio permanecem planejados.
 
 P03, P09, candidatas C01–C05, permissões de conteúdo e preços comerciais continuam em validação. As tecnologias da fundação foram adotadas conforme A09. Fixtures FX01–FX05 serão implementadas somente nos incrementos comerciais pertinentes.
 
@@ -106,14 +106,15 @@ O recorte proposto tem cinco candidatas reais, com sete eixos exemplificados na 
 | Tarefa | Situação | Artefatos e evidência de aceitação |
 | --- | --- | --- |
 | I00.01/02 | Parcial | A09 resolve tecnologias; decisões de negócio e formalização SDD permanecem explícitas |
-| I01.01 | Parcial | Contratos Zod de saúde, identidade e perfil; DTOs de catálogo/comércio planejados |
+| I01.01 | Parcial | Contratos Zod de saúde, identidade e perfil; DTOs editoriais implementados; contratos comerciais planejados |
 | I01.02 | Implementada no recorte autorizado | backend/src/: rota/serviço/repositório, requestId, pool, validação e proxy; testes de unidade/contrato/MySQL |
 | I01.03 | Parcial | Migração controlada e teste de falha DDL; backup/restauração e implantação em V08 |
 | I01.04 | Pendente, antes de I07/I10 | Nenhuma fixture comercial carregada; não bloqueia identidade |
 | I02/I03 | Implementados no recorte de identidade | Cadastro/login/sessão/logout/perfil e bootstrap inicial; Argon2id, CSRF, origem, limites, expiração, MySQL e navegador. Recuperação/e-mail verificado fora do incremento |
-| I04–I13 | Pendente | Taxonomias, conteúdo, pesquisa, comércio, biblioteca e validação integrada |
+| I04–I06 | Implementados no recorte A11 | Taxonomias N:N, rascunhos, conteúdo separado, fontes/autoria, revisão e publicação; vocabulário e permissões reais continuam pendentes |
+| I07–I13 | Pendentes | Ofertas, pesquisa, comércio, biblioteca e validação integrada |
 
-A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04 não está completo: pesquisa efetiva depende de I08. Apresentação com respostas controladas não substitui integração real. Catálogo, direitos, checkout e revisão editorial não foram implementados.
+A verificação de identidade cobre os critérios de identidade/perfil de RF01–RF03 e proteção de rotas de RF04 em MySQL/navegador, conforme [Identidade](../arquitetura/IDENTIDADE.md). RF04 não está completo: pesquisa efetiva depende de I08. Apresentação com respostas controladas não substitui integração real. [Catálogo editorial](../arquitetura/CATALOGO-EDITORIAL.md) acrescenta os critérios estruturais/editoriais de RF05/08/15/17 e MD02/08. A filtragem real de RF05 e a pesquisa dependem de I08; direitos e checkout permanecem futuros.
 
 ## 7. Evolução posterior
 

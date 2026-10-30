@@ -75,3 +75,31 @@ Comandos: npm run install:clean; npm run build; npm run lint; npm test; npm run 
 Execução [41039975425](https://github.com/dernivaljr/wiki-chem/actions/runs/41039975425) aprovada em ambos os jobs no commit 8ec1c0100a6b01b8cb79e6e286e4ca6852e3702b: 48 testes backend, 26 frontend, 43 integração (22 identidade, 16 infraestrutura MySQL, três processo e dois proxy), 13 regressões visuais e sete jornadas reais de autenticação no navegador. Instalação limpa, builds, lint, migrações iniciais/repetidas e auditorias aprovados; zero vulnerabilidades nas auditorias completas/produção.
 
 A revisão final acrescenta isolamento do formulário ao trocar usuário e testes de recusa do CLI administrativo em execução não interativa. A checagem documental verificou oito documentos, 44 links locais e oito Mermaid preservados. Os checks da revisão corrente do PR #5 devem estar aprovados antes do merge, seguido da verificação da main. Esses registros não integram o material acadêmico.
+
+## Etapa 05 — catálogo editorial (registro interno)
+
+Base main 5ce9269520d78e51d9f4939029b15b7cd3d2a879 e CI 41041227867 confirmados antes de criar feat/methodology-admin. Recorte autorizado: taxonomias, versões, administração, revisão/publicação; sem busca, preços, comércio ou IA/RAG.
+
+A implementação acrescenta 25 migrações SQL de estrutura (28 no total), sem dados técnicos. Fontes, atribuições e conteúdo integral são preservados por versão; método corrente tem FK composta de pertencimento. O material acadêmico descreve sistema/requisitos/modelo em CATALOGO-EDITORIAL.md e demais documentos; este registro guarda operações.
+
+Verificações locais executadas: npm run build:backend; npm run build:frontend; npm run lint; npm test. Passaram 65 testes backend de unidade/contrato e 35 frontend. MySQL real, migrações completas e navegador serão confirmados pelos checks do PR; não se atribui sucesso local a testes sem servidor MySQL/Chromium disponível neste Windows.
+
+Fixtures são texto original sintético DEMO, sem instruções laboratoriais nem licença de fonte externa. O setup integrado reseta somente banco descartável wikichem_test_<sufixo> com NODE_ENV=test e MYSQL_TEST_ALLOW=true, cria ADMIN com senha aleatória não gravada e mantém cookie efêmero em .test-fixtures/ ignorado no Git. Nunca executar suíte contra dados a preservar. Não são criados usuários ou conteúdos de produção.
+
+### Validação integrada e correção de interoperabilidade dos controles
+
+Execução 41059600718: 28 migrações aplicadas/repetidas e 66 testes de integração aprovados (20 catálogo, 22 identidade, 16 MySQL, seis processo e dois proxy). Job frontend aprovado, incluindo as regressões anteriores. Dos 12 percursos reais de navegador, 11 passaram; a edição completa parou no seletor nativo de tipo de fonte, cujo rótulo envolvia também as opções.
+
+A revisão usa associação explícita label/for/id nos selects de fonte, situação de uso, contribuições e taxonomia, mantendo as seleções exatas e os critérios do teste. Acrescentada checagem dos nomes acessíveis desses controles. Não foram removidas verificações de publicação, integridade ou permissão. Build/lint foram repetidos para essa correção; os checks da revisão corrente precisam ser aprovados antes do merge.
+
+O primeiro envio por ferramenta GitHub expirou no controle automático sem criar PR. A única repetição por gh pr create, dentro da autorização existente, criou o PR #6: https://github.com/dernivaljr/wiki-chem/pull/6 . Não houve rejeição de mérito nem bloqueio de permissão remanescente.
+
+A execução 41060844034 confirmou novamente todas as migrações e 66 integrações, e o navegador chegou à publicação bem-sucedida. A asserção seguinte não localizou por rótulo exato a textarea já preenchida na versão publicada. Padronizada a associação nativa de todos os campos administrativos por AdminField (label/for/id), inclusive textareas inicialmente preenchidas; seletores preservam a associação explícita. A verificação de imutabilidade foi mantida. Não se ampliaram tempos nem se removeram critérios para aceitar a correção.
+
+A execução 41061542606 aprovou ambos os jobs, incluindo 65 testes backend, 36 frontend, 66 integrações, 13 regressões e os 12 percursos reais de navegador. Build/lint, instalação limpa, 28 migrações iniciais/repetidas e auditorias passaram com zero vulnerabilidades reportadas.
+
+A revisão final acrescenta cobertura para dois administradores editando metodologias diferentes com fonte e contribuições compartilhadas. Leituras atuais com FOR SHARE evitam que o snapshot anterior ao upsert deixe de enxergar o registro compartilhado recém-confirmado; a leitura editorial também bloqueia a identidade/versão enquanto monta sua resposta. Não se altera o isolamento global do banco. Lint, build e os 65 testes backend foram repetidos com sucesso; a nova integração e a revisão corrente serão confirmadas antes do merge.
+
+A execução 41062988425 aprovou o frontend e os testes anteriores, mas o caso adicional inicialmente exigia dois sucessos imediatos e recebeu EDIT_CONFLICT em uma das transações. O contrato já permite 409 para deadlock/lock timeout. O teste agora exige ao menos um sucesso, verifica a ausência de gravação parcial/auditoria na transação revertida e realiza uma única nova requisição com a revisão preservada; ambas as metodologias devem terminar completas, com uma origem compartilhada e atribuições recuperáveis. Não se aceita 503, conflito de revisão ou perda silenciosa de campos. Lint e 65 testes backend repetidos com sucesso.
+
+A revisão documental alinhou o estado físico do catálogo e a aprovação A11 em ARQUITETURA-MVP/MODELO-DADOS. Validação local: oito documentos, 41 links locais existentes, nove blocos Mermaid com cercas completas e UTF-8 válido; referências operacionais não integram os documentos acadêmicos. Menções a COMMIT transacional e SHA-256 criptográfico são informações técnicas, não histórico Git.

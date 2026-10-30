@@ -1,3 +1,4 @@
+import type { ApiOptions } from './api'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AuthContext } from './AuthContext'
@@ -58,6 +59,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timeout)
   }, [session, status, refresh])
 
+  const csrf = session?.csrfToken
+  const request = useCallback(async <T,>(path: string, options: Omit<ApiOptions, 'csrf'> = {}): Promise<T> => {
+    try { return await apiRequest<T>(path, { ...options, ...(csrf ? { csrf } : {}) }) }
+    catch (error) {
+      if (error instanceof ApiError && error.status === 401) { invalidate(); anonymous() }
+      if (error instanceof ApiError && error.status === 403) await refresh()
+      throw error
+    }
+  }, [csrf, anonymous, invalidate, refresh])
+
   async function login(input: { email: string; password: string }) {
     busy.current = true
     ++revision.current
@@ -93,7 +104,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
   const value: AuthValue = {
-    status, user: status === 'authenticated' ? session?.user ?? null : null, expired, error, refresh, login, logout, updateName,
+    status, user: status === 'authenticated' ? session?.user ?? null : null, expired, error, refresh, login, logout, updateName, request,
     register: async input => { await apiRequest('/auth/register', { method: 'POST', body: input }) },
   }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

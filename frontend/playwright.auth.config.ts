@@ -5,7 +5,8 @@ if (process.env.NODE_ENV !== 'test' || !/^wikichem_test_[a-z0-9_]+$/.test(proces
 }
 export default defineConfig({
   testDir: './e2e',
-  testMatch: '**/auth.spec.ts',
+  testMatch: ['**/auth.spec.ts', '**/admin.spec.ts'],
+  globalSetup: './e2e/global-setup.ts',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   workers: 1,

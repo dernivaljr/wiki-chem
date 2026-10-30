@@ -1,6 +1,6 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** modelo de negócio planejado. O esquema implementado contém ledger, users e auth_sessions; demais entidades são planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A10 orientam o escopo; P03/P09 e demais decisões comerciais/editoriais continuam pendentes; identidade mínima está adotada em A10.
+**Estado:** modelo de negócio planejado. O esquema implementado contém infraestrutura, identidade e conhecimento editorial, incluindo sete taxonomias e associações N:N por versão. Entidades comerciais continuam planejadas. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A11 orientam o escopo; P03 e condições comerciais continuam pendentes; identidade mínima e fluxo editorial estão adotados em A10/A11.
 
 ## 1. Convenções e limites
 
@@ -80,7 +80,7 @@ Produto e metodologia são entidades distintas: disponibilidade/preço comercial
 
 A versão original é obtida de `entitlements.order_item_id` → `order_items.methodology_version_id`. A versão de leitura padrão vem de `methodologies.current_published_version_id`. Uma versão selecionada só é elegível se pertence à mesma metodologia, já foi publicada (PUBLISHED/SUPERSEDED e published_at registrado) e está ALLOWED; exige também usuário/sessão e direito ACTIVE. A proposta inclui histórico publicado e atualizações futuras da mesma identidade metodológica; nunca rascunho ou versão de outra metodologia. Suspensão da versão atual não autoriza fallback silencioso; o cliente pode selecionar explicitamente outra versão publicada permitida.
 
-P09 simplifica revisão para o ato de publicação: conferir expectedRevision e completude, registrar responsável da sessão/nota/revisão de conteúdo aceita e publicar atomicamente. Não há estado IN_REVIEW nem APPROVED de versão; o enum APPROVED em `version_sources.permission_status` continua sendo evidência de condição de uso, não fase editorial nem autorização criada por fixtures. Fonte pendente bloqueia publicar. O mesmo admin pode curar/revisar/publicar no recorte proposto; V09 deve aprovar essa responsabilidade. Alteração de texto publicado cria rascunho novo.
+P09 simplifica revisão para o ato de publicação: conferir expectedRevision e completude, registrar responsável da sessão/nota/revisão de conteúdo aceita e publicar atomicamente. Não há estado IN_REVIEW nem APPROVED de versão; o enum APPROVED em `version_sources.permission_status` continua sendo evidência de condição de uso, não fase editorial nem autorização criada por fixtures. Fonte pendente bloqueia publicar. O mesmo admin pode curar/revisar/publicar no recorte A11 adotado; demais responsabilidades de governança permanecem em V09. Alteração de texto publicado cria rascunho novo.
 
 Os campos de revisão são nulos enquanto DRAFT e obrigatórios ao publicar; `reviewed_by` referencia `users` e vem da sessão, não do payload. `reviewed_revision` identifica a revisão de conteúdo aceita pelo publish. Mudanças administrativas posteriores de suspensão não reescrevem esse registro de revisão nem os snapshots de compra.
 
@@ -144,10 +144,14 @@ Busca considera apenas campos gratuitos autorizados da versão corrente. As cola
 
 ## 7. Questões de modelagem que precisam de aprovação
 
-P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; P09/V09: admin único, revisão na publicação e bootstrap seguro. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
+P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; A11: admin único e revisão na publicação adotados; demais decisões de governança permanecem em V09. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
 
 ## 8. Esquema físico implementado
 
-A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users e auth_sessions estão migradas. Entidades de catálogo/comércio descrevem o destino do MVP, não tabelas existentes.
+A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users, auth_sessions e as entidades editoriais da seção 9 estão migradas. As entidades comerciais permanecem como modelo de destino, sem tabelas instaladas.
 
 Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADMIN, estado ACTIVE/BLOCKED, token_hash único, FK restritiva e timestamps UTC. provisioned_by registra o responsável pelo bootstrap. Hash Argon2id contém salt/parâmetros, sem senha em claro; token original e CSRF não são persistidos. Detalhes em [Identidade](IDENTIDADE.md).
+
+## 9. Persistência editorial implementada
+
+[Catálogo editorial](CATALOGO-EDITORIAL.md) descreve as entidades executáveis: methodologies, methodology_versions, methodology_contents, sources, version_sources, contributors, version_contributions, version_reviews, audit_events, sete tabelas de termos e sete associações. version_classification_notes guarda justificativas sem misturar desconhecido e não aplicável. Fontes e contribuições usam fingerprint único para identidade imutável; revisão esperada controla edição. FK composta garante pertencimento do ponteiro corrente. deleted_at permite remoção lógica de rascunhos sem reutilizar identidade. Não há tabela de produto, preço, carrinho, pedido ou direito instalada por este recorte.
