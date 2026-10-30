@@ -1,5 +1,113 @@
 # Capturas reais da demonstração
 
-As imagens serão incorporadas após execução automática do navegador e inspeção visual. Não são mockups. Utilizam dados sintéticos de teste, mascarando senhas, e-mails e evidências privadas. A indicação de demonstração permanece visível nas etapas comerciais e nos textos técnicos.
+18 imagens produzidas automaticamente em 2026-10-30T22:39:35.940Z por Chromium, consumindo API e MySQL reais em ambiente isolado. Todas foram revisadas; não são mockups e os originais não foram editados. Senhas, e-mails e evidências privadas são mascarados pelo próprio navegador no momento da captura, com a cor azul escura da interface. Contas e conteúdos são sintéticos e não representam informações pessoais reais, revisão humana científica ou autorização comercial.
 
-O manifesto das capturas descreve a finalidade de cada imagem. Nenhuma captura constitui prova de validação científica ou autorização comercial de metodologia real.
+O [manifesto](manifest.json) registra descrição, dimensões e hash SHA-256 de cada arquivo para conferência de integridade. As figuras comerciais mantêm DEMONSTRAÇÃO — SEM COBRANÇA. Os textos integrais mostrados são originais de teste, sem instruções laboratoriais ou validade analítica.
+
+## Figura 1 — home
+
+Página inicial, identidade visual preservada.
+
+![Página inicial, identidade visual preservada.](01-home.png)
+
+## Figura 2 — cadastro
+
+Cadastro real, sem dados pessoais ou credenciais na captura.
+
+![Cadastro real, sem dados pessoais ou credenciais na captura.](02-cadastro.png)
+
+## Figura 3 — login
+
+Cadastro concluído e acesso por autenticação real.
+
+![Cadastro concluído e acesso por autenticação real.](03-login.png)
+
+## Figura 4 — pesquisa
+
+Cinco exemplos sintéticos publicados exclusivamente no banco de testes.
+
+![Cinco exemplos sintéticos publicados exclusivamente no banco de testes.](04-pesquisa.png)
+
+## Figura 5 — sete-filtros
+
+Combinação real dos sete filtros, OR interno e AND entre categorias.
+
+![Combinação real dos sete filtros, OR interno e AND entre categorias.](05-sete-filtros.png)
+
+## Figura 6 — previa
+
+Prévia gratuita e oferta de demonstração, sem procedimento integral.
+
+![Prévia gratuita e oferta de demonstração, sem procedimento integral.](06-previa.png)
+
+## Figura 7 — carrinho
+
+Carrinho persistente com valores de fixture explicitamente demonstrativos.
+
+![Carrinho persistente com valores de fixture explicitamente demonstrativos.](07-carrinho.png)
+
+## Figura 8 — revisao-pedido
+
+Pedido pendente e confirmação explícita obrigatória; sem cobrança.
+
+![Pedido pendente e confirmação explícita obrigatória; sem cobrança.](08-revisao-pedido.png)
+
+## Figura 9 — confirmacao
+
+Confirmação demonstrativa concluída e direito persistido.
+
+![Confirmação demonstrativa concluída e direito persistido.](09-confirmacao.png)
+
+## Figura 10 — pedido
+
+Pedido persistido com título, versão e preço originais.
+
+![Pedido persistido com título, versão e preço originais.](10-pedido.png)
+
+## Figura 11 — biblioteca
+
+Biblioteca do titular, sem procedimento na listagem.
+
+![Biblioteca do titular, sem procedimento na listagem.](11-biblioteca.png)
+
+## Figura 12 — leitura-v1
+
+Texto integral original sintético liberado somente ao titular.
+
+![Texto integral original sintético liberado somente ao titular.](12-leitura-v1.png)
+
+## Figura 13 — admin-rascunho
+
+Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.
+
+![Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.](13-admin-rascunho.png)
+
+## Figura 14 — revisao-automatizada
+
+Estado editorial de teste: conferência automatizada explicitamente identificada, sem revisão humana presumida.
+
+![Estado editorial de teste: conferência automatizada explicitamente identificada, sem revisão humana presumida.](14-revisao-automatizada.png)
+
+## Figura 15 — historico
+
+Atualização v2 disponível e escolha explícita da v1 adquirida, sem recompra.
+
+![Atualização v2 disponível e escolha explícita da v1 adquirida, sem recompra.](15-historico.png)
+
+## Figura 16 — leitura-320
+
+Leitura responsiva em viewport de 320 px.
+
+![Leitura responsiva em viewport de 320 px.](16-leitura-320.png)
+
+## Figura 17 — pesquisa-320
+
+Pesquisa, navegação e sete categorias em 320 px.
+
+![Pesquisa, navegação e sete categorias em 320 px.](17-pesquisa-320.png)
+
+## Figura 18 — classificacoes
+
+Gestão de termos sintéticos, sem vigência normativa presumida.
+
+![Gestão de termos sintéticos, sem vigência normativa presumida.](18-classificacoes.png)

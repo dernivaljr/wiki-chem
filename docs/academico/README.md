@@ -10,5 +10,6 @@ Este conjunto prepara a posterior adaptação ao modelo do professor. Não é o 
 - [Processos BPMN](PROCESSOS.md).
 - [Resultados, evidências e limitações](RESULTADOS.md).
 - [Capturas reais](evidencias/README.md).
+- [Roteiro funcional de apresentação](ROTEIRO-APRESENTACAO.md).
 
 O sistema demonstra pesquisa e aquisição **sem cobrança**, seguida de acesso autorizado à biblioteca. Os exemplos são sintéticos, originais de software e sem validade analítica/comercial. Não existe revisão científica humana ou autorização de terceiros presumida a partir das fixtures. Dados reais, publicação comercial e implantação continuam sujeitos a validações específicas.

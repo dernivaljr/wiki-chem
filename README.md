@@ -159,7 +159,7 @@ docs/
 
 O [mapa documental](docs/README.md) separa material acadêmico de registros operacionais. Não existe ainda relatório acadêmico final. A especificação diferencia comportamento implementado de propostas de produto/comércio pendentes.
 
-Identidade preservada: React, Inter, paleta azul e ativos atuais. A página 404 React recuperável está implementada; as abas de acesso suportam teclado. Permanecem pendentes foco geral após navegação SPA, otimização de ativos e avisos de favicon no build. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
+Identidade preservada: React, Inter, paleta azul e ativos atuais. A página 404 React recuperável está implementada; as abas de acesso suportam teclado. Permanecem pendentes foco geral após navegação SPA, otimização de ativos; o favicon está presente e os builds de verificação não apresentaram alerta de favicon. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
 
 Projeto licenciado sob a [GNU GPL v2](LICENSE).
 

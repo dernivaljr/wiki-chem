@@ -1,0 +1,584 @@
+{
+  "measuredAt": "2026-10-30T22:21:52.990Z",
+  "environment": {
+    "node": "v24.19.0",
+    "mysql": "8.4.13",
+    "platform": "linux",
+    "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 4,
+    "memoryBytes": 16759443456
+  },
+  "scope": "Caso de uso de pesquisa com MySQL real; inclui consultas SQL e montagem do DTO. Exclui HTTP, rede do navegador e renderização React. Processo aquecido; ambiente compartilhado sem meta de produção.",
+  "dataset": {
+    "methodologies": 500,
+    "publishedVersions": 500,
+    "taxonomyTerms": 14,
+    "associations": 3700,
+    "originalSyntheticOnly": true,
+    "products": 5
+  },
+  "results": [
+    {
+      "volume": 5,
+      "scenario": "texto com acento",
+      "samples": 20,
+      "warmups": 3,
+      "total": 1,
+      "minMs": 3.2668579999999565,
+      "medianMs": 3.7484799999999723,
+      "p95Ms": 4.004961000000094,
+      "maxMs": 4.216752000000042
+    },
+    {
+      "volume": 5,
+      "scenario": "sete filtros AND",
+      "samples": 20,
+      "warmups": 3,
+      "total": 3,
+      "minMs": 4.259375000000091,
+      "medianMs": 4.749324500000057,
+      "p95Ms": 5.372640000000047,
+      "maxMs": 15.049598999999944
+    },
+    {
+      "volume": 5,
+      "scenario": "matrizes e analitos OR",
+      "samples": 20,
+      "warmups": 3,
+      "total": 5,
+      "minMs": 3.3896369999999933,
+      "medianMs": 4.13256350000006,
+      "p95Ms": 4.232134999999971,
+      "maxMs": 4.236752000000024
+    },
+    {
+      "volume": 5,
+      "scenario": "sem resultados",
+      "samples": 20,
+      "warmups": 3,
+      "total": 0,
+      "minMs": 1.2888530000000173,
+      "medianMs": 1.3493565000001126,
+      "p95Ms": 1.5217250000000604,
+      "maxMs": 1.534392999999909
+    },
+    {
+      "volume": 5,
+      "scenario": "pagina intermediaria ordenada",
+      "samples": 20,
+      "warmups": 3,
+      "total": 5,
+      "minMs": 0.8031790000000001,
+      "medianMs": 0.8370539999999664,
+      "p95Ms": 1.0436329999999998,
+      "maxMs": 1.06579499999998
+    },
+    {
+      "volume": 100,
+      "scenario": "texto com acento",
+      "samples": 20,
+      "warmups": 3,
+      "total": 20,
+      "minMs": 7.578913000000284,
+      "medianMs": 7.79950400000007,
+      "p95Ms": 8.496070000000145,
+      "maxMs": 9.357124999999542
+    },
+    {
+      "volume": 100,
+      "scenario": "sete filtros AND",
+      "samples": 20,
+      "warmups": 3,
+      "total": 60,
+      "minMs": 5.665542000000642,
+      "medianMs": 6.091427999999723,
+      "p95Ms": 6.561478000000534,
+      "maxMs": 6.704452999999376
+    },
+    {
+      "volume": 100,
+      "scenario": "matrizes e analitos OR",
+      "samples": 20,
+      "warmups": 3,
+      "total": 100,
+      "minMs": 4.996839999999793,
+      "medianMs": 5.365351499999633,
+      "p95Ms": 5.454050999999708,
+      "maxMs": 5.547990000000027
+    },
+    {
+      "volume": 100,
+      "scenario": "sem resultados",
+      "samples": 20,
+      "warmups": 3,
+      "total": 0,
+      "minMs": 5.329718999999386,
+      "medianMs": 5.390904000000319,
+      "p95Ms": 5.558674999999312,
+      "maxMs": 6.029948000000331
+    },
+    {
+      "volume": 100,
+      "scenario": "pagina intermediaria ordenada",
+      "samples": 20,
+      "warmups": 3,
+      "total": 100,
+      "minMs": 4.108785999999782,
+      "medianMs": 4.383433499999683,
+      "p95Ms": 4.835192000000461,
+      "maxMs": 5.049187000000529
+    },
+    {
+      "volume": 500,
+      "scenario": "texto com acento",
+      "samples": 20,
+      "warmups": 3,
+      "total": 100,
+      "minMs": 23.254953999999998,
+      "medianMs": 23.73168850000002,
+      "p95Ms": 27.201327000000674,
+      "maxMs": 30.3801250000015
+    },
+    {
+      "volume": 500,
+      "scenario": "sete filtros AND",
+      "samples": 20,
+      "warmups": 3,
+      "total": 300,
+      "minMs": 10.057625999997981,
+      "medianMs": 10.339020000001256,
+      "p95Ms": 10.932692000002135,
+      "maxMs": 11.050524999998743
+    },
+    {
+      "volume": 500,
+      "scenario": "matrizes e analitos OR",
+      "samples": 20,
+      "warmups": 3,
+      "total": 500,
+      "minMs": 9.060993999999482,
+      "medianMs": 9.374974500000462,
+      "p95Ms": 9.767581000000064,
+      "maxMs": 9.773369000002276
+    },
+    {
+      "volume": 500,
+      "scenario": "sem resultados",
+      "samples": 20,
+      "warmups": 3,
+      "total": 0,
+      "minMs": 23.15250300000116,
+      "medianMs": 23.244227499999397,
+      "p95Ms": 23.65925100000095,
+      "maxMs": 23.942322999999305
+    },
+    {
+      "volume": 500,
+      "scenario": "pagina intermediaria ordenada",
+      "samples": 20,
+      "warmups": 3,
+      "total": 500,
+      "minMs": 7.1742729999969015,
+      "medianMs": 7.4410305000001244,
+      "p95Ms": 7.832284000000072,
+      "maxMs": 7.833602000002429
+    }
+  ],
+  "seedTimes": [
+    {
+      "volume": 5,
+      "milliseconds": 0.004106000000092536
+    },
+    {
+      "volume": 100,
+      "milliseconds": 2616.0365549999997
+    },
+    {
+      "volume": 500,
+      "milliseconds": 10763.623666
+    }
+  ],
+  "plan": {
+    "query_block": {
+      "select_id": 1,
+      "cost_info": {
+        "query_cost": "74.21"
+      },
+      "ordering_operation": {
+        "using_temporary_table": true,
+        "using_filesort": true,
+        "nested_loop": [
+          {
+            "table": {
+              "table_name": "v",
+              "access_type": "ALL",
+              "possible_keys": [
+                "PRIMARY",
+                "version_label_unique",
+                "version_ownership",
+                "version_listing"
+              ],
+              "rows_examined_per_scan": 500,
+              "rows_produced_per_join": 8,
+              "filtered": "1.67",
+              "cost_info": {
+                "read_cost": "49.42",
+                "eval_cost": "0.83",
+                "prefix_cost": "50.25",
+                "data_read_per_join": "7K"
+              },
+              "used_columns": [
+                "id",
+                "methodology_id",
+                "title",
+                "editorial_status",
+                "access_state",
+                "deleted_at"
+              ],
+              "attached_condition": "((`wikichem_test_ci`.`v`.`access_state` = 'ALLOWED') and (`wikichem_test_ci`.`v`.`editorial_status` = 'PUBLISHED') and (`wikichem_test_ci`.`v`.`deleted_at` is null))"
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "techniques_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "technique_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "53.17",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "technique_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "technologies_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "technology_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "56.08",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "technology_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "equipment_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "equipment_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "59.00",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "equipment_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "matrices_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "matrix_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "61.92",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "matrix_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "analytes_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "analyte_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "64.83",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "analyte_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "standards_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "standard_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "67.75",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "standard_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "f",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "segments_versions"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id",
+                "segment_id"
+              ],
+              "key_length": "16",
+              "ref": [
+                "wikichem_test_ci.v.id",
+                "const"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 8,
+              "filtered": "100.00",
+              "using_index": true,
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.83",
+                "prefix_cost": "70.67",
+                "data_read_per_join": "200"
+              },
+              "used_columns": [
+                "version_id",
+                "segment_id"
+              ]
+            }
+          },
+          {
+            "table": {
+              "table_name": "m",
+              "access_type": "eq_ref",
+              "possible_keys": [
+                "PRIMARY",
+                "methodologies_list",
+                "methodology_current_version_fk"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "id"
+              ],
+              "key_length": "8",
+              "ref": [
+                "wikichem_test_ci.v.methodology_id"
+              ],
+              "rows_examined_per_scan": 1,
+              "rows_produced_per_join": 0,
+              "filtered": "5.00",
+              "cost_info": {
+                "read_cost": "2.08",
+                "eval_cost": "0.04",
+                "prefix_cost": "73.58",
+                "data_read_per_join": "53"
+              },
+              "used_columns": [
+                "id",
+                "lifecycle",
+                "current_published_version_id",
+                "deleted_at"
+              ],
+              "attached_condition": "((`wikichem_test_ci`.`m`.`current_published_version_id` = `wikichem_test_ci`.`v`.`id`) and (`wikichem_test_ci`.`m`.`lifecycle` = 'PUBLISHED') and (`wikichem_test_ci`.`m`.`deleted_at` is null))"
+            }
+          },
+          {
+            "table": {
+              "table_name": "approved",
+              "access_type": "ref",
+              "possible_keys": [
+                "PRIMARY"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id"
+              ],
+              "key_length": "8",
+              "ref": [
+                "wikichem_test_ci.v.id"
+              ],
+              "rows_examined_per_scan": 5,
+              "rows_produced_per_join": 0,
+              "filtered": "33.33",
+              "first_match": "m",
+              "cost_info": {
+                "read_cost": "0.11",
+                "eval_cost": "0.04",
+                "prefix_cost": "73.90",
+                "data_read_per_join": "4K"
+              },
+              "used_columns": [
+                "version_id",
+                "source_id",
+                "permission_status"
+              ],
+              "attached_condition": "(`wikichem_test_ci`.`approved`.`permission_status` = 'APPROVED')"
+            }
+          },
+          {
+            "table": {
+              "table_name": "denied",
+              "access_type": "ref",
+              "possible_keys": [
+                "PRIMARY"
+              ],
+              "key": "PRIMARY",
+              "used_key_parts": [
+                "version_id"
+              ],
+              "key_length": "8",
+              "ref": [
+                "wikichem_test_ci.v.id"
+              ],
+              "rows_examined_per_scan": 5,
+              "rows_produced_per_join": 0,
+              "filtered": "100.00",
+              "not_exists": true,
+              "cost_info": {
+                "read_cost": "0.11",
+                "eval_cost": "0.04",
+                "prefix_cost": "74.21",
+                "data_read_per_join": "4K"
+              },
+              "used_columns": [
+                "version_id",
+                "source_id",
+                "permission_status"
+              ],
+              "attached_condition": "(<if>(is_not_null_compl(denied), (`wikichem_test_ci`.`denied`.`permission_status` <> 'APPROVED'), true) and <if>(is_not_null_compl(denied), <if>(found_match(denied), false, true), true))"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
