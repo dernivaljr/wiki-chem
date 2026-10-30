@@ -10,18 +10,36 @@ O checkout deve exibir **“DEMONSTRAÇÃO — SEM COBRANÇA”** na revisão, c
 
 BRL e preços individuais são orientações A03/A05. Valores comerciais, faixas e condições só poderão ser cadastrados após V05; números de fixtures não são oferta real. Total do MVP é a soma de itens de quantidade um, sem frete, cupom ou parcelamento. Questões tributárias/contratuais para eventual operação comercial real exigem validação específica e não estão aprovadas aqui.
 
+### 1.1 Valores fictícios para fixtures de desenvolvimento
+
+**DEMONSTRAÇÃO — DADOS FICTÍCIOS DE DESENVOLVIMENTO, SEM COBRANÇA OU VALIDADE COMERCIAL.** As identidades abaixo são produtos sintéticos de software, não preços das candidatas C01–C05 nem política de precificação. A tabela documenta valores de entrada para testes posteriores; não cria seed, oferta, procedimento, referência, autor ou autorização.
+
+| Fixture | Nome sintético | amountCentavos (string) | currency | Exibição de demonstração |
+| --- | --- | --- | --- | --- |
+| FX01 | Produto DEMO 01 | `"1000"` | BRL | R$ 10,00 |
+| FX02 | Produto DEMO 02 | `"1750"` | BRL | R$ 17,50 |
+| FX03 | Produto DEMO 03 | `"2250"` | BRL | R$ 22,50 |
+| FX04 | Produto DEMO 04 | `"3000"` | BRL | R$ 30,00 |
+| FX05 | Produto DEMO 05 | `"4000"` | BRL | R$ 40,00 |
+
+Casos monetários verificáveis: FX01 + FX02 totalizam `"2750"` (R$ 27,50); as cinco totalizam `"12000"` (R$ 120,00). Em cenário isolado de alteração de preço, FX01 muda de `"1000"` para `"1250"` (R$ 12,50): antes da confirmação, nova prévia é exigida; depois de uma aquisição já concluída a `"1000"`, o item histórico permanece nesse valor. Publicar atualização não cria nova cobrança.
+
+Futuras fixtures devem exigir ativação explícita apenas em dev/test, com marcador visível DEMO e bloqueio de carregamento em produção; não serão migrações de dados comerciais. Não atribuir estes preços às metodologias reais por correspondência de numeração. A tabela monetária não define campos de licença/revisão como aprovados: testes unitários podem isolar dependências com doubles identificados, mas publicação e integração completas precisam de conteúdo original/autorizado e condições de uso efetivamente validadas em V02. Nunca aprovar fonte fictícia ou pular a proteção editorial apenas para fazer checkout passar em testes. Não se acrescenta código/seed/configuração nesta revisão.
+
 ## 2. Oferta, versão e direitos
 
 | Regra proposta | Consequência |
 | --- | --- |
 | Venda depende de produto ativo, preço corrente, metodologia publicada e versão revisada/permitida | Rascunho, produto sem preço e versão suspensa não são compráveis |
 | Pedido fixa produto, versão, referência de preço e snapshots | Histórico não muda com preço, título ou versão novos |
-| Direito por usuário/metodologia aponta à versão adquirida (P03) | Não liberar versões futuras automaticamente; mudança de política em V03 exige revisão do modelo/contrato |
+| Direito ACTIVE é por usuário/metodologia (P03, pendente de V03) | Permite original, histórico publicado e atualizações publicadas da mesma metodologia sem nova compra; nova publicação não modifica direito, pedido ou preço histórico |
 | Item adquirido não entra novamente no carrinho | UI mostra “Na minha biblioteca”; backend rejeita tentativa direta, inclusive versão nova da mesma metodologia |
 | Direitos revogados não autorizam recompra automática | Exibir estado e orientação; tratamento/possível restauração precisa de V03/V09, não contornar por nova compra |
 | Retirada de venda difere de suspensão de acesso (P06) | Retirada não apaga direito/versão; suspensão expressa por impedimento de uso bloqueia procedimento e é auditada |
 
 Referências e condições de uso são revisadas antes de publicar. Não inferir que citar uma fonte permite reproduzir seu procedimento comercialmente. Mudança conhecida de permissão exige revisão/suspensão das versões afetadas, sem apagar a história de compra. O alcance/duração do acesso e textos correspondentes dependem de V02/V03/V06; esta proposta não promete licença perpétua nem transfere direitos sobre obras de terceiros.
+
+Na biblioteca, a leitura padrão resolve a versão corrente publicada; selecionar `versionId` permite versão já publicada da mesma metodologia. O pedido sempre preserva a versão originalmente adquirida, inclusive seu rótulo, data e valor de compra. A proposta abrange também o histórico publicado; rascunhos e versões de outra metodologia não são atualizações elegíveis. Atualização suspensa continua bloqueada, e o backend não troca silenciosamente para outra versão. Seleção explícita de uma histórica ALLOWED continua possível com direito ativo. Revogação do direito/bloqueio da conta impede todas as versões. Aprovar escopo, duração e exceções em V03 antes de implementar.
 
 ## 3. Fluxo de compra em duas etapas (P05)
 
@@ -99,7 +117,7 @@ Bloqueios não substituem UNIQUE/FKs nem a revisão de deadlocks. A implementaç
 3. Para PENDING_CONFIRMATION, conferir prazo, acknowledgement e integridade dos itens. Cancelado/expirado não pode concluir. Expiração pode ser materializada como EXPIRED em transação sem efeitos de aquisição e resposta 409.
 4. Bloquear produtos/metodologias/versões e revalidar disponibilidade, permissões, versão corrente e priceId contra snapshots. Qualquer mudança de preço/versão, mesmo redução de valor, exige nova prévia. Não confiar no valor que o cliente enviou ou exibiu.
 5. Conferir ausência de aquisição anterior para **todos** os itens, incluindo outra confirmação concorrente. Em conflito, retornar 409 sem compra parcial. UNIQUE(user_id, methodology_id) é a última defesa contra duplicidade.
-6. Atualizar pedido para COMPLETED_SIMULATED, inserir um direito por item, remover somente produtos concluídos do carrinho e incrementar sua revision quando necessário; gravar evento e registro idempotente.
+6. Atualizar pedido para COMPLETED_SIMULATED, inserir direito por metodologia de cada item com vínculo ao item original (sem fixar versão no direito), remover somente produtos concluídos do carrinho e incrementar sua revision quando necessário; gravar evento e registro idempotente. O item mantém o snapshot da versão inicialmente adquirida.
 7. COMMIT único. Falha injetada em qualquer escrita da conclusão reverte pedido/direitos/carrinho/idempotência/evento de conclusão conjuntamente.
 
 Invariantes: item do direito pertence ao pedido do usuário; versão pertence à metodologia do produto; preço pertence ao produto e é o snapshot aceito; total é soma íntegra. Não há estoque físico nem baixa em gateway. Escrever somente `status` do pedido e conceder direitos em uma requisição posterior não atende à consistência exigida.
@@ -126,7 +144,7 @@ Registro idempotente só fica persistido com resultado transacional bem-sucedido
 | --- | --- | --- |
 | Carrinho vazio/entrada inválida | 400 `EMPTY_CART`/`VALIDATION_ERROR` | Retornar ao carrinho, sem pedido vazio |
 | Carrinho alterado antes de criar pedido | 409 `CART_CHANGED` | Recarregar e revisar; não enviar revisão antiga automaticamente |
-| Já adquirido | 409 `ALREADY_OWNED` | Identificar itens próprios conflitantes e oferecer biblioteca/remoção do carrinho |
+| Já adquirido, inclusive após atualização | 409 `ALREADY_OWNED` | Oferecer biblioteca e atualizações publicadas sem recompra; remover conflito do carrinho só por ação explícita |
 | Oferta ou versão alterada/suspensa | 409 `OFFER_CHANGED`/`PRODUCT_UNAVAILABLE` | Nova prévia após revisão; sem compra parcial |
 | Prazo encerrado | 409 `ORDER_EXPIRED` | Criar outra prévia com valores atuais; sem direito antigo |
 | Cancelamento voluntário | CANCELLED | Preservar itens no carrinho; não conceder direito |
@@ -140,6 +158,12 @@ Registro idempotente só fica persistido com resultado transacional bem-sucedido
 
 Testes transacionais mínimos: T1 válido sem direito; confirmação concedendo todos os direitos; preço/versão alterados; indisponibilidade antes/durante a transação; rollback entre escritas; repetição com mesma/diferente chave; dois pedidos concorrentes; mesmo produto duas vezes; aquisição já existente; expirado/cancelado; resposta perdida depois do commit; isolamento de pedidos/biblioteca entre dois usuários; suspensão versus mera retirada de venda; preservação do preço e versão após edição do catálogo.
 
-Testes de não exposição usam marcador sintético exclusivo no procedimento e verificam que busca/prévia/pedido/erros/bundle não o contêm. Acesso ao endpoint integral deve falhar antes da aquisição e passar somente com o direito correspondente, inclusive após logout/expiração/revogação para confirmar bloqueio. O conteúdo autorizado não pode ser obtido por trocar versionId/metodologia de rota.
+Testes de não exposição usam marcador de teste exclusivo em conteúdo de origem permitida e verificam que busca/prévia/pedido/erros/bundle não o contêm. Acesso integral falha sem aquisição, sessão ou direito ativo. Alterar versionId para outra versão publicada e permitida da mesma metodologia é operação legítima; trocar para rascunho ou outra metodologia deve falhar. Logout/expiração/revogação bloqueiam a requisição, sem expor conteúdo no erro.
 
-Conjunto editorial, preços reais, duração do direito, política de atualizações, suspensão, limites e textos de demonstração ainda precisam de V02–V06/V09. Este documento não inventa fontes, preços nem aprova regras legais; o [roadmap](../planejamento/ROADMAP-MVP.md) transforma os cenários aprovados em tarefas pequenas.
+### 8.1 Testes da política metodológica proposta
+
+Em ambiente isolado, com conteúdo original/autorizado de V02 e valores apenas de fixture: adquirir metodologia na versão v1 e guardar orderId/item, preço e rótulo originais; publicar v2 com revisão; verificar biblioteca/current e leitura padrão v2, seleção explícita de v1 e outras históricas publicadas permitidas, sem novo pedido, direito ou cobrança. Alterar preço de catálogo não modifica snapshot. Nova tentativa de compra da metodologia recebe ALREADY_OWNED, não uma oferta de upgrade pago.
+
+Testar ainda: v3 DRAFT ausente da lista/retorno integral; versão publicada de outra metodologia negada; versão atual SUSPENDED negada por padrão sem fallback silencioso; seleção explícita de v1 ALLOWED permitida; direito REVOKED ou usuário bloqueado negando todas as versões. Esses cenários são critérios de implementação futura, não testes de backend executados nesta revisão documental. P03 e P09 continuam pendentes de aprovação.
+
+Conjunto editorial, preços reais, duração/escopo do direito, atualizações, suspensão, limites e textos de demonstração ainda precisam de V02–V06/V09. Os valores fictícios da seção 1.1 são exclusivamente fixtures; não são política comercial. Este documento não cria referências ou autorizações fictícias nem aprova regras legais; o [roadmap](../planejamento/ROADMAP-MVP.md) transforma os cenários aprovados em tarefas pequenas.

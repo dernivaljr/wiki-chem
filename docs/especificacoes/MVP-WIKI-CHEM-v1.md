@@ -39,12 +39,13 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | --- | --- |
 | P01 | Dois papéis: cliente e administrador; sessão opaca revogável no servidor, cookie seguro e proteção CSRF |
 | P02 | AND entre facetas e OR entre valores da mesma faceta; busca somente em informações de prévia |
-| P03 | Conteúdo e taxonomias vinculados à versão; direito de acesso à versão adquirida, sem atualização futura automática |
+| P03 | Aquisição por metodologia: direito ativo permite a versão original, o histórico publicado e novas atualizações publicadas da mesma metodologia, sem recompra; versão/preço originais permanecem no pedido. Política proposta, pendente de V03 |
 | P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
 | P05 | Pedido em duas etapas: prévia persistida e confirmação de demonstração; revalidar oferta/preço/versão antes de concluir |
 | P06 | Desativar venda não remove a biblioteca; suspensão expressa por impedimento de uso bloqueia conteúdo e requer tratamento administrativo |
 | P07 | Monólito modular e publicação frontend/API na mesma origem; nenhuma escolha de framework, ORM ou hospedagem aprovada |
 | P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
+| P09 | Administração editorial mínima por um administrador: salvar rascunho e publicar com revisão explícita registrada; sem etapas intermediárias ou papéis editoriais adicionais obrigatórios. Autoria, fontes, permissões e proteção continuam exigidas; validar em V09 |
 
 As propostas são usadas de forma consistente nos contratos/modelos seguintes para permitir revisão concreta. Não devem ser implementadas como decisões já aprovadas sem resolver suas validações.
 
@@ -69,14 +70,14 @@ Os critérios abaixo são metas verificáveis da implementação posterior, não
 | RF05 | Sete filtros N:N | Técnica, tecnologia, equipamento, matriz, analito, norma e segmento aceitam múltiplos termos; testes exercitam cada faceta, OR interno e AND entre facetas na mesma versão publicada; limpar restaura a consulta; filtros desconhecidos são rejeitados |
 | RF06 | Busca textual e listagem | Regra P02 da arquitetura atende termos curtos, acentos e caracteres literais aprovados em V01; termo vazio permite navegação do catálogo; ordenação é estável e paginação limitada; nenhuma correspondência retorna lista vazia com feedback, sem conteúdo inventado |
 | RF07 | Prévia informativa | Resultado e detalhe mostram título, resumo gratuito, metadados essenciais das sete facetas aplicáveis, referências/localizadores permitidos, versão, preço BRL e disponibilidade; prévia não contém etapas completas do procedimento; curadoria avalia suficiência informativa e limite de exposição |
-| RF08 | Catálogo versionado | Rascunho não aparece na pesquisa; publicação exige prévia, procedimento separado, taxonomias e origem/permissões/revisão registradas; alterar versão publicada cria nova revisão, sem sobrescrever conteúdo adquirido; referências normativas distinguem edição/situação verificada |
+| RF08 | Catálogo versionado | Rascunho não aparece na pesquisa nem é liberado a compradores; publicação exige prévia, procedimento separado, taxonomias e origem/permissões/revisão registradas; nova versão não sobrescreve a original e fica acessível aos titulares da metodologia após publicação, conforme P03; referências normativas distinguem edição/situação verificada |
 | RF09 | Produto e oferta | Cada metodologia tem no máximo um produto individual; preço vigente é definido pelo administrador autorizado e não pelo cliente; preço/versionamento/disponibilidade são revalidados no servidor; nenhum preço definitivo é estabelecido nesta especificação |
 | RF10 | Carrinho persistente | Carrinho pertence à sessão/usuário no banco, sobrevive a recarga/logout-login; um produto aparece uma única vez; quantidade diferente de um e produto já adquirido são rejeitados; itens inválidos são identificados, sem remoção silenciosa; total vem do servidor |
 | RF11 | Checkout simulado | UI e API identificam DEMONSTRAÇÃO — SEM COBRANÇA; não coletam dados financeiros nem chamam pagamentos; prévia cria pedido pendente com itens/valores/versionamento; confirmação explícita conclui pedido simulado e direitos na mesma transação |
 | RF12 | Concorrência e repetição | Clique repetido com chave idempotente confirma o mesmo pedido sem novos efeitos; duas chaves concorrentes para a mesma metodologia não duplicam direito; nenhum pedido é concluído parcialmente; valor/versão alterados exigem nova revisão da compra, sem aceitação automática |
 | RF13 | Histórico de pedidos | Histórico próprio é paginado e mostra estado, data, indicação de simulação, itens e valores históricos; alterações atuais de preço/título não modificam o histórico; pedido de outro cliente não é exposto |
-| RF14 | Minha biblioteca e conteúdo | Só confirmação simulada concluída gera direito; biblioteca aponta à versão adquirida; backend valida usuário, titularidade, estado do direito e disponibilidade jurídica do conteúdo a cada acesso; visitante e cliente sem direito nunca recebem procedimento por API, HTML, bundle, cache ou URL de arquivo público |
-| RF15 | Administração básica | Administrador mantém rascunhos, fontes/permissões, contribuições/revisão, facetas, versão publicada, preço e disponibilidade; cliente recebe 403 nessas operações; ações relevantes têm trilha auditável; retirada de venda não apaga pedidos/direitos |
+| RF14 | Minha biblioteca e conteúdo | Só confirmação simulada concluída gera direito por metodologia; biblioteca identifica versão original e atual, permite histórico publicado e atualizações sem outro pedido/cobrança; backend valida sessão, titularidade, direito ativo, pertencimento e publicação/permissão da versão escolhida; rascunho, versão de outra metodologia e versão suspensa não são liberados; histórico da compra permanece imutável |
+| RF15 | Administração básica | Um administrador mantém rascunhos, fontes/permissões, autoria/curadoria, facetas, preço e disponibilidade; publicação registra revisão e responsável sobre a revisão exata do rascunho, sem workflow intermediário; cliente recebe 403; ações relevantes têm trilha auditável; retirada de venda não apaga pedidos/direitos |
 | RF16 | Identidade, UX e erros | Home/Sobre, marca, Inter e paleta atuais são preservadas; novas telas têm navegação/landmarks/labels/foco/contraste e não transbordam em 320 px; loading, vazio, 401, 403, 404, conflitos de compra e falha recuperável têm mensagens sem revelar conteúdo pago |
 | RF17 | Uso autorizado das fontes | Cada origem tem referência, edição/localizador quando aplicável, autoria/curadoria e condição de uso documentadas; pendência de permissão bloqueia publicação/venda; evidência restrita de autorização não é retornada no DTO de prévia |
 
@@ -88,7 +89,7 @@ flowchart TD
   B --> C["Texto e sete filtros"]
   C --> D["Resultados: prévia, referências e preço"]
   D --> E{"Já adquirido?"}
-  E -->|Sim| F["Abrir versão na Minha biblioteca"]
+  E -->|Sim| F["Biblioteca: original e atualizações publicadas"]
   E -->|Não| G["Adicionar ao carrinho"]
   G --> H["Revisar pedido de demonstração"]
   H --> I{"Confirmar sem cobrança?"}
@@ -100,7 +101,7 @@ flowchart TD
 
 | Situação | Comportamento proposto |
 | --- | --- |
-| Item adquirido | Exibir “Na minha biblioteca”, versão adquirida e CTA Abrir; bloquear nova adição/compra da metodologia, inclusive de versão nova no MVP; política de upgrades em V03 |
+| Item adquirido | Exibir “Na minha biblioteca”, versão original e atual; abrir atual publicada por padrão, com seleção do histórico publicado; bloquear recompra da mesma metodologia, pois suas atualizações já integram P03. Política ainda pendente de aprovação em V03 |
 | Sem resultados | Manter termo/filtros visíveis, informar ausência e oferecer limpar/refinar; nenhuma compra é iniciada |
 | Sessão expirada | Interromper requisição protegida, limpar estado sensível no cliente e pedir login; preservar URL interna e carrinho no servidor; não reenviar confirmação automaticamente |
 | Erro de rede ao confirmar | Informar resultado desconhecido; consultar pedido ou repetir mesma chave; nunca presumir sucesso/fracasso nem criar outra compra automaticamente |
@@ -123,7 +124,35 @@ Rotas atuais `/`, `/sobre` e `/login` são preservadas. `/consultas` passará a 
 
 A prévia deverá explicar finalidade, aplicabilidade, contexto de técnica/matriz/analito, limitações essenciais, versão, autoria/curadoria identificável e referências permitidas. A curadoria deve impedir que a prévia reproduza o procedimento integral. Procedimento, sequências operacionais detalhadas e conteúdo integral permanecem na representação protegida, com revisão técnica.
 
-Cada versão tem histórico de alteração e evidência de revisão. Fontes não são inferidas de títulos nem preenchidas por IA. Conteúdo original deve registrar autoria e revisão; conteúdo derivado deve registrar origem, localizador e autorização/condição de uso. Nenhuma fonte científica real, preço ou disponibilidade é inventada como dado de catálogo neste PR. Fixtures futuras serão sintéticas e marcadas como não técnicas/não comercializáveis.
+Cada versão tem histórico de alteração e evidência de revisão. Fontes não são inferidas de títulos nem preenchidas por IA. Conteúdo original deve registrar autoria e revisão; conteúdo derivado deve registrar origem, localizador e autorização/condição de uso. P09 propõe apenas salvar rascunho e publicar com revisão registrada sobre `expectedRevision`, responsável obtido da sessão e nota de revisão. Não há fila, etapa de aprovação separada ou segundo papel obrigatório no MVP; revisão não é dispensada. Nenhuma autorização de uso é criada por este PR.
+
+### 7.1 Cinco candidatas reais para avaliação do catálogo
+
+**Proposta de catálogo inicial, não produtos publicados.** Metadados de identificação e escopo foram consultados em fontes primárias da U.S. EPA em 29/10/2026. Os rótulos abaixo são taxonomias exemplificativas para V01/V02, não procedimentos, validação laboratorial ou oferta. A curadoria do Wiki-Chem, autoria dos conteúdos derivados e permissões de uso permanecem sem aprovação. Não se copiam etapas operacionais destes métodos.
+
+| Candidata e identificação verificada | Técnica exemplificativa | Tecnologia exemplificativa | Equipamento genérico |
+| --- | --- | --- | --- |
+| C01 — Cloreto por titrimetria com nitrato de prata — [EPA 9253, rev. 0, setembro/1994](https://www.epa.gov/sites/default/files/2015-12/documents/9253.pdf) | Titrimetria | Argentometria com detecção visual | Bureta / conjunto titrimétrico |
+| C02 — Ânions inorgânicos por cromatografia de íons — [EPA 300.0, rev. 2.1, agosto/1993](https://www.epa.gov/sites/default/files/2015-08/documents/method_300-0_rev_2-1_1993.pdf) | Cromatografia de íons | Detecção condutimétrica com supressão | Cromatógrafo de íons |
+| C03 — Metais e elementos traço em água por ICP-AES/ICP-OES — [EPA 200.7, rev. 4.4, 1994](https://www.epa.gov/esam/method-2007-determination-metals-and-trace-elements-water-and-wastes-inductively-coupled) | Espectrometria de emissão atômica/óptica | Plasma indutivamente acoplado | Espectrômetro ICP-OES |
+| C04 — Fósforo por colorimetria semiautomática — [EPA 365.1, rev. 2.0, agosto/1993](https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=P10163W4.TXT) | Colorimetria | Análise em fluxo contínuo com detector colorimétrico | Analisador colorimétrico de fluxo |
+| C05 — Compostos orgânicos voláteis por GC/MS — [EPA 8260D, rev. 4, junho/2018](https://www.epa.gov/sites/default/files/2018-06/documents/method_8260d_update_vi_final_06-11-2018.pdf) | Cromatografia gasosa | Detecção por espectrometria de massas | GC-MS |
+
+| Candidata | Matriz exemplificativa | Analito(s) exemplificativos | Norma/referencial técnico indexável | Segmento exemplificativo |
+| --- | --- | --- | --- | --- |
+| C01 | Soluções de combustão em bomba de oxigênio e águas dentro do escopo do método | Cloreto | U.S. EPA 9253, rev. 0/1994 | Caracterização de resíduos / análise ambiental |
+| C02 | Água potável, água superficial e efluentes contemplados na parte A | Cloreto, nitrato, sulfato | U.S. EPA 300.0, rev. 2.1/1993, parte A | Saneamento / análise ambiental |
+| C03 | Água; recorte inicial de água para consumo a confirmar pela curadoria | Arsênio, tálio, vanádio (exemplos da ficha EPA consultada) | U.S. EPA 200.7, rev. 4.4/1994 | Análise ambiental / controle de água |
+| C04 | Água e resíduos/efluentes aquosos previstos no método | Fósforo; fração/especiação deve ser explicitada na futura ficha | U.S. EPA 365.1, rev. 2.0/1993 | Saneamento / monitoramento ambiental |
+| C05 | Água e resíduos sólidos, conforme aplicabilidade/preparo a validar | Benzeno e tolueno como exemplos, sem lista integral de alvos | U.S. EPA 8260D, rev. 4/2018 | Investigação ambiental / resíduos |
+
+As duas tabelas cobrem os **sete filtros**; multianalitos/matrizes ilustram relações N:N. O recorte privilegia água/resíduos/análise ambiental, sem representar todos os segmentos da química analítica. Casos de busca propostos: cloreto encontra C01/C02; cloreto + técnica cromatografia de íons restringe a C02; GC-MS + benzeno restringe a C05. São expectativas para revisão das taxonomias, não resultados de sistema implementado.
+
+“Norma” usa aqui o identificador do método como referencial técnico, sem afirmar obrigação regulatória, vigência no Brasil ou equivalência a norma nacional. Disponibilidade pública do link não registra permissão comercial no catálogo. Antes de publicar qualquer candidata: confirmar escopo/edição/preparo e limitações, definir texto próprio revisado ou origem autorizada, atribuição e prova/condição de uso. Se pendente, manter rascunho e oferta inativa. Não foram inventados autores do Wiki-Chem, referências ou autorizações; as referências acima identificam documentos reais, não um corpus já liberado para reprodução.
+
+### 7.2 Fixtures exclusivamente de desenvolvimento
+
+Valores fictícios de software ficam definidos em [ECOMMERCE, seção 1.1](../arquitetura/ECOMMERCE.md). IDs FX01–FX05 identificam produtos sintéticos de demonstração, **sem associação automática às candidatas C01–C05**. Não constituem preços sugeridos para as cinco metodologias, política comercial ou permissões de publicação. Nenhum seed ou arquivo de dados é criado nesta revisão.
 
 ## 8. Condição de conclusão funcional
 
@@ -133,15 +162,15 @@ MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por 
 
 | ID | Ponto a aprovar/validar | Responsável sugerido e bloqueio |
 | --- | --- | --- |
-| V01 | Vocabulário e distinção técnica/tecnologia/equipamento; regras de busca, acentos/fórmulas, facetas e edição de norma | Produto + curadoria; antes de fixtures e catálogo |
-| V02 | Corpus inicial, fontes/origens autorizadas, conteúdo mínimo, autores/revisores e limites da prévia | Curadoria + titulares/responsável por permissões; antes de publicação |
-| V03 | Direito por versão, atualizações/upgrades, duração do acesso e tratamento de suspensão de conteúdo | Produto + curadoria/responsável por condições de uso; antes de biblioteca/compra |
+| V01 | Vocabulário e distinção técnica/tecnologia/equipamento; regras de busca, acentos/fórmulas, facetas e edição de norma; validar os exemplos C01–C05 | Produto + curadoria; antes de catálogo e fixtures de taxonomia |
+| V02 | Aprovar/rejeitar C01–C05 como recorte inicial; validar conteúdo, escopo, referências, atribuição, revisão e permissões de uso; candidata não é publicação autorizada | Curadoria + titulares/responsável por permissões; antes de publicação |
+| V03 | Aprovar P03: aquisição por metodologia, original/histórico/atualizações publicadas sem recompra; duração, limites, suspensão e critérios para distinguir atualização de metodologia realmente distinta continuam pendentes | Produto + curadoria/responsável por condições de uso; antes de biblioteca/compra |
 | V04 | Rejeição integral de repetição, prévia/expiração/cancelamento, preço alterado e preservação do carrinho | Produto; antes de checkout |
-| V05 | Preços reais, quem os aprova, faixa monetária, eventual gratuidade e condições de oferta | Responsável comercial; antes de ativar produto; nenhum preço final proposto |
+| V05 | Preços reais, responsável, faixa/gratuidade e condições de oferta; FX01–FX05 são valores fictícios isolados de desenvolvimento e não decidem política comercial | Responsável comercial; antes de ativar produto real; nenhum preço final proposto |
 | V06 | Campos do perfil, política de senha/sessão, recuperação, verificação/mudança de e-mail, retenção/eliminação de dados e textos de privacidade/uso | Produto + segurança + responsável pelas condições aplicáveis; antes de exposição pública; nada é parecer jurídico aprovado |
-| V07 | Framework HTTP, validação, acesso ao MySQL/migrações, hashing, versão MySQL e implementação da sessão | Mantenedor técnico; antes do backend, sem selecionar serviços externos agora |
+| V07 | Framework HTTP, validação, driver/ORM MySQL, ferramenta/fluxo de migrações, hashing e autenticação/sessão; decisões consolidadas na matriz da arquitetura | Mantenedor técnico; antes do backend, sem instalar dependências ou selecionar serviços externos agora |
 | V08 | Hospedagem, mesma origem, segredos, backup/restore, observabilidade, volumes/SLO e navegadores suportados | Mantenedor/operação; antes de liberação; sem contratação/configuração nesta etapa |
-| V09 | Papel/revisão editorial, concessão inicial de admin, suspensão/restauração e escopo da trilha de auditoria | Produto + curadoria + segurança; antes da administração |
+| V09 | Aprovar P09 (admin único e revisão no ato de publicar), provisionamento seguro/idempotente do primeiro admin, responsáveis, suspensão/restauração e auditoria; matriz técnica na arquitetura | Produto + curadoria + segurança; antes da administração |
 | V10 | Constituição própria, adoção formal do SDD e aprovação destes cinco documentos como baseline de implementação | Mantenedor; antes de iniciar incrementos dependentes |
 
 IA/RAG poderá receber apenas estudo posterior ao MVP funcional: viabilidade técnica, custos, qualidade, permissões e rastreabilidade. Não há escolha de provedor, SDK, banco vetorial ou arquitetura de IA neste escopo.

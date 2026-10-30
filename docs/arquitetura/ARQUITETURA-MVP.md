@@ -1,6 +1,6 @@
 # Arquitetura proposta — MVP Wiki-Chem
 
-**Estado:** proposta, não implementação aprovada. Base `main@6f48aecbca3fce10518e6224731086ec74c48d5c`. As orientações A01–A08, propostas P01–P08 e validações V01–V10 são definidas na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Nenhum serviço é configurado nesta etapa.
+**Estado:** proposta, não implementação aprovada. Base `main@6f48aecbca3fce10518e6224731086ec74c48d5c`. As orientações A01–A08, propostas P01–P09 e validações V01–V10 são definidas na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). Nenhum serviço é configurado nesta etapa.
 
 ## 1. Estrutura e limites de confiança
 
@@ -31,7 +31,7 @@ O cliente é não confiável: não define preço final, titular de pedido, papel
 | Conhecimento | Metodologias, versões, conteúdo protegido, fontes, contribuições e taxonomias |
 | Catálogo | Publicação, produto, preço corrente e DTO de prévia; consulta não lê procedimento |
 | Comércio | Carrinho, pedido de demonstração, revalidação, idempotência e transação |
-| Direitos | Biblioteca e autorização por usuário/metodologia/versão e estado do conteúdo |
+| Direitos | Direito por usuário/metodologia, resolução das versões publicadas permitidas, histórico original e estado do conteúdo |
 | Administração | Operações privilegiadas, revisão editorial/permissões e auditoria |
 
 Controladores fazem parsing/validação e devolvem DTOs; casos de uso concentram regras e transações; repositórios fazem acesso parametrizado ao MySQL. Nenhum controlador de conteúdo completo depende apenas de um guard frontend. A autorização de dono de pedido/carrinho faz parte do caso de uso, inclusive em replays idempotentes.
@@ -62,7 +62,7 @@ Essas propostas são alinhadas às referências [OWASP de sessão](https://cheat
 | Home/Sobre, cadastro/login | Sim | Sim | Sim |
 | Pesquisa, facetas, detalhe gratuito publicado | 401 na API | Sim | Sim |
 | Perfil/carrinho/pedidos/biblioteca próprios | 401 | Apenas próprios | Apenas próprios nas rotas de cliente |
-| Procedimento pela biblioteca | 401 | Direito próprio ativo para versão adquirida e conteúdo permitido | Mesmo requisito; papel não concede compra |
+| Procedimento pela biblioteca | 401 | Direito próprio ativo à metodologia e versão escolhida publicada/permitida, inclusive atualizações | Mesmo requisito; papel não concede compra |
 | Rascunhos/conteúdo integral para edição administrativa | 401 | 403 | Sim, por rota admin, auditada |
 | Preços/publicação/taxonomias/permissões | 401 | 403 | Sim, conforme revisão |
 | Pedido de outro usuário por rota cliente | 401 | 404 | 404; consulta administrativa de pedidos não faz parte do MVP |
@@ -108,7 +108,7 @@ P02: OR dentro de uma faceta; AND entre facetas e entre palavras do termo. Cada 
 
 `sort`: `title_asc` (padrão), `updated_desc`, `price_asc`, `price_desc`; desempate por ID ascendente. IDs desconhecidos/inativos de filtro causam 400. Termo/filtros vazios listam catálogo publicado e disponível; ausência de resultado retorna 200 com lista vazia. Preços comparados no banco como inteiros, nunca lexicalmente.
 
-GET `/methodologies/:id` devolve somente `MethodologyPreview`, mesmo para comprador; rascunho nunca publicado retorna 404. DTO proposto: `id`, `versionId`, `versionLabel`, `title`, `freeSummary`, `publicDescription`, `technicalMetadata` (sete facetas), `contributors`, `references` (referência/edição/localizador autorizado), `offer` (`productId`, `priceId`, `amountCentavos`, `currency`, `available`), `owned`, `purchasable`. Sem procedimento, prova privada de licença ou registro de outro usuário. `owned` considera aquisição prévia inclusive direito revogado; `offer.available` informa disponibilidade geral e `purchasable` também considera o usuário. `purchasable=false` se já adquirido; biblioteca é o caminho de leitura integral. Prévia de metodologia anteriormente publicada e retirada de venda pode informar indisponibilidade; a pesquisa lista somente ofertas disponíveis e a biblioteca conserva sua versão própria conforme P06.
+GET `/methodologies/:id` devolve somente `MethodologyPreview`, mesmo para comprador; rascunho nunca publicado retorna 404. DTO proposto: `id`, `versionId`, `versionLabel`, `title`, `freeSummary`, `publicDescription`, `technicalMetadata` (sete facetas), `contributors`, `references` (referência/edição/localizador autorizado), `offer` (`productId`, `priceId`, `amountCentavos`, `currency`, `available`), `owned`, `purchasable`. Sem procedimento, prova privada de licença ou registro de outro usuário. `owned` considera aquisição prévia inclusive direito revogado; `offer.available` informa disponibilidade geral e `purchasable` também considera o usuário. `purchasable=false` se já adquirido, mesmo após atualização: o CTA abre a biblioteca, sem nova compra. Prévia retirada de venda pode informar indisponibilidade; a pesquisa lista ofertas disponíveis e a biblioteca resolve original/histórico/atualizações conforme P03/P06.
 
 ### 4.3 Carrinho, pedidos e direitos
 
@@ -121,29 +121,26 @@ GET `/methodologies/:id` devolve somente `MethodologyPreview`, mesmo para compra
 | POST `/orders/:id/confirm-simulation` | `demoAcknowledged: true`; `Idempotency-Key` | 200 `OrderDetail` concluído simulado; 409 nas revalidações; sem dados financeiros |
 | POST `/orders/:id/cancel` | Sessão + CSRF | 200 pedido cancelado se pendente; cancelamento repetido é no-op; concluído não é cancelável por este contrato |
 | GET `/orders` e GET `/orders/:id` | Listagem paginada/detalhe próprios | Snapshots de itens/valores e estado de demonstração; nunca filtrar por userId recebido do cliente |
-| GET `/library` e GET `/library/:methodologyId` | Prévia da versão adquirida, origem do direito, `accessAllowed` e motivo seguro de indisponibilidade | Próprios; não implica direito à versão atual nova |
-| GET `/library/:methodologyId/content` | Conteúdo completo da versão vinculada ao direito | Backend revalida sessão, titularidade, direito e suspensão; sem direito retorna 403 `PURCHASE_REQUIRED`; nunca aceita um versionId arbitrário para ampliar acesso |
+| GET `/library` e GET `/library/:methodologyId` | `methodologyId`, `acquiredVersionId`, `currentPublishedVersionId`, origem do direito, `accessAllowed` e motivo seguro de indisponibilidade | Aquisição é por metodologia; original vem do item do pedido, atual vem do catálogo; não cria nova aquisição ao publicar atualização |
+| GET `/library/:methodologyId/versions` | Lista paginada de versões já publicadas da metodologia, rótulo/data, indicadores de original/atual e `accessAllowed` | Exige direito próprio; não lista DRAFT; versões suspensas podem ter metadados seguros com acesso negado |
+| GET `/library/:methodologyId/content` | Query opcional `versionId`; resposta inclui `selectedVersionId` e procedimento autorizado | Sem query resolve a atual publicada; com query permite histórico publicado da mesma metodologia; validar sessão, direito metodológico e versão a cada acesso; 403 `PURCHASE_REQUIRED` sem direito |
 
-`OrderDetail`: id, status, mode, currency, createdAt/expiresAt/completedAt, totalCentavos e itens com productId, methodologyId, methodologyVersionId, titleSnapshot, versionLabelSnapshot, unitAmountCentavos, quantity=1 e lineTotalCentavos. `OrderDetail` não contém procedimento. Cabeçalho idempotente não substitui sessão/CSRF/autorização; escopo, replay e falhas estão em [ECOMMERCE](ECOMMERCE.md).
+`OrderDetail`: id, status, mode, currency, createdAt/expiresAt/completedAt, totalCentavos e itens com productId, methodologyId, methodologyVersionId, titleSnapshot, versionLabelSnapshot, unitAmountCentavos, quantity=1 e lineTotalCentavos. `methodologyVersionId` é a versão originalmente adquirida, não o ponteiro corrente; snapshots nunca são atualizados por novas publicações. `OrderDetail` não contém procedimento. Cabeçalho idempotente não substitui sessão/CSRF/autorização; escopo, replay e falhas estão em [ECOMMERCE](ECOMMERCE.md).
 
-A autorização de conteúdo integral usa a versão do direito ACTIVE, com usuário/sessão ativos e access_state ALLOWED. Estado editorial PUBLISHED ou SUPERSEDED é aceito para a versão adquirida; uma versão nova DRAFT/APPROVED não é liberada por esse direito. A aposentadoria da metodologia ou desativação do produto, isoladamente, não bloqueia essa leitura, ao contrário de suspensão expressa da versão.
+A autorização integral usa direito ACTIVE à metodologia e usuário/sessão ativos. A versão resolvida deve pertencer à mesma metodologia, ter published_at e estado PUBLISHED/SUPERSEDED, e access_state ALLOWED. Isso libera a original, histórico e atualizações publicadas, nunca DRAFT. Query malformada retorna 400; versão inexistente, de outra metodologia ou não publicada retorna 404 sem conteúdo; suspensão retorna 403 `CONTENT_SUSPENDED`. Se a atual está suspensa, não há fallback silencioso: informar indisponibilidade e permitir seleção explícita de outra versão histórica elegível. Revogar direito/bloquear usuário impede todas as versões. Desativar venda isoladamente não bloqueia biblioteca. P03 continua sendo proposta pendente de V03.
 
 ### 4.4 Administração
 
 Todas as rotas seguintes exigem papel admin, sessão e CSRF em escrita; leitura editorial integral é auditada. Não há endpoint de autoatribuição de papel.
 
-Texto, conteúdo, fontes, contribuições e vínculos técnicos só podem ser editados em DRAFT. Em revisão, mudanças exigem retorno explícito ao rascunho; versão publicada/superseded requer novo rascunho, não PATCH em seu conteúdo histórico. Suspensão/restauração e disponibilidade são estados administrativos separados, com auditoria.
+P09 propõe apenas um formulário de rascunho e uma ação de publicação com revisão explícita. Texto, conteúdo, fontes, autoria/curadoria e vínculos técnicos só podem ser editados em DRAFT; publicada/superseded exige novo rascunho. Não existem fila ou estados intermediários de revisão/aprovação. No ato de publicar, conferir expectedRevision e completude/permissões, exigir `reviewAcknowledged=true` e `reviewNote`, e registrar revisor obtido da sessão, data e reviewed_revision na mesma transação. O administrador pode ser também curador/revisor no recorte mínimo, pendente de V09; isso não dispensa revisão nem autoria. Suspensão/restauração e disponibilidade permanecem separadas e auditadas.
 
 | Método/rota | Intenção e contrato inicial |
 | --- | --- |
 | GET/POST `/admin/methodologies` | Lista paginada/cria identidade de metodologia e produto inativo; sem publicar automaticamente |
 | POST `/admin/methodologies/:id/versions` | Cria rascunho novo, opcionalmente baseado em versão existente, sem alterar a publicada |
-| GET/PATCH `/admin/versions/:id` | Lê/edita metadados, resumo, facetas, changelog e `expectedRevision`; somente rascunho editável |
-| PUT `/admin/versions/:id/content` | Procedimento integral e descrição protegida; validar formato e impedir script/HTML ativo |
-| PUT `/admin/versions/:id/sources` | Origens, localizadores, condições/evidências de permissão, autoria original quando aplicável; evidências não públicas |
-| PUT `/admin/versions/:id/contributors` | Autoria/curadoria/revisão identificadas; regra de segregação exige V09 |
-| POST `/admin/versions/:id/submit-review`, `/request-changes` e `/approve` | Transições registradas; request-changes devolve IN_REVIEW a DRAFT com motivo; ausência de permissão/revisão impede aprovação/publicação |
-| POST `/admin/versions/:id/publish` | `expectedRevision`; valida completude e aponta versão corrente atomicamente; não altera versão vendida anteriormente |
+| GET/PATCH `/admin/versions/:id` | Formulário único: metadados, resumo, facetas, conteúdo protegido, fontes/condições e autoria/curadoria em seções validadas; expectedRevision obrigatório em escrita; somente DRAFT editável; evidências não públicas e HTML/script indevido bloqueado |
+| POST `/admin/versions/:id/publish` | `expectedRevision`, `reviewAcknowledged=true`, `reviewNote`; valida condições de uso, registra revisão e publica/atualiza ponteiro atomicamente; edição concorrente causa 409, sem publicar revisão antiga. Atualização é acessível aos titulares de P03, sem reescrever pedidos |
 | POST `/admin/products/:id/prices` | `amountCentavos`, currency BRL, `expectedRevision`; cria preço imutável e ativa ponteiro corrente em transação |
 | PATCH `/admin/products/:id` | `active`, `expectedRevision`; desativar não apaga histórico/direitos |
 | POST `/admin/versions/:id/suspend` e `/restore` | Motivo/evidência e revisão; controla impedimento expresso de uso, sem reescrever pedidos |
@@ -158,3 +155,19 @@ O [modelo](MODELO-DADOS.md) define chaves/constraints e separação de conteúdo
 Testar unidade para regras puras, contrato para DTOs/erros, integração com MySQL para relações/rollback/idempotência/concorrência e navegador para fluxo/UX e tentativas de acesso indevido. Não considerar SQLite/mock suficiente para provar as garantias de MySQL. O CI existente continua como base; mudanças futuras de testes/serviços serão propostas no incremento correspondente, não neste PR.
 
 V08 deve aprovar implantação, limites de carga, migração/rollback, backup/restauração, segregação de segredos, logs e alertas. A configuração futura precisa garantir que somente a API acesse MySQL e que arquivos técnicos não escapem por servidor estático. Não há seleção de nuvem, domínio, gateway, provedor de identidade ou IA nesta documentação.
+
+## 6. Matriz consolidada de decisões técnicas pendentes
+
+Esta matriz detalha V06/V07/V09; **nenhuma opção abaixo foi instalada, selecionada definitivamente ou considerada aprovada**. O frontend e a versão de Node de referência da Etapa 01 permanecem preservados. V10 aprova a baseline antes das tarefas dependentes.
+
+| Tema | Proposta/opções para decisão | Aprovação e evidência necessárias |
+| --- | --- | --- |
+| Framework backend — V07 | Framework HTTP TS com validação, erros e middleware centralizados; Express ou Fastify são opções, não escolhas realizadas | Mantenedor registra escolha/compatibilidade com runtime, contratos e testes; não adicionar camadas sem caso de uso |
+| MySQL e acesso — V07 | Definir versão MySQL, driver SQL parametrizado versus query builder/ORM e estratégia transacional única | Demonstrar BIGINT monetário, FKs/UNICIDADE, isolamento, locks e rollback em MySQL; escolher uma abordagem compatível, sem misturar implementações |
+| Migrações — V07/V08 | Uma ferramenta alinhada ao acesso escolhido, scripts versionados e execução controlada; sem sincronização destrutiva automática em produção | Aprovar fluxo de aplicação/reversão/backup, testar banco vazio e atualização; distinguir fixtures de desenvolvimento de dados reais |
+| Autenticação — V06/V07 | P01 mantém proposta de contas locais e sessão opaca revogável no MySQL; definir biblioteca de sessão, hashing/custo, TTL absoluto/inatividade e CSRF | Testar rotação, logout, expiração, abuso e isolamento; aprovar política de senha/recuperação/e-mail; sem credencial no frontend ou provedor externo escolhido |
+| Primeiro administrador — V07/V09 | Futuro comando operacional local protegido, fora de cadastro/HTTP público, executado por responsável autorizado | Sem senha padrão/seed de admin; segredo por entrada segura, nunca argumentos/logs/repositório; hash no serviço; repetição não cria conta duplicada nem promove outro usuário silenciosamente; registrar responsável/ação e desabilitar execução não autorizada |
+| Administração editorial — V09 | P09: admin único, DRAFT → PUBLISHED e SUPERSEDED ao substituir; revisão no publish com autoria/fontes/condições | Aprovar que a mesma pessoa pode curar/revisar/publicar, campos mínimos e suspensão/restauração; papéis, filas e dupla aprovação não são dependências do MVP |
+| Conteúdo e atualização — V02/V03 | Direito metodológico com original/histórico/atualizações e validação da versão por requisição | Confirmar duração/limites/condições e candidatas; não inferir autorização de uso a partir de link público nem de fixture |
+
+IA/RAG, fornecedores, SDKs, embeddings e bancos vetoriais estão integralmente fora do MVP, de sua autenticação/pesquisa e da lista de dependências técnicas a escolher. Eventual estudo só ocorrerá após a plataforma funcional, em escopo próprio.

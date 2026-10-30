@@ -1,12 +1,12 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** proposta lógica, sem DDL/migrações executados. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A08 orientam o escopo; P01–P08/V01–V10 ainda requerem aprovação.
+**Estado:** proposta lógica, sem DDL/migrações executados. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A08 orientam o escopo; P01–P09/V01–V10 ainda requerem aprovação.
 
 ## 1. Convenções e limites
 
 MySQL relacional, mecanismo transacional com FKs, datas UTC e migrações versionadas na implementação futura. Proposta: PKs BIGINT UNSIGNED, serializadas como strings na API; nomes abaixo são lógicos. Escolher versão, colações e ferramenta de migração em V07. Não há conexão, schema criado ou dependência adicionada neste PR.
 
-Valores monetários em BIGINT de centavos e currency fixa BRL, serializados como strings decimais para evitar perda de precisão em JavaScript. Soma/cálculo no servidor com aritmética inteira e validação de overflow. Proposta de ofertas MVP: valor positivo, sem descontos/quantidade variável; gratuidade/faixa e preços finais dependem de V05. Nenhum valor de venda é definido aqui.
+Valores monetários em BIGINT de centavos e currency fixa BRL, serializados como strings decimais para evitar perda de precisão em JavaScript. Soma/cálculo no servidor com aritmética inteira e validação de overflow. Proposta de ofertas MVP: valor positivo, sem descontos/quantidade variável; gratuidade/faixa e preços reais dependem de V05. Os valores FX01–FX05 em [ECOMMERCE](ECOMMERCE.md) são apenas fixtures monetárias de desenvolvimento, sem vincular preços às candidatas reais e sem criar dados de catálogo/migrações neste PR.
 
 As relações de conhecimento são normalizadas. Snapshots de título, versão e valor nos itens de pedido são **redundância intencional de fatos da aquisição**, imutáveis, não uma cópia do catálogo atual nem do procedimento. Identidade de produto/metodologia/versão não pode ser reaproveitada.
 
@@ -27,7 +27,6 @@ erDiagram
   METHODOLOGY_VERSIONS ||--o{ ORDER_ITEMS : fixa
   USERS ||--o{ ENTITLEMENTS : recebe
   METHODOLOGIES ||--o{ ENTITLEMENTS : identifica
-  METHODOLOGY_VERSIONS ||--o{ ENTITLEMENTS : permite
   ORDER_ITEMS ||--o| ENTITLEMENTS : origina
   USERS ||--o{ IDEMPOTENCY_RECORDS : delimita
   ORDERS ||--o{ IDEMPOTENCY_RECORDS : identifica
@@ -46,7 +45,7 @@ Cada item pendente pode originar zero direitos; item concluído simulado deve or
 | `product_prices` | id, product_id, amount_centavos, currency, created_by, created_at | Preço imutável; currency BRL; histórico append-only; ativação do ponteiro é transacional |
 | `orders` | id, user_id, status, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at, completed_at nullable, cancelled_at nullable | mode SIMULATED; status PENDING_CONFIRMATION/COMPLETED_SIMULATED/CANCELLED/EXPIRED; total igual à soma dos itens |
 | `order_items` | id, order_id, product_id, methodology_version_id, price_id, title_snapshot, version_label_snapshot, unit_amount_centavos, quantity, line_total_centavos | UNIQUE(order_id, product_id); quantity=1; line_total=unit_amount; preço/versão pertencem ao produto/metodologia; campos comerciais imutáveis |
-| `entitlements` | id, user_id, methodology_id, methodology_version_id, order_item_id, status, granted_at, revoked_at nullable, reason nullable | UNIQUE(user_id, methodology_id); UNIQUE(order_item_id); concedido somente por pedido concluído simulado; ACTIVE/REVOKED, eventual revogação/restauração requer V03/V09 e não cria recompra automática |
+| `entitlements` | id, user_id, methodology_id, order_item_id, status, granted_at, revoked_at nullable, reason nullable | UNIQUE(user_id, methodology_id); UNIQUE(order_item_id); direito metodológico, sem FK que o fixe a uma versão; origem/versão original derivadas do item imutável; ACTIVE/REVOKED; P03/V03 ainda pendentes |
 | `idempotency_records` | id, user_id, operation, key_hash, request_hash, order_id, response_status, created_at | UNIQUE(user_id, operation, key_hash); somente efeitos concluídos da operação ficam persistidos; rollback remove reserva nova; não guardar conteúdo pago ou credencial na resposta |
 | `audit_events` | id, actor_user_id, action, target_type, target_id, request_id, safe_metadata, occurred_at | Trilha de escrita relevante e acesso editorial integral; sem senha/token/procedimento; retenção em V06/V09 |
 
@@ -67,17 +66,23 @@ erDiagram
 
 | Entidade | Campos essenciais propostos | Regras |
 | --- | --- | --- |
-| `methodologies` | id, slug, lifecycle, current_published_version_id nullable, created_by, created_at | UNIQUE(slug); DRAFT/PUBLISHED/RETIRED; ponteiro só aceita versão própria aprovada/publicada; aposentadoria bloqueia venda, não apaga versões |
-| `methodology_versions` | id, methodology_id, version_label, title, free_summary, public_description, changelog, editorial_status, access_state, revision, created_by, reviewed_at, published_at | UNIQUE(methodology_id, version_label); DRAFT/IN_REVIEW/APPROVED/PUBLISHED/SUPERSEDED; access_state ALLOWED/SUSPENDED; versões publicadas não são sobrescritas |
+| `methodologies` | id, slug, lifecycle, current_published_version_id nullable, created_by, created_at | UNIQUE(slug); DRAFT/PUBLISHED/RETIRED; ponteiro só aceita versão própria publicada com revisão registrada; aposentadoria bloqueia venda, não apaga versões/direitos |
+| `methodology_versions` | id, methodology_id, version_label, title, free_summary, public_description, changelog, editorial_status, access_state, revision, created_by, reviewed_by, reviewed_at, reviewed_revision, review_note, published_at | UNIQUE(methodology_id, version_label); somente DRAFT/PUBLISHED/SUPERSEDED no fluxo editorial mínimo; revisão e publicação registradas juntas; access_state ALLOWED/SUSPENDED independente; publicada é imutável |
 | `methodology_contents` | version_id, full_description, full_procedure, content_format | PK/FK version_id; representação integral separada; rascunho pode ainda não tê-la, publicação exige conteúdo; acesso só por caso de uso autorizado |
 | `sources` | id, reference_text, source_type, canonical_url nullable, owner_credit, edition_label nullable | Origem verificável, sem inventar referência; fonte pode ser registro de autoria original comprovada; nova edição/origem cria identidade distinta |
 | `version_sources` | version_id, source_id, locator, usage_conditions_snapshot, permission_status, permission_evidence_ref nullable, checked_by, checked_at | PK(version_id, source_id); PENDING/APPROVED/REJECTED; ligação registra condições da versão; evidência administrativa não entra no DTO de prévia |
 | `contributors` | id, display_name, contributor_type, reference nullable, linked_user_id nullable | Pessoa/organização identificada; vínculo opcional com usuário de administração, sem inventar autores |
-| `version_contributions` | version_id, contributor_id, contribution_role, recorded_at | PK(version_id, contributor_id, contribution_role); AUTHOR/CURATOR/REVIEWER; exige curadoria/revisão identificadas para publicar; segregação de pessoas depende de V09 |
+| `version_contributions` | version_id, contributor_id, contribution_role, recorded_at | PK(version_id, contributor_id, contribution_role); AUTHOR/CURATOR para atribuição; revisão obrigatória identificada em reviewed_by/at/note, sem cadastro duplicado obrigatório de revisor/contribuidor; independência de pessoas depende de V09 |
 
 `sources` guarda referências e atribuição, não cópia integral automática do material. Corrigir conteúdo publicado, referência, contribuição ou vínculo técnico com impacto exige nova versão; versões antigas e suas condições permanecem rastreáveis. Suspensão administrativa de acesso é um estado separado e auditável, não alteração silenciosa do texto publicado. Mudança da condição de uso de uma origem exige avaliar versões afetadas antes de mantê-las disponíveis.
 
-Produto e metodologia são entidades distintas: disponibilidade/preço comercial não pertence ao texto técnico, e conteúdo pode existir como rascunho sem produto ativo. “Versão atual” de venda não altera a versão armazenada em direitos anteriores (P03).
+Produto e metodologia são entidades distintas: disponibilidade/preço comercial não pertence ao texto técnico, e conteúdo pode existir como rascunho sem produto ativo. P03 propõe direito por metodologia: publicar atualização muda o ponteiro corrente, sem alterar direito, pedido ou preço histórico e sem emitir nova aquisição. O item de pedido mantém `methodology_version_id`, título e rótulo originais; o direito não armazena uma versão corrente mutável.
+
+A versão original é obtida de `entitlements.order_item_id` → `order_items.methodology_version_id`. A versão de leitura padrão vem de `methodologies.current_published_version_id`. Uma versão selecionada só é elegível se pertence à mesma metodologia, já foi publicada (PUBLISHED/SUPERSEDED e published_at registrado) e está ALLOWED; exige também usuário/sessão e direito ACTIVE. A proposta inclui histórico publicado e atualizações futuras da mesma identidade metodológica; nunca rascunho ou versão de outra metodologia. Suspensão da versão atual não autoriza fallback silencioso; o cliente pode selecionar explicitamente outra versão publicada permitida.
+
+P09 simplifica revisão para o ato de publicação: conferir expectedRevision e completude, registrar responsável da sessão/nota/revisão de conteúdo aceita e publicar atomicamente. Não há estado IN_REVIEW nem APPROVED de versão; o enum APPROVED em `version_sources.permission_status` continua sendo evidência de condição de uso, não fase editorial nem autorização criada por fixtures. Fonte pendente bloqueia publicar. O mesmo admin pode curar/revisar/publicar no recorte proposto; V09 deve aprovar essa responsabilidade. Alteração de texto publicado cria rascunho novo.
+
+Os campos de revisão são nulos enquanto DRAFT e obrigatórios ao publicar; `reviewed_by` referencia `users` e vem da sessão, não do payload. `reviewed_revision` identifica a revisão de conteúdo aceita pelo publish. Mudanças administrativas posteriores de suspensão não reescrevem esse registro de revisão nem os snapshots de compra.
 
 ## 4. Sete taxonomias e relações N:N por versão
 
@@ -120,11 +125,11 @@ Deprecar termo impede novas seleções, mas preserva vínculos históricos. Alte
 | ID | Invariante e evidência futura necessária |
 | --- | --- |
 | MD01 | E-mail normalizado único e papel de registro sempre cliente; concorrência de dois cadastros não duplica conta |
-| MD02 | Somente versão própria, completa, revisada e com origens autorizadas pode ocupar o ponteiro publicado; versão/sources/taxonomias históricas não são sobrescritas |
+| MD02 | Somente versão própria, completa e com origens autorizadas pode ser publicada com revisão explícita registrada na mesma transação; rascunho incompleto ou revisão concorrente divergente falha; versão/sources/taxonomias históricas não são sobrescritas |
 | MD03 | Um produto por metodologia; preço corrente pertence ao produto e é imutável; atualização de preço cria registro e incrementa revision da oferta |
 | MD04 | Um produto por carrinho e por pedido; quantidade um; nenhum pedido persistido vazio; total de snapshot igual à soma dos itens, currency BRL |
-| MD05 | Direito associa o mesmo usuário do pedido, a metodologia do produto e a versão do item; pedido deve estar COMPLETED_SIMULATED; confirmação e concessão ocorrem juntas |
-| MD06 | UNIQUE(user_id, methodology_id) impede segunda aquisição mesmo com nova versão/chave concorrente; REVOKED não autoriza recompra automática. A política deve ser aprovada em V03 |
+| MD05 | Direito associa usuário do pedido e metodologia do produto; item de origem preserva versão/valor originais. Pedido deve estar COMPLETED_SIMULATED e concessão ser atômica; leitura pode resolver outra versão publicada da mesma metodologia sem alterar o item |
+| MD06 | UNIQUE(user_id, methodology_id) impede recompra; atualização publicada não cria pedido/direito novo nem nova cobrança. REVOKED não autoriza recompra automática. P03/V03 seguem pendentes de aprovação |
 | MD07 | Reservas idempotentes, pedido confirmado, direitos, limpeza seletiva de carrinho e evento de conclusão têm destino atômico; nenhuma falha intermediária concede acesso parcial |
 | MD08 | Conteúdo completo não aparece nos DTOs de prévia/itens/pedidos, nem no índice de busca textual; teste de não exposição deve procurar marcadores exclusivos do procedimento |
 | MD09 | FKs históricas usam restrição de exclusão; desativação lógica não destrói compra. Retenção/anonimização de usuários depende de V06, sem presumir deleção em cascata como regra legal |
@@ -139,4 +144,4 @@ Busca considera apenas campos gratuitos autorizados da versão corrente. As cola
 
 ## 7. Questões de modelagem que precisam de aprovação
 
-P03/V03: versão adquirida e atualizações; P04/V04: repetição/carrinho; V02: condições de fontes e revisão; V05: valores reais/gratuidade; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações; V09: papéis editoriais e suspensão. Não há seeds científicos ou comerciais reais nestes diagramas/tabelas.
+P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; P09/V09: admin único, revisão na publicação e bootstrap seguro. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
