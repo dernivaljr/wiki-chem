@@ -192,7 +192,12 @@ describe('catálogo editorial em MySQL real', () => {
     expect(response.json().data.references).toHaveLength(1)
     expect((await call('GET', '/admin/versions/' + version.id, undefined, customer)).statusCode).toBe(403)
     expect((await call('GET', '/methodologies/' + method.id + '?include=procedure', undefined, customer)).statusCode).toBe(400)
-    expect((await call('GET', '/methodologies')).statusCode).toBe(404)
+    const list = await call('GET', '/methodologies')
+    expect(list.statusCode, list.body).toBe(200)
+    expect(list.body).not.toContain(privateMarker)
+    expect(list.body).not.toContain(evidenceMarker)
+    expect(list.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote/)
+    expect((await call('GET', '/methodologies', undefined, null)).statusCode).toBe(401)
   })
   it('publicada é imutável e nova versão não herda confirmação de direitos de fonte', async () => {
     const { method, version } = await complete(); const published = unwrap<Version>(await publish(version))
