@@ -1,3 +1,4 @@
+import AdminField from './AdminField'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/AuthContext'
@@ -31,12 +32,12 @@ export default function TaxonomyManager({ taxonomies, onSaved }: { taxonomies: T
     <p>Vocabulários e curadoria continuam em validação. Não há termos científicos pré-carregados. Termos vinculados mantêm sua identidade; desativação preserva o histórico.</p>
     <div className="admin-select-field"><label htmlFor="taxonomy-type">Tipo de classificação</label><select id="taxonomy-type" value={facet} onChange={event => { setFacet(event.target.value as Facet); setEditing(null); setFields(blank()); setError(null); setMessage('') }}>{facets.map(type => <option key={type} value={type}>{labels[type]}</option>)}</select></div>
     <form onSubmit={submit} className="admin-form" aria-busy={pending}>
-      <label>Código do termo<input value={fields.code} onChange={event => setFields({ ...fields, code: event.target.value })} required maxLength={60} pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*" /></label>
-      <label>Nome do termo<input value={fields.label} onChange={event => setFields({ ...fields, label: event.target.value })} required maxLength={160} /></label>
+      <AdminField label={<>Código do termo</>}><input value={fields.code} onChange={event => setFields({ ...fields, code: event.target.value })} required maxLength={60} pattern="[a-zA-Z0-9][a-zA-Z0-9_-]*" /></AdminField>
+      <AdminField label={<>Nome do termo</>}><input value={fields.label} onChange={event => setFields({ ...fields, label: event.target.value })} required maxLength={160} /></AdminField>
       {facet === 'standards' && <>
-        <label>Emissor<input value={fields.issuer} onChange={event => setFields({ ...fields, issuer: event.target.value })} required maxLength={120} /></label>
-        <label>Identificador da norma<input value={fields.identifier} onChange={event => setFields({ ...fields, identifier: event.target.value })} required maxLength={120} /></label>
-        <label>Edição da norma<input value={fields.editionLabel} onChange={event => setFields({ ...fields, editionLabel: event.target.value })} required maxLength={80} /></label>
+        <AdminField label={<>Emissor</>}><input value={fields.issuer} onChange={event => setFields({ ...fields, issuer: event.target.value })} required maxLength={120} /></AdminField>
+        <AdminField label={<>Identificador da norma</>}><input value={fields.identifier} onChange={event => setFields({ ...fields, identifier: event.target.value })} required maxLength={120} /></AdminField>
+        <AdminField label={<>Edição da norma</>}><input value={fields.editionLabel} onChange={event => setFields({ ...fields, editionLabel: event.target.value })} required maxLength={80} /></AdminField>
         <div className="admin-select-field"><label htmlFor="taxonomy-verification">Verificação da identificação</label><select id="taxonomy-verification" value={fields.verifiedStatus} onChange={event => setFields({ ...fields, verifiedStatus: event.target.value as 'PENDING' | 'VERIFIED' })}><option value="PENDING">Pendente</option><option value="VERIFIED">Identificação e edição verificadas</option></select></div>
         <p>Verificar identificação não declara vigência regulatória ou permissão de reprodução.</p>
       </>}

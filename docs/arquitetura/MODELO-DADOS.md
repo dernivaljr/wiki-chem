@@ -80,7 +80,7 @@ Produto e metodologia são entidades distintas: disponibilidade/preço comercial
 
 A versão original é obtida de `entitlements.order_item_id` → `order_items.methodology_version_id`. A versão de leitura padrão vem de `methodologies.current_published_version_id`. Uma versão selecionada só é elegível se pertence à mesma metodologia, já foi publicada (PUBLISHED/SUPERSEDED e published_at registrado) e está ALLOWED; exige também usuário/sessão e direito ACTIVE. A proposta inclui histórico publicado e atualizações futuras da mesma identidade metodológica; nunca rascunho ou versão de outra metodologia. Suspensão da versão atual não autoriza fallback silencioso; o cliente pode selecionar explicitamente outra versão publicada permitida.
 
-P09 simplifica revisão para o ato de publicação: conferir expectedRevision e completude, registrar responsável da sessão/nota/revisão de conteúdo aceita e publicar atomicamente. Não há estado IN_REVIEW nem APPROVED de versão; o enum APPROVED em `version_sources.permission_status` continua sendo evidência de condição de uso, não fase editorial nem autorização criada por fixtures. Fonte pendente bloqueia publicar. O mesmo admin pode curar/revisar/publicar no recorte proposto; V09 deve aprovar essa responsabilidade. Alteração de texto publicado cria rascunho novo.
+P09 simplifica revisão para o ato de publicação: conferir expectedRevision e completude, registrar responsável da sessão/nota/revisão de conteúdo aceita e publicar atomicamente. Não há estado IN_REVIEW nem APPROVED de versão; o enum APPROVED em `version_sources.permission_status` continua sendo evidência de condição de uso, não fase editorial nem autorização criada por fixtures. Fonte pendente bloqueia publicar. O mesmo admin pode curar/revisar/publicar no recorte A11 adotado; demais responsabilidades de governança permanecem em V09. Alteração de texto publicado cria rascunho novo.
 
 Os campos de revisão são nulos enquanto DRAFT e obrigatórios ao publicar; `reviewed_by` referencia `users` e vem da sessão, não do payload. `reviewed_revision` identifica a revisão de conteúdo aceita pelo publish. Mudanças administrativas posteriores de suspensão não reescrevem esse registro de revisão nem os snapshots de compra.
 
@@ -144,7 +144,7 @@ Busca considera apenas campos gratuitos autorizados da versão corrente. As cola
 
 ## 7. Questões de modelagem que precisam de aprovação
 
-P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; P09/V09: admin único, revisão na publicação e bootstrap seguro. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
+P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; A11: admin único e revisão na publicação adotados; demais decisões de governança permanecem em V09. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
 
 ## 8. Esquema físico implementado
 

@@ -1,3 +1,4 @@
+import AdminField from './AdminField'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/AuthContext'
@@ -50,13 +51,13 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
     <form className="admin-form" onSubmit={save} aria-busy={pending}>
       <fieldset disabled={pending || readOnly}>
         <legend>Prévia gratuita e conteúdo protegido</legend>
-        <label>Título<input value={fields.title} onChange={event => setFields({ ...fields, title: event.target.value })} maxLength={200} /></label>
-        <label>Resumo gratuito<textarea value={fields.freeSummary} onChange={event => setFields({ ...fields, freeSummary: event.target.value })} maxLength={4000} /></label>
-        <label>Descrição pública<textarea value={fields.publicDescription} onChange={event => setFields({ ...fields, publicDescription: event.target.value })} maxLength={8000} /></label>
-        <label>Descrição técnica completa<textarea value={fields.fullDescription} onChange={event => setFields({ ...fields, fullDescription: event.target.value })} maxLength={16000} /></label>
-        <label>Procedimento completo<textarea value={fields.fullProcedure} onChange={event => setFields({ ...fields, fullProcedure: event.target.value })} rows={8} maxLength={64000} /></label>
+        <AdminField label={<>Título</>}><input value={fields.title} onChange={event => setFields({ ...fields, title: event.target.value })} maxLength={200} /></AdminField>
+        <AdminField label={<>Resumo gratuito</>}><textarea value={fields.freeSummary} onChange={event => setFields({ ...fields, freeSummary: event.target.value })} maxLength={4000} /></AdminField>
+        <AdminField label={<>Descrição pública</>}><textarea value={fields.publicDescription} onChange={event => setFields({ ...fields, publicDescription: event.target.value })} maxLength={8000} /></AdminField>
+        <AdminField label={<>Descrição técnica completa</>}><textarea value={fields.fullDescription} onChange={event => setFields({ ...fields, fullDescription: event.target.value })} maxLength={16000} /></AdminField>
+        <AdminField label={<>Procedimento completo</>}><textarea value={fields.fullProcedure} onChange={event => setFields({ ...fields, fullProcedure: event.target.value })} rows={8} maxLength={64000} /></AdminField>
         <p>Formato de texto simples. Marcação digitada não é executada como HTML. O procedimento não integra a prévia gratuita.</p>
-        <label>Descrição das alterações<textarea value={fields.changelog} onChange={event => setFields({ ...fields, changelog: event.target.value })} maxLength={2000} /></label>
+        <AdminField label={<>Descrição das alterações</>}><textarea value={fields.changelog} onChange={event => setFields({ ...fields, changelog: event.target.value })} maxLength={2000} /></AdminField>
       </fieldset>
       <fieldset disabled={pending || readOnly}><legend>Sete classificações por versão</legend>
         <div className="admin-facets">{facets.map(facet => <fieldset key={facet}>
@@ -68,20 +69,20 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
               setFields({ ...fields, classifications: { ...fields.classifications, [facet]: ids }, notApplicable: { ...fields.notApplicable, [facet]: ids.length ? '' : fields.notApplicable[facet] } })
             }} />{term.label}{!term.active ? ' (inativo)' : ''}</label>)}
           {taxonomies[facet].length === 0 && <p>Cadastre termos em Classificações.</p>}
-          {fields.classifications[facet].length === 0 && <label>Justificativa de não aplicabilidade — {labels[facet]}<textarea value={fields.notApplicable[facet]} onChange={event => setFields({ ...fields, notApplicable: { ...fields.notApplicable, [facet]: event.target.value } })} maxLength={1000} /></label>}
+          {fields.classifications[facet].length === 0 && <AdminField label={<>Justificativa de não aplicabilidade — {labels[facet]}</>}><textarea value={fields.notApplicable[facet]} onChange={event => setFields({ ...fields, notApplicable: { ...fields.notApplicable, [facet]: event.target.value } })} maxLength={1000} /></AdminField>}
         </fieldset>)}</div>
       </fieldset>
       <fieldset disabled={pending || readOnly}><legend>Fontes e condições de uso</legend>
         <p>Registre origens reais e condições verificadas. Link público não concede autorização. Não invente referências nem permissões.</p>
         {fields.sources.map((source, index) => <fieldset key={index}><legend>Fonte {index + 1}</legend>
-          <label>Referência {index + 1}<textarea value={source.referenceText} onChange={event => changeSource(index, 'referenceText', event.target.value)} maxLength={4000} /></label>
+          <AdminField label={<>Referência {index + 1}</>}><textarea value={source.referenceText} onChange={event => changeSource(index, 'referenceText', event.target.value)} maxLength={4000} /></AdminField>
           <div className="admin-select-field"><label htmlFor={'source-type-' + version.id + '-' + index}>Tipo da fonte {index + 1}</label><select id={'source-type-' + version.id + '-' + index} value={source.sourceType} onChange={event => changeSource(index, 'sourceType', event.target.value)}><option value="REFERENCE">Referência externa</option><option value="ORIGINAL">Conteúdo original</option></select></div>
-          <label>URL da fonte {index + 1}<input type="url" value={source.canonicalUrl} onChange={event => changeSource(index, 'canonicalUrl', event.target.value)} maxLength={2000} /></label>
-          <label>Crédito do titular {index + 1}<input value={source.ownerCredit} onChange={event => changeSource(index, 'ownerCredit', event.target.value)} maxLength={300} /></label>
-          <label>Edição da fonte {index + 1}<input value={source.editionLabel} onChange={event => changeSource(index, 'editionLabel', event.target.value)} maxLength={120} /></label>
-          <label>Localizador {index + 1}<input value={source.locator} onChange={event => changeSource(index, 'locator', event.target.value)} maxLength={1000} /></label>
-          <label>Condições de uso {index + 1}<textarea value={source.usageConditions} onChange={event => changeSource(index, 'usageConditions', event.target.value)} maxLength={4000} /></label>
-          <label>Evidência privada {index + 1}<textarea value={source.permissionEvidence} onChange={event => changeSource(index, 'permissionEvidence', event.target.value)} maxLength={2000} /></label>
+          <AdminField label={<>URL da fonte {index + 1}</>}><input type="url" value={source.canonicalUrl} onChange={event => changeSource(index, 'canonicalUrl', event.target.value)} maxLength={2000} /></AdminField>
+          <AdminField label={<>Crédito do titular {index + 1}</>}><input value={source.ownerCredit} onChange={event => changeSource(index, 'ownerCredit', event.target.value)} maxLength={300} /></AdminField>
+          <AdminField label={<>Edição da fonte {index + 1}</>}><input value={source.editionLabel} onChange={event => changeSource(index, 'editionLabel', event.target.value)} maxLength={120} /></AdminField>
+          <AdminField label={<>Localizador {index + 1}</>}><input value={source.locator} onChange={event => changeSource(index, 'locator', event.target.value)} maxLength={1000} /></AdminField>
+          <AdminField label={<>Condições de uso {index + 1}</>}><textarea value={source.usageConditions} onChange={event => changeSource(index, 'usageConditions', event.target.value)} maxLength={4000} /></AdminField>
+          <AdminField label={<>Evidência privada {index + 1}</>}><textarea value={source.permissionEvidence} onChange={event => changeSource(index, 'permissionEvidence', event.target.value)} maxLength={2000} /></AdminField>
           <div className="admin-select-field"><label htmlFor={'source-permission-' + version.id + '-' + index}>Situação da condição de uso {index + 1}</label><select id={'source-permission-' + version.id + '-' + index} value={source.permissionStatus} onChange={event => changeSource(index, 'permissionStatus', event.target.value)}><option value="PENDING">Pendente</option><option value="APPROVED">Verificada e permitida</option><option value="REJECTED">Verificada e recusada</option></select></div>
           <label className="admin-check"><input type="checkbox" checked={source.permissionAcknowledged} onChange={event => changeSource(index, 'permissionAcknowledged', event.target.checked)} />Conferi a condição de uso e a evidência da fonte {index + 1}</label>
           <button type="button" onClick={() => setFields({ ...fields, sources: fields.sources.filter((_, at) => at !== index) })}>Remover fonte {index + 1}</button>
@@ -90,10 +91,10 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
       </fieldset>
       <fieldset disabled={pending || readOnly}><legend>Autoria e curadoria</legend>
         {fields.contributors.map((item, index) => <fieldset key={index}><legend>Contribuição {index + 1}</legend>
-          <label>Nome da contribuição {index + 1}<input value={item.displayName} onChange={event => changeContributor(index, 'displayName', event.target.value)} maxLength={160} required /></label>
+          <AdminField label={<>Nome da contribuição {index + 1}</>}><input value={item.displayName} onChange={event => changeContributor(index, 'displayName', event.target.value)} maxLength={160} required /></AdminField>
           <div className="admin-select-field"><label htmlFor={'contributor-type-' + version.id + '-' + index}>Tipo da contribuição {index + 1}</label><select id={'contributor-type-' + version.id + '-' + index} value={item.contributorType} onChange={event => changeContributor(index, 'contributorType', event.target.value)}><option value="PERSON">Pessoa</option><option value="ORGANIZATION">Organização</option></select></div>
           <div className="admin-select-field"><label htmlFor={'contributor-role-' + version.id + '-' + index}>Papel da contribuição {index + 1}</label><select id={'contributor-role-' + version.id + '-' + index} value={item.role} onChange={event => changeContributor(index, 'role', event.target.value)}><option value="AUTHOR">Autoria</option><option value="CURATOR">Curadoria</option></select></div>
-          <label>Identificação da contribuição {index + 1}<input value={item.reference} onChange={event => changeContributor(index, 'reference', event.target.value)} maxLength={1000} /></label>
+          <AdminField label={<>Identificação da contribuição {index + 1}</>}><input value={item.reference} onChange={event => changeContributor(index, 'reference', event.target.value)} maxLength={1000} /></AdminField>
           <button type="button" onClick={() => setFields({ ...fields, contributors: fields.contributors.filter((_, at) => at !== index) })}>Remover contribuição {index + 1}</button>
         </fieldset>)}
         <button type="button" disabled={fields.contributors.length >= 20} onClick={() => setFields({ ...fields, contributors: [...fields.contributors, { displayName: '', contributorType: 'PERSON', reference: '', role: fields.contributors.some(item => item.role === 'AUTHOR') ? 'CURATOR' : 'AUTHOR' }] })}>Adicionar contribuição</button>
@@ -103,7 +104,7 @@ export default function VersionEditor({ version, taxonomies, onSaved, onDeleted,
     {!readOnly && <fieldset className="admin-publication" disabled={pending}><legend>Publicação com revisão explícita</legend>
       <p>Salve o rascunho antes de publicar. A revisão se aplica à versão salva, não às alterações locais.</p>
       {dirty && <p role="status">Há alterações locais não salvas. Salve o rascunho para revisar e publicar.</p>}
-      <label>Nota da revisão<textarea value={reviewNote} onChange={event => setReviewNote(event.target.value)} maxLength={2000} /></label>
+      <AdminField label={<>Nota da revisão</>}><textarea value={reviewNote} onChange={event => setReviewNote(event.target.value)} maxLength={2000} /></AdminField>
       <label className="admin-check"><input type="checkbox" checked={reviewAcknowledged} onChange={event => setReviewAcknowledged(event.target.checked)} />Revisei o conteúdo salvo, autoria, classificações e condições de uso.</label>
       <button className="admin-primary" type="button" onClick={() => { void publish() }} disabled={dirty || !reviewAcknowledged || !reviewNote.trim()}>Publicar versão revisada</button>
     </fieldset>}

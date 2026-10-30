@@ -1,3 +1,4 @@
+import AdminField from './AdminField'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../../auth/AuthContext'
@@ -108,7 +109,7 @@ export default function Admin() {
       {!taxonomies || !methods ? <p role="status">Carregando catálogo…</p> : tab === 'terms' ? <TaxonomyManager taxonomies={taxonomies} onSaved={loadTerms} /> : <>
         <section aria-labelledby="new-method-title"><h2 id="new-method-title">Cadastrar metodologia</h2>
           <form className="admin-inline" onSubmit={create}>
-            <label>Identificador da metodologia<input value={newSlug} onChange={event => setNewSlug(event.target.value)} required pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" maxLength={80} /></label>
+            <AdminField label={<>Identificador da metodologia</>}><input value={newSlug} onChange={event => setNewSlug(event.target.value)} required pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" maxLength={80} /></AdminField>
             <button type="submit" disabled={pending}>Criar metodologia</button>
           </form>
         </section>
@@ -125,7 +126,7 @@ export default function Admin() {
           <div>{method && <section aria-labelledby="selected-method-title">
             <h2 id="selected-method-title">{method.slug}</h2><p>Estado: {method.lifecycle}. Revisão {method.revision}.</p>
             <form className="admin-inline" onSubmit={event => { event.preventDefault(); void changeMethod({ slug }) }}>
-              <label>Editar identificador<input value={slug} readOnly={Boolean(method.currentPublishedVersionId)} onChange={event => setSlug(event.target.value)} required maxLength={80} pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" /></label>
+              <AdminField label={<>Editar identificador</>}><input value={slug} readOnly={Boolean(method.currentPublishedVersionId)} onChange={event => setSlug(event.target.value)} required maxLength={80} pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" /></AdminField>
               <button type="submit" disabled={pending || Boolean(method.currentPublishedVersionId)}>Salvar identificador</button>
             </form>
             <div className="admin-actions">
@@ -140,7 +141,7 @@ export default function Admin() {
               <button disabled={pending || versions.page * versions.pageSize >= versions.total} onClick={() => { void selectMethod(method.id, versions.page + 1) }}>Próximas versões</button>
             </div>}
             <form onSubmit={createVersion} className="admin-form">
-              <label>Identificador da nova versão<input value={versionLabel} onChange={event => setVersionLabel(event.target.value)} required pattern="[a-zA-Z0-9][a-zA-Z0-9._-]*" maxLength={40} /></label>
+              <AdminField label={<>Identificador da nova versão</>}><input value={versionLabel} onChange={event => setVersionLabel(event.target.value)} required pattern="[a-zA-Z0-9][a-zA-Z0-9._-]*" maxLength={40} /></AdminField>
               {version && <label className="admin-check"><input type="checkbox" checked={copyVersion} onChange={event => setCopyVersion(event.target.checked)} />Copiar a versão selecionada; condições de uso voltarão a pendentes</label>}
               <button type="submit" disabled={pending}>Criar rascunho</button>
             </form>
