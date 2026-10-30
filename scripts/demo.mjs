@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..'), project = 'wikichem-academic-demo'
 const directory = join(tmpdir(), 'wikichem-demo-' + createHash('sha256').update(root).digest('hex').slice(0, 16)), envFile = join(directory, 'runtime.env')
-const action = process.argv[2], allowed = ['prepare','up','down','reset','access','backup','restore','status']
+const action = process.argv[2], allowed = ['prepare','up','down','reset','access','backup','restore','status','diagnose']
 const args = ['compose', '--project-name', project, '--env-file', envFile, '-f', join(root, 'demo/compose.yaml')]
 async function run(parts, { input, output, quiet = false, tty = false } = {}) {
   return new Promise((resolve, reject) => {
@@ -42,6 +42,14 @@ try {
     console.log('Demonstração isolada: http://127.0.0.1:4180 — material sintético de teste, sem validade analítica/comercial. Segredos de infraestrutura fora do repositório: ' + directory)
   } else if (action === 'down') await run(['down'])
   else if (action === 'status') await run(['ps'])
+  else if (action === 'diagnose') {
+    // Somente MySQL deste projeto; sanitizar antes de escrever qualquer log.
+    const secrets = (await readFile(envFile, 'utf8')).split('\n').map(line => line.slice(line.indexOf('=') + 1)).filter(Boolean)
+    const child = spawnSync('docker', [...args, 'logs', '--no-color', '--tail', '100', 'mysql'], { cwd: root, shell: false, encoding: 'utf8', maxBuffer: 1000000 })
+    let text = (child.stdout ?? '') + (child.stderr ?? '')
+    for (const secret of secrets) text = text.replaceAll(secret, '[REDACTED]')
+    console.log(text)
+  }
   else if (action === 'reset') {
     if (process.argv[3] !== '--confirm-demo-reset') throw new Error('EXPLICIT_DEMO_RESET_REQUIRED')
     await run(['down', '--volumes', '--remove-orphans'])

@@ -143,6 +143,9 @@ jobs:
         run: npm run demo:up
       - name: Verificar fluxo, isolamento e backup/restauração real
         run: npm run demo:verify
+      - name: Diagnóstico sanitizado da inicialização MySQL
+        if: failure()
+        run: node scripts/demo.mjs diagnose
       - name: Encerrar apenas a demonstração descartável
         if: always()
         run: npm run demo:reset -- --confirm-demo-reset
