@@ -45,7 +45,10 @@ async function productDto(db: PoolConnection, row: Row, lock = false): Promise<P
 async function cartView(db: PoolConnection, userId: string, lock = false): Promise<Cart> {
   const [cart] = await rows(db, 'SELECT id, revision FROM carts WHERE user_id = ?' + (lock ? ' FOR UPDATE' : ''), [userId])
   if (!cart) return { revision: 1, items: [], currency: 'BRL', totalCentavos: '0', unavailableCount: 0 }
-  const items = await rows(db, 'SELECT ci.*, pp.amount_centavos AS observed_amount FROM cart_items ci JOIN product_prices pp ON pp.id = ci.observed_price_id AND pp.product_id = ci.product_id WHERE ci.cart_id = ? ORDER BY ci.product_id' + (lock ? ' FOR SHARE' : ''), [String(cart.id)])
+  // O usuário/carrinho já serializa suas mutações. Não reservar gaps de itens:
+  // carrinhos vazios de compradores distintos podem compartilhar o mesmo gap.
+  // Preços são imutáveis e as próprias escritas ficam visíveis à transação.
+  const items = await rows(db, 'SELECT ci.*, pp.amount_centavos AS observed_amount FROM cart_items ci JOIN product_prices pp ON pp.id = ci.observed_price_id AND pp.product_id = ci.product_id WHERE ci.cart_id = ? ORDER BY ci.product_id', [String(cart.id)])
   const methodIds = items.map(item => String(item.methodology_id))
   const versions = await currentVersions(db, methodIds, lock), offers = await loadOffers(db, methodIds, lock)
   const owned = await ownedMethods(db, userId, methodIds, lock)
@@ -135,7 +138,7 @@ export function createCommerceRepository(pool: Pool) {
         const [cart] = await rows(db, 'SELECT id, revision FROM carts WHERE user_id = ? FOR UPDATE', [actor.userId])
         if (!cart) throw new Error('CART_MISSING')
         expected(cart, expectedRevision)
-        const existing = await rows(db, 'SELECT product_id FROM cart_items WHERE cart_id = ? ORDER BY product_id FOR UPDATE', [String(cart.id)])
+        const existing = await rows(db, 'SELECT product_id FROM cart_items WHERE cart_id = ? ORDER BY product_id', [String(cart.id)])
         const ids = [...new Set([...existing.map(item => String(item.product_id)), productId])].sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1)
         const locked = await rows(db, 'SELECT * FROM products WHERE id IN (' + placeholders(ids.length) + ') ORDER BY id FOR UPDATE', ids)
         const present = existing.some(item => String(item.product_id) === productId)
