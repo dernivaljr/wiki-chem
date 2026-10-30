@@ -19,6 +19,17 @@ Referência diagnóstica: [PR #1](https://github.com/dernivaljr/wiki-chem/pull/1
 
 Nenhum arquivo de lógica de negócio da aplicação (`App`, páginas ou componentes `.tsx` existentes) foi alterado. Login/cadastro continuam simulados e a pesquisa permanece sem implementação, conforme o limite desta etapa.
 
+### Arquivos alterados (23)
+
+| Grupo | Arquivos |
+| --- | --- |
+| Ambiente e dependências | `.nvmrc`, `package.json`, `package-lock.json`, `frontend/package.json`, `frontend/package-lock.json` |
+| CI e artefatos locais | `.github/workflows/ci.yml`, `.gitignore` |
+| Documentação | `README.md`, `frontend/README.md`, `docs/etapas/ETAPA-01-ESTABILIZACAO.md` |
+| Configuração de testes/tipos | `frontend/vitest.config.ts`, `frontend/playwright.config.ts`, `frontend/tsconfig.node.json` |
+| Testes | `frontend/src/test/setup.ts`, `frontend/src/App.test.tsx`, `frontend/src/pages/Login/Login.test.tsx`, `frontend/src/pages/Consultas/Consultas.test.tsx`, `frontend/e2e/estabilizacao.spec.ts` |
+| Estilos | `frontend/src/index.css`, `frontend/src/components/Header/Header.css`, `frontend/src/components/Hero/Hero.css`, `frontend/src/pages/Login/Login.css`, `frontend/src/pages/Consultas/Consultas.css` |
+
 ## Dependências e compatibilidade
 
 | Pacote do grafo original | Antes | Depois |
@@ -57,13 +68,30 @@ Os comandos abaixo são executados na raiz. A instalação limpa usa o pacote fr
 
 As falhas iniciais da configuração de testes foram corrigidas antes da validação final: import com extensão no config Vitest, opções de locator da Testing Library e encaminhamento de argumentos nos scripts da raiz. Não foram suprimidos avisos de compatibilidade nem desabilitadas verificações para obter aprovação.
 
-A inspeção adicional pelo navegador integrado confirmou foco visível e ausência de overflow do painel de consultas nas dez larguras, inclusive com scrollbar clássica em 320 px (clientWidth/scrollWidth 305/305). Ela é evidência complementar e não substitui a execução da suíte Playwright. O binário instalado é PE x64 e o erro local de spawn persiste mesmo na execução autorizada; a causa detalhada não foi comprovada e não foram alteradas proteções do sistema para contorná-lo. O runner Linux do CI será usado para validar a suíte versionada.
+A inspeção adicional pelo navegador integrado confirmou foco visível e ausência de overflow do painel de consultas nas dez larguras, inclusive com scrollbar clássica em 320 px (clientWidth/scrollWidth 305/305). Ela é evidência complementar e não substitui a execução da suíte Playwright. O binário instalado é PE x64 e o erro local de spawn persiste mesmo na execução autorizada; a causa detalhada não foi comprovada e não foram alteradas proteções do sistema para contorná-lo. A suíte versionada foi validada no runner Linux do CI, conforme os resultados abaixo.
+
+### Resultado remoto em Ubuntu
+
+A [execução 40977170223](https://github.com/dernivaljr/wiki-chem/actions/runs/40977170223), vinculada ao commit de implementação `9c5290f524e46f6ecb4fb3c17caa4670bdbb4b3e` no [PR #2](https://github.com/dernivaljr/wiki-chem/pull/2), concluiu com **sucesso**. Os logs do job foram consultados; não se inferiu aprovação somente pela existência do workflow.
+
+| Etapa no runner | Resultado |
+| --- | --- |
+| Node e instalação limpa | Node 24.19.0; `npm ci --prefix frontend` aprovado |
+| `npm run build` | Aprovado |
+| `npm run lint` | Aprovado |
+| `npm test` | 3 arquivos, 10 testes aprovados |
+| Instalação de Chromium com `--with-deps --no-shell` | Aprovada |
+| `npm run test:e2e` | **13 testes aprovados**, sem skips; 15,2 s na execução de referência |
+| `npm run audit:deps` | Zero vulnerabilidades |
+| `npm run audit:prod` | Zero vulnerabilidades |
+
+A aprovação de Playwright em Linux comprova as asserções da suíte; a limitação local de lançamento no Windows permanece registrada. O CI também executa novamente a cada atualização deste PR, e seus checks identificam o resultado de cada commit posterior ao de referência.
 
 ## GitHub Actions
 
 O workflow `.github/workflows/ci.yml` usa Ubuntu, checkout/setup-node v6, versão Node da `.nvmrc`, cache npm pelo lockfile frontend e `npm ci`. Executa build, lint, Vitest, instalação de Chromium com dependências do sistema, Playwright e ambas as auditorias npm. A auditoria bloqueia severidade moderada ou superior; o resultado local atual é zero em todos os níveis.
 
-Dispara para PRs destinados a main, pushes em main e execução manual quando o workflow estiver disponível. Não há deploy, permissões de escrita ou alteração das regras de proteção. A execução remota depende da publicação/abertura do novo PR; seus checks são a fonte do resultado posterior à validação local registrada aqui.
+Dispara para PRs destinados a main, pushes em main e execução manual quando o workflow estiver disponível. Não há deploy, permissões de escrita ou alteração das regras de proteção. Os checks do PR são a fonte do resultado de sua revisão atual; a execução de referência e seus resultados foram registrados acima.
 
 ## Pendências preservadas
 
