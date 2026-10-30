@@ -239,6 +239,30 @@ describe('catálogo editorial em MySQL real', () => {
     expect(await rows('SELECT version_id FROM version_techniques WHERE version_id = ? AND technique_id = ?', [version.id, term.id])).toHaveLength(1)
     await call('PATCH', '/admin/taxonomies/techniques/' + term.id, { code: term.code, label: term.label, active: true, expectedRevision: inactive.revision })
   })
+
+  it('edições simultâneas de metodologias diferentes preservam fontes e atribuições compartilhadas', async () => {
+    const first = await methodAndDraft(), second = await methodAndDraft()
+    const reference = 'Origem original DEMO compartilhada ' + randomUUID()
+    const data = demoEditor(termIds)
+    data.sources[0]!.referenceText = reference
+    data.contributors = data.contributors.map(item => ({ ...item, displayName: item.displayName + ' ' + serial }))
+    // Segundo ADMIN somente na fixture isolada; a API nunca permite essa promoção.
+    await pool.execute("UPDATE users SET role = 'ADMIN' WHERE id = ?", [customer.id])
+    let responses: LightMyRequestResponse[]
+    try {
+      responses = await Promise.all([call('PATCH', '/admin/versions/' + first.version.id, { ...data, expectedRevision: first.version.revision }), call('PATCH', '/admin/versions/' + second.version.id, { ...data, expectedRevision: second.version.revision }, customer)])
+    } finally { await pool.execute("UPDATE users SET role = 'CUSTOMER' WHERE id = ?", [customer.id]) }
+    for (const response of responses) {
+      const saved = unwrap<Version>(response)
+      expect(saved.sources).toHaveLength(1)
+      expect(saved.sources[0]?.referenceText).toBe(reference)
+      expect(saved.contributors).toHaveLength(2)
+      const loaded = unwrap<Version>(await call('GET', '/admin/versions/' + saved.id))
+      expect(loaded.sources).toEqual(saved.sources)
+      expect(loaded.contributors).toEqual(saved.contributors)
+    }
+    expect(await rows('SELECT id FROM sources WHERE reference_text = ?', [reference])).toHaveLength(1)
+  })
   it('CSRF/origem são exigidos e revogação de papel é efetiva', async () => {
     const response = await app.inject({ method: 'POST', url: '/api/v1/admin/methodologies', headers: { cookie: admin.cookie, origin: config.APP_ORIGIN }, payload: { slug: 'must-not-exist' } })
     expect(response.statusCode).toBe(403)

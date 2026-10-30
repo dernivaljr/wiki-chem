@@ -76,3 +76,9 @@ Os testes verificam CRUD lógico, classificação múltipla nos sete eixos, FKs/
 Há testes de formulário, carregamento, conflito, campos acessíveis, publicação somente do conteúdo salvo, teclado e responsividade. A integração usa MySQL real e navegador, preservando os testes anteriores. Resultados executados devem ser distinguidos da validação científica das metodologias.
 
 Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. Busca, preços, direitos, pedidos, biblioteca e pagamentos são incrementos próprios; IA/RAG permanece integralmente fora do MVP.
+
+### Resultados experimentais
+
+A validação automatizada executada aprovou 65 testes de unidade/contrato do backend, 36 testes de componentes e rotas React, 13 regressões de navegador e 12 jornadas com API e MySQL reais. As jornadas verificaram criação, edição, publicação, leitura imutável, autorização, navegação por teclado e formulário em largura de 320 px.
+
+A integração com MySQL 8.4 aprovou CRUD, os sete relacionamentos múltiplos, restrições referenciais, conflitos de revisão, publicação incompleta, imutabilidade e isolamento do procedimento. As 28 migrações de estrutura foram aplicadas e executadas novamente sem reaplicação. Instalação limpa, builds, análise estática e auditorias completas/de produção foram aprovados, com zero vulnerabilidades reportadas. Esses resultados demonstram comportamento do software com fixtures sintéticas; não constituem validação científica de métodos nem comprovação de direitos sobre fontes reais.

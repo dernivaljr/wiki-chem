@@ -79,22 +79,22 @@ async function taxonomyCollections(db: Db, includeInactive: boolean) {
 async function readEditor(db: Db, row: Row): Promise<Editor> {
   const result = emptyEditor()
   result.title = row.title; result.freeSummary = row.free_summary; result.publicDescription = row.public_description; result.changelog = row.changelog
-  const [content] = await records(db, 'SELECT full_description, full_procedure FROM methodology_contents WHERE version_id = ?', [String(row.id)])
+  const [content] = await records(db, 'SELECT full_description, full_procedure FROM methodology_contents WHERE version_id = ? FOR SHARE', [String(row.id)])
   result.fullDescription = content?.full_description ?? ''; result.fullProcedure = content?.full_procedure ?? ''
   for (const facet of facets) {
     const map = facetTables[facet]
-    const links = await records(db, 'SELECT ' + map.column + ' AS term_id FROM ' + map.link + ' WHERE version_id = ? ORDER BY ' + map.column, [String(row.id)])
+    const links = await records(db, 'SELECT ' + map.column + ' AS term_id FROM ' + map.link + ' WHERE version_id = ? ORDER BY ' + map.column + ' FOR SHARE', [String(row.id)])
     result.classifications[facet] = links.map(link => String(link.term_id))
   }
-  const notes = await records(db, 'SELECT facet, reason FROM version_classification_notes WHERE version_id = ?', [String(row.id)])
+  const notes = await records(db, 'SELECT facet, reason FROM version_classification_notes WHERE version_id = ? FOR SHARE', [String(row.id)])
   for (const note of notes) result.notApplicable[note.facet as Facet] = note.reason
-  const sources = await records(db, 'SELECT s.*, vs.locator, vs.usage_conditions_snapshot, vs.permission_status, vs.permission_evidence_ref, vs.checked_by FROM version_sources vs JOIN sources s ON s.id = vs.source_id WHERE vs.version_id = ? ORDER BY s.id', [String(row.id)])
+  const sources = await records(db, 'SELECT s.*, vs.locator, vs.usage_conditions_snapshot, vs.permission_status, vs.permission_evidence_ref, vs.checked_by FROM version_sources vs JOIN sources s ON s.id = vs.source_id WHERE vs.version_id = ? ORDER BY s.id FOR SHARE', [String(row.id)])
   result.sources = sources.map(source => ({
     referenceText: source.reference_text, sourceType: source.source_type, canonicalUrl: source.canonical_url, ownerCredit: source.owner_credit, editionLabel: source.edition_label,
     locator: source.locator, usageConditions: source.usage_conditions_snapshot, permissionStatus: source.permission_status,
     permissionEvidence: source.permission_evidence_ref, permissionAcknowledged: source.checked_by !== null,
   }))
-  const contributors = await records(db, 'SELECT c.*, vc.contribution_role FROM version_contributions vc JOIN contributors c ON c.id = vc.contributor_id WHERE vc.version_id = ? ORDER BY c.id, vc.contribution_role', [String(row.id)])
+  const contributors = await records(db, 'SELECT c.*, vc.contribution_role FROM version_contributions vc JOIN contributors c ON c.id = vc.contributor_id WHERE vc.version_id = ? ORDER BY c.id, vc.contribution_role FOR SHARE', [String(row.id)])
   result.contributors = contributors.map(item => ({ displayName: item.display_name, contributorType: item.contributor_type, reference: item.reference, role: item.contribution_role }))
   return result
 }
@@ -131,7 +131,7 @@ async function writeEditor(db: Db, versionId: string, editor: Editor, actor: Act
     const key = fingerprint([source.referenceText, source.sourceType, source.canonicalUrl, source.ownerCredit, source.editionLabel])
     await db.execute('INSERT INTO sources (fingerprint, reference_text, source_type, canonical_url, owner_credit, edition_label) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE fingerprint = fingerprint',
       [key, source.referenceText, source.sourceType, source.canonicalUrl, source.ownerCredit, source.editionLabel])
-    const [stored] = await records(db, 'SELECT id FROM sources WHERE fingerprint = ?', [key])
+    const [stored] = await records(db, 'SELECT id FROM sources WHERE fingerprint = ? FOR SHARE', [key])
     if (!stored) throw new Error('SOURCE_MISSING')
     const checked = source.permissionStatus !== 'PENDING'
     await db.execute('INSERT INTO version_sources (version_id, source_id, locator, usage_conditions_snapshot, permission_status, permission_evidence_ref, checked_by, checked_at) VALUES (?, ?, ?, ?, ?, ?, ?, ' + (checked ? 'UTC_TIMESTAMP(6)' : 'NULL') + ')',
@@ -142,7 +142,7 @@ async function writeEditor(db: Db, versionId: string, editor: Editor, actor: Act
     const key = fingerprint([item.displayName, item.contributorType, item.reference])
     await db.execute('INSERT INTO contributors (fingerprint, display_name, contributor_type, reference) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE fingerprint = fingerprint',
       [key, item.displayName, item.contributorType, item.reference])
-    const [stored] = await records(db, 'SELECT id FROM contributors WHERE fingerprint = ?', [key])
+    const [stored] = await records(db, 'SELECT id FROM contributors WHERE fingerprint = ? FOR SHARE', [key])
     if (!stored) throw new Error('CONTRIBUTOR_MISSING')
     await db.execute('INSERT INTO version_contributions (version_id, contributor_id, contribution_role, recorded_at) VALUES (?, ?, ?, UTC_TIMESTAMP(6))', [versionId, stored.id, item.role])
   }
@@ -235,7 +235,9 @@ export function createCatalogRepository(pool: Pool) {
     },
     async getVersion(id: string, actor: Actor): Promise<Version> {
       return write(actor, async db => {
-        const row = await versionRow(db, id)
+        const initial = await versionRow(db, id)
+        await methodRow(db, String(initial.methodology_id), true)
+        const row = await versionRow(db, id, true)
         await audit(db, actor, 'ADMIN_CONTENT_READ', 'version', id)
         return { ...summary(row), ...await readEditor(db, row) }
       })
