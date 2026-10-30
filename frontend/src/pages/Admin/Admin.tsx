@@ -101,7 +101,7 @@ export default function Admin() {
   return <main className="admin-page">
     <div className="admin-container">
       <h1>Administração do catálogo</h1>
-      <p>Gerencie conteúdo editorial. Pesquisa, preços e vendas não fazem parte desta área.</p>
+      <p>Gerencie conteúdo editorial, classificações e ofertas. Aquisições são demonstrativas, sem cobrança.</p>
       <nav className="admin-actions" aria-label="Seções administrativas">
         <button type="button" aria-pressed={tab === 'methods'} onClick={() => setTab('methods')}>Metodologias e versões</button>
         <button type="button" aria-pressed={tab === 'terms'} onClick={() => setTab('terms')}>Classificações</button>

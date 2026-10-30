@@ -1,0 +1,65 @@
+name: wikichem-academic-demo
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DEMO_ROOT_PASSWORD:?Use npm run demo:prepare}
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: wikichem_test_demo
+      MYSQL_USER: wikichem_demo_app
+      MYSQL_PASSWORD: ${DEMO_APP_PASSWORD:?Use npm run demo:prepare}
+    volumes:
+      - demo-mysql:/var/lib/mysql
+      - ./restrict-app.sql:/docker-entrypoint-initdb.d/20-restrict-app.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysqladmin ping -h 127.0.0.1 --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 40
+  api:
+    build: { context: .., dockerfile: demo/api.Dockerfile }
+    environment: &api-environment
+      NODE_ENV: test
+      HOST: 0.0.0.0
+      PORT: '3001'
+      LOG_LEVEL: silent
+      APP_ORIGIN: http://127.0.0.1:4180
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_NAME: wikichem_test_demo
+      DB_USER: wikichem_demo_app
+      DB_PASSWORD: ${DEMO_APP_PASSWORD}
+      DB_TLS: 'false'
+      MYSQL_TEST_ALLOW: 'true'
+      DEMO_ALLOW: 'true'
+    depends_on:
+      mysql: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3001/api/v1/health/database').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  frontend:
+    build: { context: .., dockerfile: demo/frontend.Dockerfile }
+    environment:
+      API_PROXY_TARGET: http://api:3001
+    ports: ['127.0.0.1:4180:4173']
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4173/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  prepare:
+    build: { context: .., dockerfile: demo/api.Dockerfile }
+    profiles: [operations]
+    environment:
+      <<: *api-environment
+      MIGRATION_DB_USER: root
+      MIGRATION_DB_PASSWORD: ${DEMO_ROOT_PASSWORD}
+    depends_on:
+      mysql: { condition: service_healthy }
+    command: [node, node_modules/tsx/dist/cli.mjs, tests/demo/prepare.ts]
+volumes:
+  demo-mysql:

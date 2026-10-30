@@ -81,14 +81,13 @@ test('protege escritas com origem e CSRF reais', async ({ page, context }) => {
   await page.goto('/perfil')
   await expect(page.getByLabel('Nome de exibição')).toHaveValue('Nome via API')
 })
-test('sessão revogada é removida da interface ao tentar ação protegida', async ({ page, context }) => {
+test('sessão revogada é removida da interface ao retomar o foco', async ({ page, context }) => {
   await page.goto('/login')
   await login(page, await signup(page))
   await page.getByRole('link', { name: 'Perfil', exact: true }).click()
   const session = (await (await context.request.get('/api/v1/auth/session')).json()).data
   expect((await context.request.post('/api/v1/auth/logout', { headers: { Origin: 'http://127.0.0.1:4174', 'X-CSRF-Token': session.csrfToken }, data: {} })).status()).toBe(204)
-  await page.getByLabel('Nome de exibição').fill('Ação após revogação')
-  await page.getByRole('button', { name: 'Salvar nome' }).click()
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')))
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
   await expect(page.getByRole('status')).toContainText('Sua sessão expirou')
 })

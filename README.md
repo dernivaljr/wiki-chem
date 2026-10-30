@@ -14,7 +14,7 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 | Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada; ofertas e preços quando cadastrados, carrinho autenticado |
 | Ofertas, histórico imutável de preços BRL e carrinho por usuário | Valores comerciais reais exigem definição |
 | Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; biblioteca integral autenticada está implementada |
-| Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem somente nas suítes de teste |
+| Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem nas suítes e na demonstração isolada NODE_ENV=test |
 
 A identidade visual React foi preservada. /consultas pesquisa prévias por texto e sete filtros; /metodologias/:id apresenta detalhes gratuitos. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
 
@@ -159,7 +159,7 @@ docs/
 
 O [mapa documental](docs/README.md) separa material acadêmico de registros operacionais. Não existe ainda relatório acadêmico final. A especificação diferencia comportamento implementado de propostas de produto/comércio pendentes.
 
-Identidade preservada: React, Inter, paleta azul e ativos atuais. Permanecem pendentes a página 404 React, semântica das abas, foco após navegação SPA, otimização de ativos e avisos de favicon no build. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
+Identidade preservada: React, Inter, paleta azul e ativos atuais. A página 404 React recuperável está implementada; as abas de acesso suportam teclado. Permanecem pendentes foco geral após navegação SPA, otimização de ativos; o favicon está presente e os builds de verificação não apresentaram alerta de favicon. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
 
 Projeto licenciado sob a [GNU GPL v2](LICENSE).
 
@@ -180,3 +180,11 @@ Os comandos existentes install:clean, build, lint, test, test:integration, test:
 ## Biblioteca digital
 
 /biblioteca lista aquisições e /biblioteca/:methodologyId consulta a versão publicada atual, com seleção explícita de histórico elegível. Direito próprio ACTIVE e condições de fontes são verificados no backend em cada leitura; ADMIN não recebe acesso de cliente sem aquisição. Suspensão/restauração por versão exige justificativa em /admin, com revisão concorrente e auditoria. Execute db:migrate pela conta operacional para aplicar a migração 0048 antes de utilizar o novo controle editorial. Os comandos de testes existentes incluem biblioteca, navegador integrado e inspeção de ativos de produção. [Regras e contratos](docs/arquitetura/BIBLIOTECA-DIGITAL.md).
+
+## Demonstração acadêmica isolada
+
+Com Docker/Compose v2 e Node.js 24 disponíveis, execute `npm run demo:prepare`. Abra http://127.0.0.1:4180. O sistema completo utiliza MySQL 8.4 privado, API Fastify e React, com cinco exemplos originais sintéticos cobrindo os sete filtros. O estado publicado existe somente no banco de testes e não representa revisão humana científica, licença externa ou validade analítica/comercial.
+
+`npm run demo:access` gera acesso administrativo sintético aleatório em terminal interativo, sem senha padrão ou arquivo de credenciais. Cadastre uma conta cliente para apresentação. Segredos de infraestrutura e backups ficam fora do repositório, em diretório temporário restrito do sistema. `demo:down` preserva dados, `demo:up` retoma, `demo:backup` e `demo:restore -- CAMINHO` ensaiam recuperação apenas desse ambiente. Consulte o [guia operacional](docs/desenvolvimento/DEMONSTRACAO-LOCAL.md) para requisitos, isolamento, recuperação e reset explícito. Nenhum serviço pago ou hospedagem é configurado.
+
+O [material acadêmico estruturado](docs/academico/README.md) reúne problema, objetivos, requisitos, arquitetura, ER, BPMN, rastreabilidade, evidências e limitações, sem constituir o relatório final. `npm run evidence:academic` produz capturas mascaradas no navegador e `npm run test:integration` mede pesquisas com corpus sintético em MySQL real. Esses comandos exigem banco descartável e as habilitações de teste descritas no guia; não apontar a ambientes com dados a preservar.

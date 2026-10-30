@@ -36,3 +36,6 @@ Thumbs.db
 
 # Sessões efêmeras exclusivas de testes de navegador
 .test-fixtures/
+
+# Evidências intermediárias; apenas capturas revisadas são incorporadas à documentação
+.artifacts/

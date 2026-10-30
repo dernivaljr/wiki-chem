@@ -63,7 +63,7 @@ function OfferManager({ methodologyId }: { methodologyId: string }) {
 }
 export default function OfferSection({ methodologyId }: { methodologyId: string }) {
   const [open, setOpen] = useState(false)
-  return <section className="admin-card" aria-label="Administração comercial"><h2>Oferta e preços</h2><p>Ativação exige conteúdo publicado, revisado e autorizado, além de preço vigente. Checkout e pedidos não estão implementados.</p>
+  return <section className="admin-card" aria-label="Administração comercial"><h2>Oferta e preços</h2><p>Ativação exige conteúdo publicado, revisado e autorizado, além de preço vigente. Checkout e pedidos são demonstrativos, sem cobrança.</p>
     <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>Gerenciar oferta e preços</button>
     {open && <OfferManager methodologyId={methodologyId} />}
   </section>
