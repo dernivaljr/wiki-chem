@@ -53,3 +53,11 @@ Na execução [40992342032](https://github.com/dernivaljr/wiki-chem/actions/runs
 A verificação HTTP local do binário compilado confirmou liveness 200, banco ausente 503 e query inválida 400. A primeira asserção sobre encerramento supunha semântica POSIX; no Windows, child.kill termina diretamente o processo. A suíte de integração inclui verificação do processo compilado, ambiente inválido e saída limpa por SIGTERM no CI Linux.
 
 O PR [#4](https://github.com/dernivaljr/wiki-chem/pull/4) concentra as revisões e os checks correntes. A aprovação final deve considerar o commit mais recente e os dois jobs completos; esta anotação não declara integração real aprovada antes de sua execução.
+
+### Resultado confirmado da revisão técnica
+
+A revisão `daa9e52662b519fa4b43a07854fa5226a88d80f7` teve os dois jobs concluídos com sucesso na execução [40992696438](https://github.com/dernivaljr/wiki-chem/actions/runs/40992696438). Foram aprovados instalação limpa, build, lint e auditorias, 10 testes frontend, 13 testes Playwright, 36 testes backend de unidade/contrato e **21 testes de integração** (16 MySQL, três do processo compilado e dois do proxy).
+
+O fluxo CLI mostrou PENDING → APPLIED e repetição sem reaplicação. Os negativos de checksum, histórico, lock, DDL incompleto, múltiplos statements, credenciais, banco ausente e pool encerrado passaram. BIGINT, FKs, unicidade, commit/rollback e escrita concorrente foram verificados no MySQL 8.4 real. O processo compilado respondeu via HTTP e encerrou com código zero por SIGTERM no Linux.
+
+Este registro comprova a fundação e a preservação das regressões existentes; não aprova propostas comerciais nem comprova autenticação, pesquisa, catálogo ou compra. A verificação da última revisão documental e da main após integração permanece nos checks do PR.

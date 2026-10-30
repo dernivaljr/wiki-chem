@@ -89,7 +89,7 @@ Comandos por pacote: `build:frontend`, `build:backend`, `lint:frontend`, `lint:b
 
 ### Integração automatizada
 
-A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. O banco não deve conter tabelas de aplicação. A suíte recusa nomes não permitidos e tabelas inesperadas, recria o ledger e remove somente tabelas/linhas próprias de teste.
+A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. O banco não deve conter tabelas de aplicação. A suíte recusa nomes não permitidos e tabelas inesperadas, recria o ledger e remove somente tabelas/linhas próprias de teste.
 
 São exercitados migração inicial/repetida, status sem escrita, checksum/histórico inválidos, lock concorrente, falha DDL, statements múltiplos rejeitados, precisão BIGINT, FKs, unicidade, commit/rollback, credenciais inválidas, banco inexistente, pool encerrado e proxy. A suite usa tabelas genéricas de teste, sem antecipar entidades ou regras comerciais.
 
