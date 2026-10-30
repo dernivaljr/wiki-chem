@@ -1,3 +1,4 @@
+import OfferSection from '../commerce/OfferSection'
 import { facets, labels } from './types'
 import type { Preview } from './types'
 function referenceUrl(value: string) {
@@ -14,6 +15,6 @@ export default function PreviewContent({ preview, detail = false }: { preview: P
       {source.ownerCredit && <span> · {source.ownerCredit}</span>}{referenceUrl(source.canonicalUrl) && <> · <a href={referenceUrl(source.canonicalUrl)!} rel="noopener noreferrer">Consultar fonte {index + 1}</a></>}
     </li>)}</ul></section>
     {detail && <section aria-label="Autoria e curadoria"><h2>Autoria e curadoria</h2><ul>{preview.contributors.map((person, index) => <li key={index}>{person.displayName} — {person.role === 'AUTHOR' ? 'Autoria' : 'Curadoria'}{person.reference && ' · ' + person.reference}</li>)}</ul></section>}
-    <p className="search-offer">Oferta comercial ainda não disponível.</p>
+    <OfferSection key={preview.versionId + ":" + (preview.offer?.revision ?? 0)} preview={preview} />
   </>
 }

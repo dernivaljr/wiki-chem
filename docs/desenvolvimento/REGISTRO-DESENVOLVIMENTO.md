@@ -103,3 +103,21 @@ A revisão final acrescenta cobertura para dois administradores editando metodol
 A execução 41062988425 aprovou o frontend e os testes anteriores, mas o caso adicional inicialmente exigia dois sucessos imediatos e recebeu EDIT_CONFLICT em uma das transações. O contrato já permite 409 para deadlock/lock timeout. O teste agora exige ao menos um sucesso, verifica a ausência de gravação parcial/auditoria na transação revertida e realiza uma única nova requisição com a revisão preservada; ambas as metodologias devem terminar completas, com uma origem compartilhada e atribuições recuperáveis. Não se aceita 503, conflito de revisão ou perda silenciosa de campos. Lint e 65 testes backend repetidos com sucesso.
 
 A revisão documental alinhou o estado físico do catálogo e a aprovação A11 em ARQUITETURA-MVP/MODELO-DADOS. Validação local: oito documentos, 41 links locais existentes, nove blocos Mermaid com cercas completas e UTF-8 válido; referências operacionais não integram os documentos acadêmicos. Menções a COMMIT transacional e SHA-256 criptográfico são informações técnicas, não histórico Git.
+
+## Etapa 07 — ofertas, preços e carrinho (registro interno)
+
+Base main 96bc8151e6f858dc6c55b22412fd285df1717db9 e CI 41071074026 confirmados antes da branch codex/produtos-precos-carrinho. Recorte autorizado: products/product_prices/carts/cart_items, ofertas e administração BRL, prévias e carrinho; sem checkout, pedidos, direitos, pagamentos ou IA/RAG.
+
+Sete migrações de estrutura foram acrescentadas (35 no total), incluindo FKs de pertencimento e dois triggers de imutabilidade do preço. Nenhum dado comercial é migrado. As suítes que recriam o esquema usam a conta operacional MIGRATION_DB_USER para aplicar migrações; a API mantém sua própria conta. Essa separação é necessária para criação de triggers sob as regras de binary logging do MySQL, sem elevar a conta da aplicação.
+
+Comandos locais executados: npm run install:clean; npm run build; npm run lint; npm test; npm run audit:deps; npm run audit:prod. Passaram 92 testes backend e 67 frontend; auditorias completas/produção reportaram zero vulnerabilidades. Bundle frontend inspecionado sem marcadores de fixtures comerciais. Validação documental: 11 documentos UTF-8, 62 links locais existentes e 12 blocos Mermaid com cercas completas. MySQL real, migrações iniciais/repetidas e navegador serão confirmados nos checks do PR; não se atribui execução local ao MySQL/Chromium indisponível neste Windows.
+
+As fixtures FX são originais DEMO da suíte e recusam produção. Não há associação às candidatas EPA nem autorização de terceiros inventada. O material acadêmico fica em OFERTAS-CARRINHO.md e documentos associados, com linguagem de funcionalidades, modelo, testes e resultados; este registro mantém operações separadas.
+
+### Verificação integrada de ofertas e carrinho
+
+A execução 41083952208 aprovou ambos os jobs na revisão e0a87050e92344008c0408694c88bd0c7045808b: 92 testes backend, 67 frontend, 114 integrações (22 comerciais), 13 regressões e 19 jornadas reais de navegador (quatro comerciais), totalizando 305. As 35 migrações foram aplicadas/repetidas, com checks de FKs e triggers. Instalação limpa, builds, lint e auditorias passaram; zero vulnerabilidades reportadas.
+
+A primeira execução 41083277379 encontrou três falhas de remoção: Fastify apresenta ausência de corpo como null ao validador, incompatível com z.undefined. A correção mantém origem/CSRF, aceita somente ausência de corpo normalizada e rejeita corpo explícito por framing/schema. Uma regressão adicional verifica DELETE vazio válido e rejeição de JSON explícito, inclusive null. As verificações de revisão, isolamento, privacidade e indisponibilidade foram preservadas.
+
+Resultados acadêmicos estão em OFERTAS-CARRINHO.md, sem identificadores Git/CI. A revisão documental corrente precisa passar pelos checks antes do merge, seguida da verificação da main.

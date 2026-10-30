@@ -2,7 +2,7 @@
 
 ## Objetivo e funcionalidades
 
-Implementar o gerenciamento de metodologias de química analítica com sete taxonomias, versões, conteúdo protegido, fontes, autoria, curadoria e revisão. /admin utiliza a interface React e exige ADMIN tanto na navegação quanto no backend. O cliente CUSTOMER pode consultar taxonomias ativas e a prévia de uma metodologia publicada conhecida; a [pesquisa autenticada](PESQUISA-METODOLOGIAS.md) lista prévias por texto/sete filtros. Não há oferta ou preço.
+Implementar o gerenciamento de metodologias de química analítica com sete taxonomias, versões, conteúdo protegido, fontes, autoria, curadoria e revisão. /admin utiliza a interface React e exige ADMIN tanto na navegação quanto no backend. O cliente CUSTOMER pode consultar taxonomias ativas e a prévia de uma metodologia publicada conhecida; a [pesquisa autenticada](PESQUISA-METODOLOGIAS.md) lista prévias por texto/sete filtros. Ofertas/preços opcionais e carrinho estão descritos em [Ofertas e carrinho](OFERTAS-CARRINHO.md).
 
 A implementação não carrega corpus científico, as candidatas da EPA ou permissões de reprodução. Vocabulário, aplicabilidade das candidatas e condições reais de uso continuam sujeitos à curadoria. Isso não impede o cadastro funcional de rascunhos e a construção da estrutura.
 
@@ -42,7 +42,7 @@ Copiar versão da mesma metodologia cria outro DRAFT; confirmações de condiç�
 
 DELETE de rascunho usa expectedRevision e marca deleted_at. Metodologia sem histórico publicado pode ser removida logicamente; identidade/slug/rótulo da versão não são reutilizados. Metodologia com histórico é arquivada/restaurada por PATCH, preservando versões. Arquivamento retira a prévia e impede novas publicações até restauração.
 
-Não há exclusão física por API, edição de versão publicada ou sobrescrita global de fonte atribuída ao histórico. Retenção/limpeza de registros desativados e órfãos é uma decisão operacional posterior. Arquivamento editorial não define política de direitos de compra; comércio e biblioteca não estão implementados.
+Não há exclusão física por API, edição de versão publicada ou sobrescrita global de fonte atribuída ao histórico. Retenção/limpeza de registros desativados e órfãos é uma decisão operacional posterior. Arquivamento editorial não define política de direitos de compra; ofertas/carrinho estão implementados, enquanto pedidos, direitos e biblioteca permanecem futuros.
 
 ## Contratos REST implementados
 
@@ -75,7 +75,7 @@ Os testes verificam CRUD lógico, classificação múltipla nos sete eixos, FKs/
 
 Há testes de formulário, carregamento, conflito, campos acessíveis, publicação somente do conteúdo salvo, teclado e responsividade. A integração usa MySQL real e navegador, preservando os testes anteriores. Resultados executados devem ser distinguidos da validação científica das metodologias.
 
-Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. A busca gratuita está implementada em recorte próprio; preços, direitos, pedidos, biblioteca e pagamentos permanecem futuros; IA/RAG permanece integralmente fora do MVP.
+Continuam pendentes: vocabulários oficiais e critérios de aplicabilidade, inclusão das candidatas reais, corpus revisado e permissões demonstráveis, volumes/otimização das coleções de termos, retenção e política de suspensão. A busca gratuita está implementada em recorte próprio; ofertas/preços/carrinho estão implementados e direitos, pedidos, biblioteca e pagamentos permanecem futuros; IA/RAG permanece integralmente fora do MVP.
 
 ### Resultados experimentais
 

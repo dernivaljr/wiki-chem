@@ -1,3 +1,4 @@
+import OfferSection from './OfferManager'
 import AdminField from './AdminField'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -146,6 +147,7 @@ export default function Admin() {
               <button type="submit" disabled={pending}>Criar rascunho</button>
             </form>
           </section>}
+          {method && <OfferSection key={method.id + ":" + method.revision} methodologyId={method.id} />}
           {version && <VersionEditor key={version.id + ':' + version.revision} version={version} taxonomies={taxonomies} onSaved={saved}
             onReload={() => selectVersion(version.id)}
             onDeleted={async () => { if (method) await selectMethod(method.id); setMessage('Rascunho removido da listagem.') }} />}

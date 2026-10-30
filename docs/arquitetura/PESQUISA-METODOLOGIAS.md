@@ -4,7 +4,7 @@
 
 A pesquisa permite recuperar prévias técnicas do catálogo MySQL sem depender de produtos, preços ou direitos de compra. A interface React em /consultas combina texto, sete classificações, ordenação e paginação. A página /metodologias/:id apresenta a prévia gratuita, fontes permitidas e autoria/curadoria. Ambas exigem sessão válida; a autorização é verificada novamente na API.
 
-RF04–RF06 são implementados no recorte de recuperação editorial. RF07 permanece parcial: título, resumo, descrição gratuita, versão, classificações e referências estão disponíveis; preço, oferta e demais informações comerciais serão concluídos na Etapa 07. A interface informa “Oferta comercial ainda não disponível”, sem simular preço, compra ou direito adquirido. Não há novas tabelas comerciais, dados científicos pré-carregados nem IA/RAG.
+RF04–RF06 são implementados no recorte de recuperação editorial. RF07 agora inclui preço/disponibilidade da oferta cadastrada, conforme [Ofertas e carrinho](OFERTAS-CARRINHO.md), além dos metadados gratuitos. Sem oferta elegível, a interface informa “Oferta comercial ainda não disponível”. Não se presume compra ou direito adquirido. A pesquisa não depende de oferta ativa; não há dados científicos pré-carregados nem IA/RAG.
 
 ## Contrato e regras de seleção
 

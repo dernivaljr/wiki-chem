@@ -11,7 +11,8 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 | Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulários científicos e curadoria ainda precisam de validação humana |
 | Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Sem corpus científico ou permissões pré-carregados |
 | Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
-| Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada, preços ou comércio |
+| Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada; ofertas e preços quando cadastrados, carrinho autenticado |
+| Ofertas, histórico imutável de preços BRL e carrinho por usuário | Sem checkout, pedidos ou liberação de conteúdo; valores comerciais reais exigem definição |
 | Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem somente nas suítes de teste |
 
 A identidade visual React foi preservada. /consultas pesquisa prévias por texto e sete filtros; /metodologias/:id apresenta detalhes gratuitos. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
@@ -38,7 +39,7 @@ CREATE DATABASE wikichem CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 CREATE USER 'wikichem_app'@'localhost' IDENTIFIED BY '<senha-segura-da-api>';
 GRANT SELECT, INSERT, UPDATE, DELETE ON wikichem.* TO 'wikichem_app'@'localhost';
 CREATE USER 'wikichem_migrator'@'localhost' IDENTIFIED BY '<senha-segura-operacional>';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES, TRIGGER
   ON wikichem.* TO 'wikichem_migrator'@'localhost';
 ```
 
@@ -49,6 +50,8 @@ npm run db:status
 npm run db:migrate
 npm run db:status
 ```
+
+Os preços históricos têm triggers que rejeitam UPDATE/DELETE. A conta operacional precisa de TRIGGER e, conforme o binary logging da instância, dos privilégios administrativos exigidos pelo MySQL para criar triggers. Use uma conta operacional autorizada para a migração; não amplie os privilégios da API. O proprietário dos triggers deve manter seus privilégios. [Requisitos oficiais](https://dev.mysql.com/doc/refman/8.4/en/create-trigger.html).
 
 Cada arquivo `backend/migrations/NNNN_nome.sql` contém **um único statement**, sequência contígua e checksum SHA-256 com normalização LF/CRLF. A primeira migração cria apenas `schema_migrations`. O executor usa lock por banco e registra APPLYING/APPLIED; repetir uma execução concluída não reaplica arquivos. Status não cria tabelas.
 
@@ -125,7 +128,7 @@ São exercitados migração inicial/repetida, status sem escrita, checksum/hist�
 
 Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste. O setup desse comando recria todas as tabelas conhecidas no banco descartável e prepara uma sessão ADMIN com senha aleatória, usada apenas para preparar testes de administração e pesquisa. Exige MIGRATION_DB_USER/MIGRATION_DB_PASSWORD; cookie temporário fica em frontend/.test-fixtures/ ignorado pelo Git. Não contém senha padrão nem semente de produção.
 
-O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação, administração e pesquisa no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
+O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação, administração, pesquisa e carrinho no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
 
 ## Organização e documentação
 
@@ -158,3 +161,9 @@ O [mapa documental](docs/README.md) separa material acadêmico de registros oper
 Identidade preservada: React, Inter, paleta azul e ativos atuais. Permanecem pendentes a página 404 React, semântica das abas, foco após navegação SPA, otimização de ativos e avisos de favicon no build. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
 
 Projeto licenciado sob a [GNU GPL v2](LICENSE).
+
+## Ofertas e carrinho
+
+Selecione uma metodologia em /admin e abra “Gerenciar oferta e preços”. Crie produto inativo, cadastre preço em centavos BRL e ative somente após publicação revisada. Novo preço preserva o histórico; arquivamento desativa a oferta e restauração exige ativação explícita. A pesquisa funciona sem produto/preço.
+
+Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. Não há checkout, pedido ou direito concedido. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).

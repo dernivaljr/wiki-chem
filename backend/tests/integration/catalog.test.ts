@@ -5,14 +5,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buildApp } from '../../src/app.js'
 import { loadConfig } from '../../src/config/env.js'
 import { createDatabasePool } from '../../src/database/pool.js'
-import { loadMigrations, runMigrations } from '../../src/database/migrations.js'
+
 import { provisionInitialAdmin } from '../../src/modules/identity/admin-bootstrap.js'
 import { createIdentityRepository } from '../../src/modules/identity/identity.repository.js'
 import { createCatalogRepository } from '../../src/modules/catalog/catalog.repository.js'
 import { facets, searchQuery } from '../../src/modules/catalog/catalog.contracts.js'
 import type { Facet, Methodology, Version } from '../../src/modules/catalog/catalog.contracts.js'
 import { demoEditor } from '../catalog-fixtures.js'
-import { resetTestDatabase } from '../test-database.js'
+import { migrateTestDatabase, resetTestDatabase } from '../test-database.js'
 
 const env = loadConfig(process.env)
 if (env.NODE_ENV !== 'test' || !/^wikichem_test_[a-z0-9_]+$/.test(env.DB_NAME) || process.env.MYSQL_TEST_ALLOW !== 'true') throw new Error('Catálogo exige banco descartável explícito.')
@@ -54,7 +54,7 @@ async function complete() {
 const publish = (version: Version) => call('POST', '/admin/versions/' + version.id + '/publish', { expectedRevision: version.revision, reviewAcknowledged: true, reviewNote: 'Revisão explícita da fixture original DEMO; sem validação de método laboratorial.' })
 beforeAll(async () => {
   await resetTestDatabase(pool, config)
-  await runMigrations(pool, config.DB_NAME, await loadMigrations(), true)
+  await migrateTestDatabase(config)
   const email = prefix + '-admin@example.test'
   await provisionInitialAdmin(pool, config.DB_NAME, { displayName: 'Admin DEMO de teste', email, password }, 'Operador sintético DEMO de testes')
   app = buildApp(config, { identity: createIdentityRepository(pool), catalog: createCatalogRepository(pool), checkDatabase: async () => {} })
@@ -77,7 +77,7 @@ function labels(type: Facet) { return type }
 afterAll(async () => {
   await app?.close()
   await resetTestDatabase(pool, config)
-  await runMigrations(pool, config.DB_NAME, await loadMigrations(), true)
+  await migrateTestDatabase(config)
   await pool.end()
 })
 
@@ -401,7 +401,7 @@ describe('pesquisa autenticada de prévias no MySQL', () => {
     for (const response of [await find(), await call('GET', '/methodologies/' + a.id, undefined, customer)]) {
       expect(response.statusCode).toBe(200)
       expect(response.body).not.toContain(hidden)
-      expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote|price|offer|owned/)
+      expect(response.body).not.toMatch(/fullProcedure|fullDescription|permissionEvidence|reviewNote|owned/)
     }
   })
   it('total, página e metadados usam um snapshot mesmo com publicação concorrente', async () => {

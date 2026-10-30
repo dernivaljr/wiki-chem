@@ -1,6 +1,6 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade, administração editorial e pesquisa autenticada estão implementadas; comércio permanece planejado. RF07 está parcial, sem oferta/preço.
+**Estado:** requisitos do MVP e propostas de produto em validação. Infraestrutura, identidade, administração editorial e pesquisa autenticada estão implementadas; ofertas, preços e carrinho persistente estão implementados. Checkout, pedidos e direitos permanecem planejados.
 
 ## 1. Contexto e metodologia
 
@@ -8,7 +8,7 @@ O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenhar
 
 A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas, /metodologias/:id e /perfil exigem sessão. Texto e sete filtros consultam o catálogo publicado corrente, com prévia gratuita e referências permitidas; não há ofertas, preços ou pedidos. A exibição comercial completa de RF07 será concluída na Etapa 07.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa infraestrutura e identidade persistente: cadastro, login, sessão, logout e perfil. /consultas, /metodologias/:id e /perfil exigem sessão. Texto e sete filtros consultam o catálogo publicado corrente, com prévia gratuita e referências permitidas; ofertas/preços cadastrados são apresentados com disponibilidade, sem bloquear a pesquisa quando ausentes. /carrinho mantém itens e revalida valores. Não há checkout, pedidos ou direitos de acesso.
 
 Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
@@ -32,6 +32,8 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 
 | A12 | Pesquisa autenticada autorizada: texto, sete filtros com OR interno/AND entre categorias, paginação, ordenação e detalhes gratuitos; independente de produtos. Oferta comercial completa de RF07 na Etapa 07; sem preços fictícios |
 
+| A13 | Produtos/preços BRL/carrinho autorizados: um produto por metodologia, histórico imutável, quantidade um, revisão, revalidação e isolamento; sem checkout, pedidos ou direitos |
+
 ### Propostas transversais e adoções identificadas
 
 | ID | Proposta (P), com adoção explicitada quando aplicável |
@@ -39,7 +41,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | P01 | Adotada no recorte de A10: CUSTOMER/ADMIN, sessão opaca revogável, cookie seguro e CSRF; políticas em [Identidade](../arquitetura/IDENTIDADE.md) |
 | P02 | Adotada no recorte A12: AND entre facetas/palavras e OR entre valores da mesma faceta; busca somente em informações de prévia. Semântica científica do vocabulário permanece em V01 |
 | P03 | Aquisição por metodologia: direito ativo permite a versão original, o histórico publicado e novas atualizações publicadas da mesma metodologia, sem recompra; versão/preço originais permanecem no pedido. Política proposta, pendente de V03 |
-| P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
+| P04 | Estrutura de produto único/quantidade um e carrinho adotada em A13. Recompra, direitos e confirmação idempotente permanecem propostos para incremento de pedidos |
 | P05 | Pedido em duas etapas: prévia persistida e confirmação de demonstração; revalidar oferta/preço/versão antes de concluir |
 | P06 | Desativar venda não remove a biblioteca; suspensão expressa por impedimento de uso bloqueia conteúdo e requer tratamento administrativo |
 | P07 | Monólito modular adotado e mesma origem preparada no desenvolvimento; tecnologias em A09, hospedagem em produção pendente |
