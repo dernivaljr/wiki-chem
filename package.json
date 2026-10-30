@@ -6,13 +6,25 @@
   },
   "scripts": {
     "dev": "npm --prefix frontend run dev --",
-    "build": "npm --prefix frontend run build --",
-    "lint": "npm --prefix frontend run lint --",
-    "test": "npm --prefix frontend run test --",
+    "build": "npm run build:frontend && npm run build:backend",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "test": "npm run test:frontend && npm run test:backend",
     "test:watch": "npm --prefix frontend run test:watch --",
     "test:e2e": "npm --prefix frontend run test:e2e --",
     "preview": "npm --prefix frontend run preview --",
-    "audit:deps": "npm --prefix frontend audit --audit-level=moderate",
-    "audit:prod": "npm --prefix frontend audit --omit=dev --audit-level=moderate"
+    "audit:deps": "npm audit --prefix frontend --audit-level=moderate && npm audit --prefix backend --audit-level=moderate",
+    "audit:prod": "npm audit --prefix frontend --omit=dev --audit-level=moderate && npm audit --prefix backend --omit=dev --audit-level=moderate",
+    "install:clean": "npm ci --prefix frontend && npm ci --prefix backend",
+    "dev:api": "npm --prefix backend run dev",
+    "start:api": "npm --prefix backend start",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "lint:backend": "npm --prefix backend run lint",
+    "test:frontend": "npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:integration": "npm --prefix backend run test:integration",
+    "db:migrate": "npm --prefix backend run migrate",
+    "db:status": "npm --prefix backend run migrate:status"
   }
 }

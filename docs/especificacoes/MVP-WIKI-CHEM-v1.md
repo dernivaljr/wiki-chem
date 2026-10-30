@@ -1,26 +1,20 @@
 # Wiki-Chem — Especificação do MVP v1 com e-commerce
 
-**Estado:** proposta para revisão e aprovação. **Data:** 29/10/2026 (America/Sao_Paulo). Este documento especifica comportamento futuro; não declara funcionalidades implementadas.
+**Estado:** requisitos do MVP e propostas de produto em validação. A fundação técnica está implementada; identidade, catálogo e comércio permanecem planejados.
 
-## 1. Base, evidências e governança
+## 1. Contexto e metodologia
 
-A branch documental parte de `main` em `6f48aecbca3fce10518e6224731086ec74c48d5c`. Pré-condições verificadas antes de criá-la:
+O Wiki-Chem é um projeto acadêmico da FATEC, curso DSM, disciplina de Engenharia de Software II. O problema abordado é a organização e recuperação de metodologias de química analítica com metadados rastreáveis e acesso controlado ao conteúdo integral. O objetivo é construir uma plataforma funcional de pesquisa e aquisição demonstrativa, mantendo a interface React existente.
 
-| Verificação | Evidência |
-| --- | --- |
-| Auditoria integrada | [PR #1](https://github.com/dernivaljr/wiki-chem/pull/1), merge `2fe5ee6a330d2057783077d42165e68e717db146` |
-| Etapa 01 integrada | [PR #2](https://github.com/dernivaljr/wiki-chem/pull/2), merge `6f48aecbca3fce10518e6224731086ec74c48d5c` |
-| CI da main aprovada nesse SHA | [Execução 40980122133](https://github.com/dernivaljr/wiki-chem/actions/runs/40980122133), evento push em main, conclusão success |
+A metodologia é incremental e orientada por especificações verificáveis, tomando as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md) como referência. Requisitos, arquitetura, modelagem e tarefas são distintos; testes verificam critérios de aceitação. A constituição própria e a adoção formal permanecem em V10, sem impedir incrementos expressamente autorizados.
 
-Referências locais: [auditoria](../auditoria/AUDITORIA-2026-10-29.md) e [Etapa 01](../etapas/ETAPA-01-ESTABILIZACAO.md). A base tem frontend React, quatro rotas, testes e CI. Login/cadastro e consulta ainda são simulações. Não há backend, banco ou e-commerce implementados.
+A aplicação dispõe de frontend e backend modular com MySQL configurável. O backend implementa somente saúde, validação, erros e migrações de infraestrutura. Login/cadastro e consulta da interface continuam simulados; não há persistência de usuários, catálogo ou pedidos.
 
-Foram consultadas as [diretrizes SDD v1.0](https://github.com/dernivaljr/sdd-methodology/blob/main/SDD-GUIDELINES.md), blob `05f4cb40e5b0a68c6bf7e606a74fe6c223c09e5b`. Requisitos, solução técnica e tarefas estão separados nestes cinco documentos. Não foi identificada constituição própria aprovada; sua formalização/adaptação permanece em V10. Consultar as diretrizes não constitui aprovação automática do desenho proposto.
-
-Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo de dados](../arquitetura/MODELO-DADOS.md), [regras comerciais](../arquitetura/ECOMMERCE.md) e [roadmap](../planejamento/ROADMAP-MVP.md).
+Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md), [comércio](../arquitetura/ECOMMERCE.md) e [planejamento](../planejamento/ROADMAP-MVP.md). Esta especificação não é o relatório acadêmico final.
 
 ## 2. Estados das decisões
 
-**A = orientação expressamente confirmada pelo solicitante para este trabalho.** Não significa aprovação das propostas de implementação. **P = proposta técnica ou de comportamento**, dependente de revisão deste PR. **V = ponto que exige validação identificada na seção 9.** Nenhum preço, fonte, contrato de uso ou parecer jurídico foi aprovado por estes documentos.
+**A = orientação expressamente confirmada pelo solicitante para este trabalho.** Não significa aprovação das propostas de implementação. **P = proposta técnica ou de comportamento**, dependente de validação de produto. **V = ponto que exige validação identificada na seção 9.** Nenhum preço, fonte, contrato de uso ou parecer jurídico foi aprovado por estes documentos.
 
 | ID | Orientação confirmada (A) |
 | --- | --- |
@@ -31,7 +25,8 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | A05 | Planejar Node.js + TypeScript/REST e MySQL relacional com relações N:N; valores históricos e consistência transacional |
 | A06 | Rastrear autoria/curadoria, revisão, fontes, versões e permissões; não comercializar reprodução protegida sem autorização |
 | A07 | IA/RAG, provedores, pacotes, assinaturas e pagamentos reais fora do MVP |
-| A08 | Esta entrega modifica apenas cinco documentos, sem código, dependências ou infraestrutura |
+| A08 | Implementação incremental: a fundação não antecipa identidade, catálogo ou comércio; distinguir requisitos e propostas |
+| A09 | Fundação adotada: Node.js 24, TypeScript strict, Fastify, Zod, MySQL 8.4, mysql2/promise, SQL parametrizado, migrações SQL controladas e Vitest |
 
 ### Propostas transversais
 
@@ -43,7 +38,7 @@ Documentos associados: [arquitetura e API](../arquitetura/ARQUITETURA-MVP.md), [
 | P04 | Um produto por metodologia, quantidade um, rejeição integral de carrinho com item já adquirido; confirmação idempotente |
 | P05 | Pedido em duas etapas: prévia persistida e confirmação de demonstração; revalidar oferta/preço/versão antes de concluir |
 | P06 | Desativar venda não remove a biblioteca; suspensão expressa por impedimento de uso bloqueia conteúdo e requer tratamento administrativo |
-| P07 | Monólito modular e publicação frontend/API na mesma origem; nenhuma escolha de framework, ORM ou hospedagem aprovada |
+| P07 | Monólito modular adotado e mesma origem preparada no desenvolvimento; tecnologias em A09, hospedagem em produção pendente |
 | P08 | Perfil edita nome de exibição; mudança de e-mail, recuperação de senha e verificação de e-mail exigem definição própria em V06 |
 | P09 | Administração editorial mínima por um administrador: salvar rascunho e publicar com revisão explícita registrada; sem etapas intermediárias ou papéis editoriais adicionais obrigatórios. Autoria, fontes, permissões e proteção continuam exigidas; validar em V09 |
 
@@ -116,7 +111,7 @@ Rotas atuais `/`, `/sobre` e `/login` são preservadas. `/consultas` passará a 
 - RNF01: nenhuma resposta de prévia/pesquisa/facetas inclui procedimento, HTML oculto, arquivo completo ou trecho obtido de busca em conteúdo pago. Usar DTO por finalidade e listas explícitas de campos.
 - RNF02: autorização por requisição, sessão revogável, validação de entrada, SQL parametrizado, limites/paginação, controle de abuso e logs sem senha/token/procedimento. Testes negativos fazem parte da entrega, não apenas guard de React.
 - RNF03: um erro injetado entre atualização do pedido e concessão de direitos deixa ambos sem confirmação; concorrência é testada em MySQL real, não apenas em mocks.
-- RNF04: scripts e CI da Etapa 01 são preservados; testes de backend/contrato/compra são incrementais. Não declarar funcionalidade real aprovada com testes de simulação.
+- RNF04: testes de apresentação são preservados; testes de backend, contrato e integração são incrementais. Não declarar funcionalidade real aprovada com testes de simulação.
 - RNF05: restauração de backup, implantação, HTTPS, orçamento de resposta e matriz de navegadores serão definidos/validados em V08 antes da liberação. Não há infraestrutura provisionada por esta documentação.
 - RNF06: textos técnicos, autoria e fontes precisam de curadoria humana e condições de uso demonstráveis. Esta especificação não aprova termos de uso, obrigação legal, licença comercial ou segurança operacional de procedimento laboratorial.
 
@@ -124,7 +119,7 @@ Rotas atuais `/`, `/sobre` e `/login` são preservadas. `/consultas` passará a 
 
 A prévia deverá explicar finalidade, aplicabilidade, contexto de técnica/matriz/analito, limitações essenciais, versão, autoria/curadoria identificável e referências permitidas. A curadoria deve impedir que a prévia reproduza o procedimento integral. Procedimento, sequências operacionais detalhadas e conteúdo integral permanecem na representação protegida, com revisão técnica.
 
-Cada versão tem histórico de alteração e evidência de revisão. Fontes não são inferidas de títulos nem preenchidas por IA. Conteúdo original deve registrar autoria e revisão; conteúdo derivado deve registrar origem, localizador e autorização/condição de uso. P09 propõe apenas salvar rascunho e publicar com revisão registrada sobre `expectedRevision`, responsável obtido da sessão e nota de revisão. Não há fila, etapa de aprovação separada ou segundo papel obrigatório no MVP; revisão não é dispensada. Nenhuma autorização de uso é criada por este PR.
+Cada versão tem histórico de alteração e evidência de revisão. Fontes não são inferidas de títulos nem preenchidas por IA. Conteúdo original deve registrar autoria e revisão; conteúdo derivado deve registrar origem, localizador e autorização/condição de uso. P09 propõe apenas salvar rascunho e publicar com revisão registrada sobre `expectedRevision`, responsável obtido da sessão e nota de revisão. Não há fila, etapa de aprovação separada ou segundo papel obrigatório no MVP; revisão não é dispensada. A especificação não concede autorização de uso.
 
 ### 7.1 Cinco candidatas reais para avaliação do catálogo
 
@@ -152,11 +147,11 @@ As duas tabelas cobrem os **sete filtros**; multianalitos/matrizes ilustram rela
 
 ### 7.2 Fixtures exclusivamente de desenvolvimento
 
-Valores fictícios de software ficam definidos em [ECOMMERCE, seção 1.1](../arquitetura/ECOMMERCE.md). IDs FX01–FX05 identificam produtos sintéticos de demonstração, **sem associação automática às candidatas C01–C05**. Não constituem preços sugeridos para as cinco metodologias, política comercial ou permissões de publicação. Nenhum seed ou arquivo de dados é criado nesta revisão.
+Valores fictícios de software ficam definidos em [ECOMMERCE, seção 1.1](../arquitetura/ECOMMERCE.md). IDs FX01–FX05 identificam produtos sintéticos de demonstração, **sem associação automática às candidatas C01–C05**. Não constituem preços sugeridos para as cinco metodologias, política comercial ou permissões de publicação. A fundação técnica não carrega dados comerciais.
 
 ## 8. Condição de conclusão funcional
 
-MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por evidências do [roadmap](../planejamento/ROADMAP-MVP.md), com fluxo completo em ambiente integrado e testes de falha/concorrência/autorização. A publicação comercial real não é consequência desse marco: checkout continua sendo demonstração. Este PR conclui a elaboração documental, não o MVP.
+MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por evidências do [roadmap](../planejamento/ROADMAP-MVP.md), com fluxo completo em ambiente integrado e testes de falha/concorrência/autorização. A publicação comercial real não é consequência desse marco: checkout continua sendo demonstração. A fundação técnica, isoladamente, não satisfaz os requisitos funcionais do MVP.
 
 ## 9. Registro único de validações pendentes
 
@@ -168,7 +163,7 @@ MVP implementado somente quando os RF01–RF17 aprovados estiverem cobertos por 
 | V04 | Rejeição integral de repetição, prévia/expiração/cancelamento, preço alterado e preservação do carrinho | Produto; antes de checkout |
 | V05 | Preços reais, responsável, faixa/gratuidade e condições de oferta; FX01–FX05 são valores fictícios isolados de desenvolvimento e não decidem política comercial | Responsável comercial; antes de ativar produto real; nenhum preço final proposto |
 | V06 | Campos do perfil, política de senha/sessão, recuperação, verificação/mudança de e-mail, retenção/eliminação de dados e textos de privacidade/uso | Produto + segurança + responsável pelas condições aplicáveis; antes de exposição pública; nada é parecer jurídico aprovado |
-| V07 | Framework HTTP, validação, driver/ORM MySQL, ferramenta/fluxo de migrações, hashing e autenticação/sessão; decisões consolidadas na matriz da arquitetura | Mantenedor técnico; antes do backend, sem instalar dependências ou selecionar serviços externos agora |
+| V07 | Fundação resolvida por A09; pendentes hashing, autenticação/sessão e restrições físicas dos futuros agregados | Mantenedor técnico; resolver decisões de identidade antes dos comportamentos dependentes |
 | V08 | Hospedagem, mesma origem, segredos, backup/restore, observabilidade, volumes/SLO e navegadores suportados | Mantenedor/operação; antes de liberação; sem contratação/configuração nesta etapa |
 | V09 | Aprovar P09 (admin único e revisão no ato de publicar), provisionamento seguro/idempotente do primeiro admin, responsáveis, suspensão/restauração e auditoria; matriz técnica na arquitetura | Produto + curadoria + segurança; antes da administração |
 | V10 | Constituição própria, adoção formal do SDD e aprovação destes cinco documentos como baseline de implementação | Mantenedor; antes de iniciar incrementos dependentes |

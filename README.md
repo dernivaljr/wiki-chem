@@ -1,115 +1,128 @@
 # Wiki-Chem
 
-Plataforma em desenvolvimento para consulta e aprendizado de **Química Analítica**, destinada a estudantes, professores e profissionais de laboratório.
+Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodologias de química analítica, desenvolvida no curso DSM da FATEC, disciplina de Engenharia de Software II.
 
-## Estado atual
+## Estado do sistema
 
-O projeto contém um **protótipo de frontend**, ainda sem um MVP de consulta funcional.
-
-| Disponível | Limite atual |
+| Implementado | Limites |
 | --- | --- |
-| Home (`/`) e Sobre (`/sobre`) | Apresentação institucional estática |
-| Navegação pelo cabeçalho e CTA | O CTA leva à tela de acesso |
-| Formulários de acesso (`/login`) | Alternância de modo, campos HTML e mostrar/ocultar senha funcionam; login e cadastro são simulados |
-| Painel de consultas (`/consultas`) | Campo editável e controles visuais; não executa pesquisa nem filtros |
-| Estabilização técnica inicial | Build, lint, testes de componentes/rotas, regressões visuais no navegador e GitHub Actions |
+| Frontend React/TypeScript: Home, Sobre, acesso e painel de consultas | Login/cadastro são simulações; pesquisa e filtros ainda não consultam dados |
+| Backend modular Node.js 24/TypeScript strict/Fastify | Somente infraestrutura, sem autenticação, catálogo ou comércio |
+| API `/api/v1/health` e `/api/v1/health/database` | Saúde do processo e disponibilidade do MySQL são verificações distintas; não certificam esquema de negócio |
+| Pool MySQL 8.4, SQL parametrizado e helper transacional | Única tabela persistente implementada: controle de migrações |
+| Migrações SQL controladas, erros JSON, validação Zod e requestId | Não há migração automática ao iniciar o servidor |
+| Testes unitários, de contrato, MySQL real e navegador | Testes de apresentação não comprovam funcionalidades simuladas |
 
-**Não existe autenticação, criação de conta ou sessão real.** O redirecionamento do login não comprova identidade e a mensagem de cadastro não significa que uma conta foi persistida. `/consultas` é uma rota pública. As categorias e o botão de pesquisa ainda não têm lógica de consulta.
+A rota React `/consultas` continua pública. Não há conta, sessão, conteúdo técnico, pedido ou direito de acesso persistido. Autenticação real será o próximo incremento. Catálogo, sete filtros, checkout simulado e biblioteca são requisitos posteriores. IA/RAG, pagamentos reais, pacotes e assinaturas não integram o MVP.
 
-A auditoria de referência está no [PR #1](https://github.com/dernivaljr/wiki-chem/pull/1). A estabilização é uma alteração independente, baseada em `main`; não incorpora nem modifica o relatório daquele PR.
+## Instalação
 
-Consulte o [registro da Etapa 01](docs/etapas/ETAPA-01-ESTABILIZACAO.md) para mudanças, resultados das verificações e pendências.
-
-## Ambiente e instalação
-
-Use **Node.js 24.19.0** (versão de referência em `.nvmrc`) e **npm 11 ou superior**. O intervalo de Node suportado está em `engines`; o CI usa a mesma versão de referência. Com nvm compatível, execute `nvm install` e `nvm use`; também é possível instalar essa versão diretamente.
-
-Na raiz do repositório:
+Requisitos: Node.js 24.19.0 (referência em [.nvmrc](.nvmrc)), npm 11 ou superior e MySQL 8.4 para integração/migrações.
 
 ```sh
-npm ci --prefix frontend
+npm run install:clean
 npm exec --prefix frontend -- playwright install --no-shell chromium
+```
+
+No Linux, a instalação do navegador pode exigir `--with-deps`. As dependências são independentes em `frontend/` e `backend/`; executar somente `npm ci` na raiz não instala ambos.
+
+Copie [backend/.env.example](backend/.env.example) para `backend/.env` e configure suas credenciais localmente. O arquivo é ignorado pelo Git. Nunca use variáveis `VITE_*` para credenciais de banco. O backend valida ambiente, porta, pool e timeouts, não exibe valores secretos em erros e exige TLS verificado em produção (`DB_TLS=true`, CA opcional em `DB_TLS_CA_FILE`).
+
+## MySQL e migrações
+
+O banco e as contas devem existir antes da execução. Use uma instância local ou ambiente isolado sem serviços pagos. Um administrador MySQL pode provisionar, por canal seguro, os objetos abaixo; substitua os marcadores de senha fora do repositório:
+
+```sql
+CREATE DATABASE wikichem CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE USER 'wikichem_app'@'localhost' IDENTIFIED BY '<senha-segura-da-api>';
+GRANT SELECT, INSERT, UPDATE, DELETE ON wikichem.* TO 'wikichem_app'@'localhost';
+CREATE USER 'wikichem_migrator'@'localhost' IDENTIFIED BY '<senha-segura-operacional>';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+  ON wikichem.* TO 'wikichem_migrator'@'localhost';
+```
+
+Adapte host/origem das contas à instalação. A API usa `DB_USER/DB_PASSWORD`; somente o comando operacional usa `MIGRATION_DB_USER/MIGRATION_DB_PASSWORD`. Não conceda DDL à conta da API nem exponha MySQL ao navegador. Exemplos de conta não implementam o administrador funcional da plataforma.
+
+```sh
+npm run db:status
+npm run db:migrate
+npm run db:status
+```
+
+Cada arquivo `backend/migrations/NNNN_nome.sql` contém **um único statement**, sequência contígua e checksum SHA-256 com normalização LF/CRLF. A primeira migração cria apenas `schema_migrations`. O executor usa lock por banco e registra APPLYING/APPLIED; repetir uma execução concluída não reaplica arquivos. Status não cria tabelas.
+
+Não edite ou remova migrações aplicadas. Falha/execução interrompida deixa APPLYING e bloqueia novas execuções para inspeção. DDL do MySQL faz commit implícito: não existe rollback automático de esquema. Faça backup antes de mudanças futuras, examine o estado real e use correção progressiva controlada ou restauração; não apague o marcador para repetir DDL às cegas. A API inicia sem migrar, permitindo distinguir liveness de falha do banco.
+
+## Execução
+
+Em terminais separados, na raiz:
+
+```sh
+npm run dev:api
 npm run dev
 ```
 
-O pacote que contém a aplicação e suas dependências é `frontend/`. Executar apenas `npm ci` na raiz não instala o frontend. Use o lockfile versionado e `npm ci` para reproduzir a instalação; os scripts da raiz encaminham os comandos para o frontend.
-
-No Linux, a primeira preparação do navegador pode exigir bibliotecas do sistema:
+A API escuta em `127.0.0.1:3001`. O Vite encaminha `/api/v1` para ela, preservando a mesma origem no desenvolvimento. Para outra porta/origem local, configure `API_PROXY_TARGET` em `frontend/.env` (exemplo versionado). Nenhuma tela atual consome autenticação ou pesquisa da API.
 
 ```sh
-npm exec --prefix frontend -- playwright install --with-deps --no-shell chromium
+npm run build
+npm run start:api
 ```
 
-O servidor de desenvolvimento informa a URL no terminal. Os testes de componentes não exigem navegador instalado; Playwright é necessário somente para `test:e2e`.
+O build gera `frontend/dist/` e `backend/dist/`. `npm run preview` serve apenas o frontend compilado; proxy Vite e preview não são configuração de hospedagem em produção. Hospedagem, HTTPS, limites de carga e backup/restauração continuam pendentes.
 
-A configuração usa o canal Chromium no modo headless atual; `--no-shell` evita baixar também o binário headless shell separado.
+## Comandos de qualidade
 
-## Comandos de desenvolvimento e qualidade
-
-Execute na raiz:
-
-| Comando | Finalidade |
+| Comando na raiz | Finalidade |
 | --- | --- |
-| `npm run dev` | Servidor Vite com atualização durante desenvolvimento |
-| `npm run build` | Verificação TypeScript e build em `frontend/dist/` |
-| `npm run preview` | Inspeção local do build existente; execute build antes |
-| `npm run lint` | ESLint do frontend, configurações e testes |
-| `npm test` | Vitest em execução única, apropriado para CI |
-| `npm run test:watch` | Vitest em modo interativo durante desenvolvimento |
-| `npm run test:e2e` | Playwright/Chromium: navegação, cabeçalho responsivo, foco e contraste |
-| `npm run audit:deps` | Auditoria npm incluindo ferramentas de desenvolvimento |
-| `npm run audit:prod` | Auditoria npm somente das dependências de produção |
+| `npm run install:clean` | Instalação limpa dos dois pacotes pelos lockfiles |
+| `npm run build` | Build de frontend e backend |
+| `npm run lint` | ESLint dos dois pacotes e TypeScript strict do backend/testes |
+| `npm test` | Testes de apresentação frontend e unidade/contrato backend |
+| `npm run test:integration` | MySQL 8.4 real e proxy Vite/API |
+| `npm run test:e2e` | Playwright/Chromium: navegação, responsividade, foco e contraste |
+| `npm run test:watch` | Vitest interativo do frontend |
+| `npm run audit:deps` | Auditoria completa dos dois pacotes |
+| `npm run audit:prod` | Auditoria de dependências de produção dos dois pacotes |
 
-`test:e2e` gera seu próprio build e inicia/encerra um preview em `127.0.0.1:4173`. A porta precisa estar livre. Falhas geram capturas e traces em `frontend/test-results/`, ignorado pelo Git. Vite dev/preview são servidores de desenvolvimento e inspeção local, não uma configuração de hospedagem de produção.
+Comandos por pacote: `build:frontend`, `build:backend`, `lint:frontend`, `lint:backend`, `test:frontend` e `test:backend`. Auditorias falham a partir de severidade moderada e precisam do registro npm; não utilizar `npm audit fix --force`.
 
-As auditorias dependem do registro npm e falham a partir de severidade **moderada**, incluindo alta e crítica. Omitir dependências de desenvolvimento não substitui a auditoria completa. Não use `npm audit fix --force`; revise mudanças de versão e execute as verificações após atualizar o lockfile.
+### Integração automatizada
 
-## Estratégia inicial de testes
+A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. O banco não deve conter tabelas de aplicação. A suíte recusa nomes não permitidos e tabelas inesperadas, recria o ledger e remove somente tabelas/linhas próprias de teste.
 
-- **Vitest + Testing Library + jsdom:** renderização das quatro páginas, navegação real por links/CTA, nomes acessíveis e restrições HTML dos campos, alternância visual login/cadastro, visibilidade da senha e edição do termo de consulta.
-- **Playwright + Chromium:** navegação no build, ausência de overflow/sobreposição dos links em 320, 375, 768 e 1280 px e nos limites das media queries (480/481, 600/601, 700/701 px), foco de teclado na busca e contraste mínimo de 4,5:1 nos textos/placeholder corrigidos.
-- Os testes **não submetem login/cadastro simulados nem certificam autenticação, persistência, pesquisa ou proteção de rotas**. Essas funcionalidades exigirão implementação e testes próprios.
+São exercitados migração inicial/repetida, status sem escrita, checksum/histórico inválidos, lock concorrente, falha DDL, statements múltiplos rejeitados, precisão BIGINT, FKs, unicidade, commit/rollback, credenciais inválidas, banco inexistente, pool encerrado e proxy. A suite usa tabelas genéricas de teste, sem antecipar entidades ou regras comerciais.
 
-Não há cobertura percentual mínima nesta suíte inicial. Os testes de navegador não equivalem a uma auditoria WCAG completa nem a uma matriz de navegadores/dispositivos.
+O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
 
-## Integração contínua
-
-O workflow [ci.yml](.github/workflows/ci.yml) roda em PRs destinados a `main`, pushes em `main` e execução manual quando disponível. Em Ubuntu/Node definido por `.nvmrc`, executa:
-
-1. Instalação limpa pelo lockfile (`npm ci --prefix frontend`).
-2. Build, lint e testes de componentes/rotas.
-3. Instalação do Chromium e testes de navegador.
-4. Auditoria completa e auditoria das dependências de produção.
-
-O workflow tem permissão somente de leitura do repositório e não publica a aplicação. Tornar seus checks obrigatórios para merge depende das regras de proteção do repositório; este workflow não altera essas regras.
-
-## Tecnologias implementadas
-
-React 19, TypeScript, React Router, Vite 8, CSS próprio, Inter e lucide-react. Vitest, Testing Library, jsdom e Playwright dão suporte à qualidade. Node.js é o runtime das ferramentas; **não existe backend Node de aplicação neste repositório**.
+## Organização e documentação
 
 ```text
-wiki-chem/
-├── .github/workflows/   # Verificações de CI
-├── frontend/
-│   ├── e2e/            # Regressões no navegador
-│   ├── public/         # Ícones
-│   └── src/            # Páginas, componentes, estilos e testes
-├── docs/               # Registro das etapas e resultados
-└── README.md
+backend/
+  migrations/          # SQL de infraestrutura versionado
+  src/
+    config/            # Validação do ambiente
+    database/          # Pool, transações e executor de migrações
+    modules/health/    # Rotas, serviço e repositório
+    shared/            # Contratos, validação e erros
+    app.ts             # Composição testável, sem listen
+    server.ts          # Inicialização HTTP e encerramento
+  tests/
+    unit/
+    contract/
+    integration/
+frontend/              # Interface React e seus testes existentes
+docs/
+  especificacoes/      # Objetivos, requisitos e critérios de aceitação
+  arquitetura/         # Solução, modelo e regras propostas
+  planejamento/        # Incrementos e rastreabilidade
+  desenvolvimento/     # Registros operacionais internos
+  auditoria/           # Diagnóstico histórico interno
+  etapas/              # Registros históricos internos
 ```
 
-## Planejado, ainda não implementado
+O [mapa documental](docs/README.md) separa material acadêmico de registros operacionais. Não existe ainda relatório acadêmico final. A especificação diferencia comportamento implementado de propostas de produto/comércio pendentes.
 
-- Catálogo curado, resultados, detalhes e referências às fontes.
-- Filtros por técnica, tecnologia, equipamento, matriz, analito, norma e segmento.
-- Backend Node.js/API REST/MVC e MySQL: arquitetura prevista, ainda sem implementação.
-- Modelo de acesso, autenticação real, sessões e persistência de usuários, se aprovados para o MVP.
-- Busca semântica, assistência por IA/RAG, resumos e procedimentos técnicos com fontes: evolução futura.
+Identidade preservada: React, Inter, paleta azul e ativos atuais. Permanecem pendentes a página 404 React, semântica das abas, foco após navegação SPA, otimização de ativos e avisos de favicon no build. A resposta 404 JSON da API não substitui a página 404 da interface.
 
-Persistem pendências registradas na auditoria, incluindo página 404, semântica/teclado das abas, gestão de foco após navegação SPA, otimização de imagens/fontes, caminhos de favicon que geram avisos no Vite e configuração de hospedagem. Não foram incluídas nesta etapa alterações dessas funcionalidades.
-
-## Identidade visual e licença
-
-Paleta principal: azul escuro `#0D1B4C`, azul `#1E66FF`, azul claro `#D6E9FF`, fundo `#F2F6FF` e branco `#FFFFFF`, com tipografia Inter. Textos auxiliares usam o cinza do projeto para contraste legível.
-
-Projeto desenvolvido para a disciplina de Engenharia de Software II. Licenciado sob a [GNU GPL v2](LICENSE).
+Projeto licenciado sob a [GNU GPL v2](LICENSE).

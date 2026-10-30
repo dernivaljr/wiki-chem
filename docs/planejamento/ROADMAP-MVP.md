@@ -1,16 +1,14 @@
 # Roadmap de implementação proposto — MVP Wiki-Chem
 
-**Estado:** planejamento para aprovação; nenhuma tarefa de implementação abaixo foi executada nesta etapa documental. Base: `main@6f48aecbca3fce10518e6224731086ec74c48d5c`. Referências: [requisitos/decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura/API](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
+**Estado:** planejamento incremental do MVP; fundação técnica implementada, demais incrementos pendentes. Referências: [requisitos](../especificacoes/MVP-WIKI-CHEM-v1.md), [arquitetura](../arquitetura/ARQUITETURA-MVP.md), [modelo](../arquitetura/MODELO-DADOS.md) e [comércio](../arquitetura/ECOMMERCE.md).
 
-## 1. Ponto de partida e governança
+## 1. Método incremental e estado
 
-PRs #1/#2 integrados e [CI da base aprovado](https://github.com/dernivaljr/wiki-chem/actions/runs/40980122133) foram confirmados antes de iniciar a branch documental. A auditoria é evidência histórica, não o estado atualizado inteiro: a Etapa 01 corrigiu dependências, layout/foco/contraste e adicionou testes/CI. Não implementou catálogo, identidade, banco ou compra.
+O desenvolvimento parte de requisitos verificáveis, esclarece decisões, define tarefas pequenas e valida incrementos com testes. A interface React é preservada. O backend dispõe de configuração, saúde, erros, pool e migrações; identidade, catálogo e comércio permanecem planejados.
 
-O escopo atual entrega somente estes cinco Markdown. A próxima etapa depende da aprovação das propostas P e resolução dos V aplicáveis. Seguir SDD: aprovar baseline/constituição, esclarecer requisitos, detalhar plano/tarefas, verificar consistência e só então implementar/validar incrementos. Nenhum merge deste PR é realizado pelo agente.
+P03, P09, candidatas C01–C05, permissões de conteúdo e preços comerciais continuam em validação. As tecnologias da fundação foram adotadas conforme A09. Fixtures FX01–FX05 serão implementadas somente nos incrementos comerciais pertinentes.
 
-Na revisão final, P03 passa a propor aquisição por metodologia com original/histórico/atualizações publicadas, preservando versão/preço da aquisição no pedido; segue pendente de V03. P09 reduz a administração a rascunho e publicação com revisão registrada, pendente de V09. As candidatas C01–C05 e as fixtures monetárias FX01–FX05 têm finalidades distintas: candidatos reais não são conteúdo autorizado, e valores fictícios não definem preços reais. A matriz técnica da arquitetura consolida framework, MySQL, migrações, autenticação e bootstrap de admin ainda não decididos.
-
-Não há calendário, estimativa de esforço, preço comercial, corpus técnico autorizado ou fornecedor assumido. Há cinco candidatas reais para avaliação e valores isolados de fixtures de desenvolvimento. Os incrementos são ordenados por dependência; uma PR por fatia verificável é recomendação, não regra já aprovada. Reabrir especificações antes de mudar comportamento acordado.
+Não se pressupõem calendário, esforço, corpus autorizado ou infraestrutura de produção pronta. Mudanças de comportamento exigem revisão dos requisitos antes das tarefas dependentes.
 
 ## 2. Dependências dos incrementos
 
@@ -35,18 +33,18 @@ Cada incremento deve terminar com testes de suas regras e integração mínima a
 
 ## 3. Backlog em tarefas pequenas
 
-Artefatos citados são **locais futuros de implementação**, não arquivos criados por este PR. IDs RF remetem à tabela de critérios da especificação; MD remetem às invariantes do modelo.
+Artefatos citados são destinos de implementação; a seção 6 distingue o que existe do que continua planejado. IDs RF remetem à tabela de critérios da especificação; MD remetem às invariantes do modelo.
 
 | Tarefa | Escopo e origem | Critério de conclusão proposto | Dependência |
 | --- | --- | --- | --- |
-| I00.01 | Aprovar requisitos A e propostas P/V10 | Baseline revisada com registro do mantenedor; propostas não aprovadas permanecem identificadas, sem serem tratadas como implementação autorizada | Revisão deste PR |
+| I00.01 | Aprovar requisitos A e propostas P/V10 | Baseline revisada com registro do mantenedor; propostas não aprovadas permanecem identificadas, sem serem tratadas como implementação autorizada | Validação dos requisitos |
 | I00.02 | Resolver conteúdo/negócio/segurança | V01–V09 têm responsáveis e decisões ou bloqueios explícitos; constituição própria/forma de adoção SDD definida | I00.01 |
 | I00.03 | Validar candidatas C01–C05 — RF05/07/17 | Curadoria verifica as cinco referências reais e o mapeamento dos sete filtros; registra escopo/limitações e decide entrada no catálogo; nenhuma candidata é publicada por ter link público | I00.01, V01/V02 |
 | I01.01 | Contratos e convenções — RF01–RF17 | Contrato executável inicial documenta DTOs gratuitos/protegidos, erros, paginação, valores e idempotência; exemplos sintéticos sem preços comerciais ou fontes inventadas | I00, V07 |
-| I01.02 | Fundação backend e integração — RNF02/04 | Futuro backend TS com validação/erros/requestId e camada de dados; testes usam MySQL isolado e migrações, sem segredo em cliente; frontend atual/regressões continuam passando | I01.01, V07 |
+| I01.02 | Fundação backend e integração — RNF02/04 | Backend TS com validação/erros/requestId e camada de dados; testes usam MySQL isolado e migrações, sem segredo em cliente; frontend atual/regressões continuam passando | I01.01, V07 |
 | I01.03 | Estratégia de ambiente/teste — RNF03/05 | Plano de migração/rollback e execução automatizada em MySQL definido; nenhuma infraestrutura de produção presumida pronta | I01.02, V08 |
 | I01.04 | Fixtures monetárias de desenvolvimento — RF09/11/13 | FX01–FX05 ficam isoladas em dev/test com aviso DEMO e bloqueio em produção; somas 2750/12000 centavos verificadas; alteração 1000→1250 exercita revalidação/histórico; sem atribuir esses preços a C01–C05 ou forjar fontes/permissões | I01.01, V07 |
-| I02.01 | Cadastro — RF01/MD01 | Migração de usuários, e-mail único/normalizado, senha adaptativa, rejeição de papel injetado e teste concorrente de duplicidade | I01, V06/V07 |
+| I02.01 | Cadastro — RF01/MD01 | Migração de usuários, e-mail único/normalizado, senha adaptativa, rejeição de papel injetado e teste concorrente de duplicidade | Fundação I01.02, contratos de identidade, V06/V07 |
 | I02.02 | Login real — RF02 | Credenciais válidas/ inválidas verificadas no servidor; sessão opaca criada/rotacionada; resposta e logs sem senha/hash/token; frontend substitui submit fictício | I02.01 |
 | I03.01 | Sessão/CSRF/logout — RF02/RNF02 | Expiração absoluta/inatividade e revogação testadas; cookie anterior não autoriza; bloqueio de conta impede sessão; bootstrap/CSRF e login de origem indevida exercitados | I02, V06 |
 | I03.02 | Perfil e rotas autenticadas — RF03/04 | Perfil próprio e edição permitida; troca de ID não expõe terceiros; `/consultas` deixa de ser publicamente utilizável por API; 401 preserva retorno interno seguro sem auto-compra | I03.01 |
@@ -74,7 +72,7 @@ Artefatos citados são **locais futuros de implementação**, não arquivos cria
 | I12.04 | Atualizações sem recompra — RF13/14/P03 | Adquirir v1, publicar v2, ler v2 e v1, sem novo pedido/direito/cobrança; snapshot original/valor permanece; recompra recebe ALREADY_OWNED; DRAFT e versão de outra metodologia negados; matriz de testes da seção 8.1 de ECOMMERCE coberta | I12.01/02/03, V03 |
 | I13.01 | Percurso integrado e segurança — RF01–RF17 | Cadastro/login→filtros→prévia→carrinho→demonstração→biblioteca executado em ambiente integrado; cenários negativos da seção 4 passam | I02–I12 |
 | I13.02 | UX/acessibilidade/regressões — RF16 | Novas telas preservam identidade e funcionam em 320/375/768/1280 px; semântica das abas, foco SPA, labels, estados/404 e teclado verificados; testes anteriores adaptados sem certificar simulações | I13.01 |
-| I13.03 | Preparação de liberação — RNF04/05/06 | CI com testes novos aprovado; backup/restauração, migração, segredos/cache, logs e orçamento de resposta avaliados; conteúdo/preços/condições aprovados; ambiente claramente demonstrativo | I13.01/02, V02–V09 |
+| I13.03 | Preparação de liberação — RNF04/05/06 | Testes automatizados aprovados; backup/restauração, migração, segredos/cache, logs e orçamento de resposta avaliados; conteúdo/preços/condições aprovados; ambiente claramente demonstrativo | I13.01/02, V02–V09 |
 
 ## 4. Matriz mínima de rastreabilidade e testes
 
@@ -90,27 +88,32 @@ Artefatos citados são **locais futuros de implementação**, não arquivos cria
 | RF13 | Item histórico retém valor/título/versão; pedidos alheios não enumerados e histórico paginado | I12 |
 | RF14/MD05/08/09 | Direito libera original/histórico/atualizações publicadas da mesma metodologia; nega rascunho/outra metodologia; não reescreve aquisição; suspensão por versão e bloqueio global exercitados | I12 |
 | RF15/17/P09 | Cliente não administra; bootstrap seguro/idempotente; publish com revisão sobre expectedRevision, autoria e condições; sem fases editoriais extras; admin não ganha direito de compra; evidência privada não exposta | I03.03/I04–I07/I12 |
-| RF16/RNF04/05 | E2E do fluxo e exceções, teclado/foco/contraste/responsividade, CI/restore/migrações e metas de operação aprovadas | Todos/I13 |
+| RF16/RNF04/05 | E2E do fluxo e exceções, teclado/foco/contraste/responsividade, restauração/migrações e metas de operação aprovadas | Todos/I13 |
 
-Organização futura sugerida: módulos backend por caso de uso; testes de regras/contrato próximos ao módulo; integração MySQL dedicada e jornadas de navegador no frontend. Confirmar estrutura em V07. A coluna de implementação só poderá ser preenchida com caminhos/commits reais quando cada tarefa for executada; não inventar evidência agora.
+Organização futura sugerida: módulos backend por caso de uso; testes de regras/contrato próximos ao módulo; integração MySQL dedicada e jornadas de navegador no frontend. A fundação aplica essa organização. A coluna de implementação só poderá ser preenchida com artefatos e testes verificáveis quando cada tarefa for executada; não inventar evidência agora.
 
 ## 5. Gates de aceite e liberação
 
-1. **Antes do backend:** V07 e contratos/segurança relevantes aprovados; constituição/baseline esclarecidas; definição de sessão e cadastro não fica implícita em um protótipo.
+1. **Antes do backend:** A09 adotada e contratos/segurança relevantes aprovados; constituição/baseline esclarecidas; definição de sessão e cadastro não fica implícita em um protótipo.
 2. **Antes do catálogo publicado:** V01/V02/V09 e processo de revisão/condição de uso demonstráveis; nenhum corpus técnico ou referência foi inventado por esta etapa.
 3. **Antes da compra:** V03–V05, integridade MySQL e testes de autorização/concorrência; preços reais aprovados por responsável, sem confundir fixture com oferta.
 4. **Antes da liberação demonstrativa:** RF01–RF17 e RNFs aplicáveis aprovados com evidências; os pontos sem definição ficam como bloqueio explícito, não como requisito “atendido”.
 
 O recorte proposto tem cinco candidatas reais, com sete eixos exemplificados na especificação. Sua inclusão, conteúdo e condições de uso precisam de V01/V02; não é corpus autorizado nem compromisso de publicação. Capacidade esperada continua em V08. As cinco fixtures de preço são de desenvolvimento e não aumentam o catálogo real.
 
-## 6. Validação desta entrega documental
+## 6. Rastreabilidade da fundação técnica
 
-- Pré-condições de merge/CI da main verificadas e registradas na especificação.
-- Revisão de consistência entre RF, P/V, contratos, entidades, estados e tarefas; diagramas Mermaid nativos incluídos.
-- Revisão final local: cinco documentos existentes, 27 links locais válidos, 59 IDs definidos sem referências desconhecidas, oito blocos Mermaid, cercas/encoding e relações ER sem erros estruturais; cinco candidatas com fontes primárias reais e cinco fixtures monetárias distintas identificadas; somas de 2750/12000 centavos conferidas. Diff restrito aos cinco Markdown; nenhuma regra de backend foi implementada ou declarada testada.
-- Não instalar pacotes, executar migrações, configurar banco/serviços, alterar CI ou modificar aplicação para validar documentos. O CI já existente pode validar a regressão da branch; resultado de CI não aprova requisitos nem comprova MVP implementado.
-- CI de regressão documental aprovado no commit `7791496fe4d3cf688ba9fe663ff67b0ac0813f18`: [execução 40983062010](https://github.com/dernivaljr/wiki-chem/actions/runs/40983062010). Os checks do PR identificam os resultados de revisões posteriores.
-- Na revisão inicial, os oito diagramas carregaram no visualizador do GitHub sem erro de parser: três ER no modelo, dois no documento comercial e um em cada outro documento. A revisão final preserva oito blocos e a checagem no PR deve acompanhar a versão corrente. Não há CLI Mermaid instalada nem dependência adicionada; checagens de estrutura/renderização não são aprovação de P03/P09 nem teste de implementação do MVP.
+| Tarefa | Situação | Artefatos e evidência de aceitação |
+| --- | --- | --- |
+| I00.01/02 | Parcial | A09 resolve tecnologias; decisões de negócio e formalização SDD permanecem explícitas |
+| I01.01 | Parcial | Contratos Zod de saúde/erro; DTOs de identidade, catálogo e comércio planejados |
+| I01.02 | Implementada no recorte autorizado | backend/src/: rota/serviço/repositório, requestId, pool, validação e proxy; testes de unidade/contrato/MySQL |
+| I01.03 | Parcial | Migração controlada e teste de falha DDL; backup/restauração e implantação em V08 |
+| I01.04 | Pendente, antes de I07/I10 | Nenhuma fixture comercial carregada; não bloqueia identidade |
+| I02/I03 | Próximo incremento | Cadastro/login/sessão/logout/perfil; políticas V06/V07 antes dos comportamentos dependentes |
+| I04–I13 | Pendente | Taxonomias, conteúdo, pesquisa, comércio, biblioteca e validação integrada |
+
+Os testes da fundação verificam infraestrutura em tabelas genéricas. Não comprovam RF01–RF17 de negócio nem direitos, checkout ou revisão editorial. Testes de apresentação não comprovam autenticação/pesquisa. Evidências devem avaliar o critério correspondente, sem inferir conclusão do MVP a partir da fundação.
 
 ## 7. Evolução posterior
 

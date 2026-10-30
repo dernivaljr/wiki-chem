@@ -1,12 +1,12 @@
 # Modelo de dados proposto — Wiki-Chem
 
-**Estado:** proposta lógica, sem DDL/migrações executados. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A08 orientam o escopo; P01–P09/V01–V10 ainda requerem aprovação.
+**Estado:** modelo de negócio planejado. O esquema implementado contém somente controle de migrações; nenhuma entidade de negócio foi migrada. Referências: [especificação e decisões](../especificacoes/MVP-WIKI-CHEM-v1.md), [API](ARQUITETURA-MVP.md) e [transações](ECOMMERCE.md). A01–A09 orientam o escopo; P01–P09/V01–V10 ainda requerem aprovação.
 
 ## 1. Convenções e limites
 
-MySQL relacional, mecanismo transacional com FKs, datas UTC e migrações versionadas na implementação futura. Proposta: PKs BIGINT UNSIGNED, serializadas como strings na API; nomes abaixo são lógicos. Escolher versão, colações e ferramenta de migração em V07. Não há conexão, schema criado ou dependência adicionada neste PR.
+MySQL relacional, mecanismo transacional com FKs, datas UTC e migrações versionadas na implementação futura. Proposta: PKs BIGINT UNSIGNED, serializadas como strings na API; nomes abaixo são lógicos. MySQL 8.4, mysql2/promise e migrações SQL controladas são decisões adotadas. Colações, tipos e constraints dos futuros agregados serão detalhados nas migrações correspondentes.
 
-Valores monetários em BIGINT de centavos e currency fixa BRL, serializados como strings decimais para evitar perda de precisão em JavaScript. Soma/cálculo no servidor com aritmética inteira e validação de overflow. Proposta de ofertas MVP: valor positivo, sem descontos/quantidade variável; gratuidade/faixa e preços reais dependem de V05. Os valores FX01–FX05 em [ECOMMERCE](ECOMMERCE.md) são apenas fixtures monetárias de desenvolvimento, sem vincular preços às candidatas reais e sem criar dados de catálogo/migrações neste PR.
+Valores monetários em BIGINT de centavos e currency fixa BRL, serializados como strings decimais para evitar perda de precisão em JavaScript. Soma/cálculo no servidor com aritmética inteira e validação de overflow. Proposta de ofertas MVP: valor positivo, sem descontos/quantidade variável; gratuidade/faixa e preços reais dependem de V05. Os valores FX01–FX05 em [ECOMMERCE](ECOMMERCE.md) são apenas fixtures monetárias de desenvolvimento, sem vincular preços às candidatas reais. A fundação não carrega dados de catálogo.
 
 As relações de conhecimento são normalizadas. Snapshots de título, versão e valor nos itens de pedido são **redundância intencional de fatos da aquisição**, imutáveis, não uma cópia do catálogo atual nem do procedimento. Identidade de produto/metodologia/versão não pode ser reaproveitada.
 
@@ -145,3 +145,7 @@ Busca considera apenas campos gratuitos autorizados da versão corrente. As cola
 ## 7. Questões de modelagem que precisam de aprovação
 
 P03/V03: direito metodológico com histórico/atualizações e duração; P04/V04: repetição/carrinho; V02: candidatas, condições de fontes e revisão; V05: preços reais/gratuidade, separados das fixtures; V06: retenção e anonimização; V07: tipos físicos/colação/constraints/migrações e autenticação; P09/V09: admin único, revisão na publicação e bootstrap seguro. Matriz técnica consolidada em [ARQUITETURA-MVP](ARQUITETURA-MVP.md). Não há seeds científicos, permissões fictícias ou ofertas comerciais reais nestes diagramas/tabelas.
+
+## 8. Esquema físico implementado
+
+A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. As entidades e diagramas anteriores descrevem o destino do MVP, não tabelas existentes.

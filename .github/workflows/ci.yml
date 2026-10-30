@@ -1,4 +1,4 @@
-name: Qualidade do frontend
+name: Qualidade do Wiki-Chem
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   frontend:
-    name: Build, lint, testes e dependências
+    name: Frontend — build, lint, testes e dependências
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -31,16 +31,81 @@ jobs:
       - name: Instalação limpa
         run: npm ci --prefix frontend
       - name: Build
-        run: npm run build
+        run: npm run build:frontend
       - name: Lint
-        run: npm run lint
+        run: npm run lint:frontend
       - name: Testes de componentes e rotas
-        run: npm test
+        run: npm run test:frontend
       - name: Instalar Chromium para os testes de navegador
         run: npm exec --prefix frontend -- playwright install --with-deps --no-shell chromium
       - name: Testes de navegador
         run: npm run test:e2e
       - name: Auditoria de todas as dependências
-        run: npm run audit:deps
+        run: npm audit --prefix frontend --audit-level=moderate
       - name: Auditoria das dependências de produção
-        run: npm run audit:prod
+        run: npm audit --prefix frontend --omit=dev --audit-level=moderate
+
+  backend:
+    name: Backend — contratos, migrações e MySQL real
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          # Credenciais efêmeras exclusivas do serviço isolado de testes.
+          MYSQL_ROOT_PASSWORD: ci-root-only-not-production
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: wikichem_test_ci
+          MYSQL_USER: wikichem_ci
+          MYSQL_PASSWORD: ci-app-only-not-production
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    env:
+      NODE_ENV: test
+      LOG_LEVEL: silent
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: wikichem_test_ci
+      DB_USER: wikichem_ci
+      DB_PASSWORD: ci-app-only-not-production
+      DB_TLS: 'false'
+      MIGRATION_DB_USER: root
+      MIGRATION_DB_PASSWORD: ci-root-only-not-production
+      MYSQL_TEST_ALLOW: 'true'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Instalação limpa
+        run: npm run install:clean
+      - name: Build
+        run: npm run build:backend
+      - name: Lint e TypeScript strict
+        run: npm run lint:backend
+      - name: Testes unitários e de contrato
+        run: npm run test:backend
+      - name: Status e execução controlada de migrações
+        run: |
+          npm run db:status
+          npm run db:migrate
+          npm run db:migrate
+          npm run db:status
+      - name: Integração MySQL, cenários negativos e proxy React/API
+        run: npm run test:integration
+      - name: Auditoria de todas as dependências
+        run: npm audit --prefix backend --audit-level=moderate
+      - name: Auditoria das dependências de produção
+        run: npm audit --prefix backend --omit=dev --audit-level=moderate
