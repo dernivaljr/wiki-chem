@@ -47,6 +47,8 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await expect(page.getByRole('status')).toContainText('3 metodologias encontradas')
     await capture(page, '05-sete-filtros.png', 'Combinação real dos sete filtros, OR interno e AND entre categorias.')
     await page.getByRole('link', { name: data.methods[0]!.title, exact: true }).click()
+    await expect(page).toHaveURL(new RegExp('/metodologias/' + data.methods[0]!.id + '$'))
+    await expect(page.getByRole('heading', { level: 1, name: data.methods[0]!.title, exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toBeVisible()
     await capture(page, '06-previa.png', 'Prévia gratuita e oferta de demonstração, sem procedimento integral.')
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click(); await page.getByRole('link', { name: 'Ver carrinho', exact: true }).click()

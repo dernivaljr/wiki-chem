@@ -5,6 +5,7 @@ export default defineConfig({
   testIgnore: ['**/auth.spec.ts', '**/admin.spec.ts', '**/search.spec.ts', '**/commerce.spec.ts', '**/checkout.spec.ts', '**/library.spec.ts', '**/zz-academic.spec.ts'],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
+  failOnFlakyTests: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : 4,
   reporter: 'list',

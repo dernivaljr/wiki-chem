@@ -9,6 +9,7 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
+  failOnFlakyTests: Boolean(process.env.CI),
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
