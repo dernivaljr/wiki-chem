@@ -169,7 +169,7 @@ V08 deve aprovar implantação, limites de carga, migração/rollback, backup/re
 
 ## 6. Decisões adotadas e pendências
 
-As tecnologias da fundação foram expressamente autorizadas. Sua adoção não aprova propostas comerciais, editoriais ou de identidade. V10 permanece referente à formalização metodológica e às decisões dependentes.
+As tecnologias da fundação foram expressamente autorizadas. Identidade e administração editorial mínima foram adotadas nos incrementos correspondentes, sem aprovar propostas comerciais ou a curadoria científica. V10 permanece referente à formalização metodológica e às decisões dependentes.
 
 | Tema | Proposta/opções para decisão | Aprovação e evidência necessárias |
 | --- | --- | --- |
@@ -177,8 +177,8 @@ As tecnologias da fundação foram expressamente autorizadas. Sua adoção não 
 | MySQL/acesso — A09, adotado | MySQL 8.4, mysql2/promise, pool, SQL parametrizado e helper transacional DML, sem ORM | Integração verifica BIGINT, FKs, unicidade, concorrência e rollback em tabelas genéricas; integridade comercial continua futura |
 | Migrações — A09, adotado; operação V08 | Executor pequeno: um statement por arquivo, sequência contígua, SHA-256, lock exclusivo e ledger APPLYING/APPLIED; conta operacional distinta | Banco vazio/repetição, status sem escrita, checksum/histórico e falha DDL verificados; backup/restauração de produção pendentes |
 | Autenticação — A10, adotada | Argon2id, sessão opaca MySQL, cookies, CSRF, origem, limites e prazos configuráveis | Recuperação, verificação/mudança de e-mail, retenção e condições jurídicas continuam pendentes em V06 |
-| Primeiro administrador — A10, implementado | Comando local com habilitação explícita, conta operacional, terminal e senha oculta; registra responsável e é idempotente | Sem senha padrão, argumento de segredo, promoção de cliente ou API pública; administração editorial permanece futura |
-| Administração editorial — V09 | P09: admin único, DRAFT → PUBLISHED e SUPERSEDED ao substituir; revisão no publish com autoria/fontes/condições | Aprovar que a mesma pessoa pode curar/revisar/publicar, campos mínimos e suspensão/restauração; papéis, filas e dupla aprovação não são dependências do MVP |
+| Primeiro administrador — A10, implementado | Comando local com habilitação explícita, conta operacional, terminal e senha oculta; registra responsável e é idempotente | Sem senha padrão, argumento de segredo, promoção de cliente ou API pública; ADMIN utiliza a administração editorial protegida |
+| Administração editorial — A11, adotada; governança V09 | Admin com fluxo DRAFT → PUBLISHED e SUPERSEDED ao substituir; revisão explícita na publicação com autoria/fontes/condições | A mesma pessoa pode curar/revisar/publicar no mínimo funcional. Campos mínimos e imutabilidade são verificados; suspensão de acesso e governança ampliada continuam pendentes. Papéis adicionais, filas e dupla aprovação não são dependências do MVP |
 | Conteúdo e atualização — V02/V03 | Direito metodológico com original/histórico/atualizações e validação da versão por requisição | Confirmar duração/limites/condições e candidatas; não inferir autorização de uso a partir de link público nem de fixture |
 
 IA/RAG, fornecedores, SDKs, embeddings e bancos vetoriais estão integralmente fora do MVP, de sua autenticação/pesquisa e da lista de dependências técnicas a escolher. Eventual estudo só ocorrerá após a plataforma funcional, em escopo próprio.

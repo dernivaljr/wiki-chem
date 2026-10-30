@@ -252,7 +252,23 @@ describe('catálogo editorial em MySQL real', () => {
     try {
       responses = await Promise.all([call('PATCH', '/admin/versions/' + first.version.id, { ...data, expectedRevision: first.version.revision }), call('PATCH', '/admin/versions/' + second.version.id, { ...data, expectedRevision: second.version.revision }, customer)])
     } finally { await pool.execute("UPDATE users SET role = 'CUSTOMER' WHERE id = ?", [customer.id]) }
-    for (const response of responses) {
+    expect(responses.some(response => response.statusCode === 200)).toBe(true)
+    for (const [index, initialResponse] of responses.entries()) {
+      const original = [first, second][index]!.version
+      let response = initialResponse
+      if (response.statusCode === 409) {
+        expect(response.json().error.code).toBe('EDIT_CONFLICT')
+        const unchanged = unwrap<Version>(await call('GET', '/admin/versions/' + original.id))
+        expect(unchanged.revision).toBe(original.revision)
+        expect(unchanged.title).toBe('')
+        expect(unchanged.sources).toEqual([])
+        expect(unchanged.contributors).toEqual([])
+        for (const facet of facets) expect(unchanged.classifications[facet]).toEqual([])
+        expect(await rows('SELECT id FROM audit_events WHERE request_id = ? AND action = ?', [response.json().error.requestId, 'DRAFT_SAVED'])).toHaveLength(0)
+        // InnoDB pode escolher uma vítima de deadlock; nova requisição é segura
+        // porque a revisão e todos os vínculos anteriores foram preservados.
+        response = await call('PATCH', '/admin/versions/' + original.id, { ...data, expectedRevision: original.revision })
+      }
       const saved = unwrap<Version>(response)
       expect(saved.sources).toHaveLength(1)
       expect(saved.sources[0]?.referenceText).toBe(reference)

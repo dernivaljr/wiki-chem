@@ -148,7 +148,7 @@ P03/V03: direito metodológico com histórico/atualizações e duração; P04/V0
 
 ## 8. Esquema físico implementado
 
-A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users e auth_sessions estão migradas. Entidades de catálogo/comércio descrevem o destino do MVP, não tabelas existentes.
+A tabela schema_migrations registra version (PK textual), checksum SHA-256, status APPLYING/APPLIED, started_at e applied_at UTC. É infraestrutura, não dado comercial. A colação geral é utf8mb4_0900_ai_ci, com version/checksum ascii_bin. users, auth_sessions e as entidades editoriais da seção 9 estão migradas. As entidades comerciais permanecem como modelo de destino, sem tabelas instaladas.
 
 Migrações de identidade: e-mail ASCII normalizado único, papéis CUSTOMER/ADMIN, estado ACTIVE/BLOCKED, token_hash único, FK restritiva e timestamps UTC. provisioned_by registra o responsável pelo bootstrap. Hash Argon2id contém salt/parâmetros, sem senha em claro; token original e CSRF não são persistidos. Detalhes em [Identidade](IDENTIDADE.md).
 
