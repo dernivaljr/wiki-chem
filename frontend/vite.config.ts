@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'API_')
   return {
     plugins: [react()],
+    preview: { proxy: { "/api/v1": { target: env.API_PROXY_TARGET || "http://127.0.0.1:3001", changeOrigin: false } } },
     server: {
       proxy: {
         '/api/v1': {

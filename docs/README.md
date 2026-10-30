@@ -2,6 +2,10 @@
 
 O Wiki-Chem é desenvolvido no curso de Desenvolvimento de Software Multiplataforma (DSM) da FATEC, na disciplina de Engenharia de Software II.
 
+## Material estruturado para a FATEC
+
+[Índice acadêmico](academico/README.md): objetivos, requisitos, arquitetura/ER, BPMN, rastreabilidade, capturas reais e resultados, preparado para posterior adaptação ao modelo do professor, sem gerar o relatório final.
+
 ## Documentação técnica de apoio acadêmico
 
 - [Especificação do MVP](especificacoes/MVP-WIKI-CHEM-v1.md): problema, objetivos, usuários, requisitos e critérios de aceitação.

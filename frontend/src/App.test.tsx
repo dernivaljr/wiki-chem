@@ -5,6 +5,12 @@ import { describe, expect, it } from 'vitest'
 import App from './App'
 
 describe('páginas e navegação', () => {
+  it('endereço desconhecido mantém uma página recuperável com conteúdo principal', async () => {
+    render(<MemoryRouter initialEntries={['/endereco-inexistente']}><App /></MemoryRouter>)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('link', { name: 'Voltar à página inicial' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Wiki-Chem' })).toBeInTheDocument()
+  })
   it.each([
     { path: '/', heading: 'Wiki-Chem' },
     { path: '/sobre', heading: 'Sobre o Wiki-Chem' },

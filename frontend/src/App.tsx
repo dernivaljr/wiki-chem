@@ -7,7 +7,7 @@ import Admin from './pages/Admin/Admin'
 import AuthProvider from './auth/AuthProvider'
 import ProtectedRoute from './auth/ProtectedRoute'
 import Profile from './pages/Profile/Profile'
-import { Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes } from 'react-router-dom'
 import Header from './components/Header/Header'
 import Home from './pages/Home/Home'
 import About from './pages/About/About.tsx'
@@ -35,6 +35,7 @@ function AppContent() {
         <Route path="/biblioteca" element={<ProtectedRoute><Library /></ProtectedRoute>} />
         <Route path="/biblioteca/:methodologyId" element={<ProtectedRoute><LibraryReader /></ProtectedRoute>} />
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="*" element={<main className="session-status"><h1>Página não encontrada</h1><p>O endereço solicitado não está disponível.</p><Link to="/">Voltar à página inicial</Link></main>} />
       </Routes>
     </>
   )

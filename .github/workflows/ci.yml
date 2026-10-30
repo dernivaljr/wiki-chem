@@ -111,7 +111,38 @@ jobs:
         run: npm exec --prefix frontend -- playwright install --with-deps --no-shell chromium
       - name: Navegador com autenticação e MySQL reais
         run: npm run test:auth
+      - name: Guardar somente capturas mascaradas e medições sem segredos
+        uses: actions/upload-artifact@v7
+        with:
+          name: evidencias-academicas
+          path: |
+            .artifacts/performance.json
+            .artifacts/evidence/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
       - name: Auditoria de todas as dependências
         run: npm audit --prefix backend --audit-level=moderate
       - name: Auditoria das dependências de produção
         run: npm audit --prefix backend --omit=dev --audit-level=moderate
+
+  demonstracao:
+    name: Demonstração local — Compose, isolamento e restauração
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - name: Preparar sistema completo isolado
+        run: npm run demo:prepare
+      - name: Repetir preparação sem apagar dados
+        run: npm run demo:up
+      - name: Verificar fluxo, isolamento e backup/restauração real
+        run: npm run demo:verify
+      - name: Encerrar apenas a demonstração descartável
+        if: always()
+        run: npm run demo:reset -- --confirm-demo-reset

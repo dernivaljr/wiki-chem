@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "npm --prefix frontend run dev --",
     "build": "npm run build:frontend && npm run build:backend",
-    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint": "npm run lint:frontend && npm run lint:backend && npm run lint:tools",
     "test": "npm run test:frontend && npm run test:backend",
     "test:watch": "npm --prefix frontend run test:watch --",
     "test:e2e": "npm --prefix frontend run test:e2e --",
@@ -27,6 +27,18 @@
     "db:migrate": "npm --prefix backend run migrate",
     "db:status": "npm --prefix backend run migrate:status",
     "test:auth": "npm --prefix frontend run test:auth",
-    "admin:bootstrap": "npm --prefix backend run admin:bootstrap"
+    "admin:bootstrap": "npm --prefix backend run admin:bootstrap",
+    "demo:prepare": "node scripts/demo.mjs prepare",
+    "demo:up": "node scripts/demo.mjs up",
+    "demo:down": "node scripts/demo.mjs down",
+    "demo:reset": "node scripts/demo.mjs reset",
+    "demo:access": "node scripts/demo.mjs access",
+    "demo:backup": "node scripts/demo.mjs backup",
+    "demo:restore": "node scripts/demo.mjs restore",
+    "demo:status": "node scripts/demo.mjs status",
+    "demo:verify": "node scripts/demo-verify.mjs",
+    "evidence:academic": "npm run test:auth -- --grep ACADEMICO",
+    "lint:tools": "node --check scripts/demo.mjs && node --check scripts/demo-verify.mjs && node --check scripts/academic-diagrams.mjs",
+    "diagrams:academic": "node scripts/academic-diagrams.mjs"
   }
 }
