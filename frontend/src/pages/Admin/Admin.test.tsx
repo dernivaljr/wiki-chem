@@ -40,6 +40,7 @@ describe('administração editorial na interface', () => {
     })
     render(<MemoryRouter initialEntries={['/admin']}><App /></MemoryRouter>)
     expect(await screen.findByText('Nenhuma metodologia cadastrada.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Perfil' }))
     expect(screen.getByRole('link', { name: 'Administração' })).toHaveAttribute('href', '/admin')
     expect(screen.getByRole('button', { name: 'Criar metodologia' })).toBeEnabled()
   })

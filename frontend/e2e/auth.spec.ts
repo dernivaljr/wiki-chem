@@ -21,7 +21,7 @@ async function login(page: Page, email: string) {
   await page.getByRole('button', { name: 'Entrar no Wiki-Chem' }).click()
 }
 
-test('cadastro, retorno protegido, perfil persistente e logout reais', async ({ page, context }) => {
+test('cadastro, retorno protegido, perfil persistente e logout reais pelo menu Perfil', async ({ page, context }) => {
   await page.goto('/perfil')
   await expect(page).toHaveURL(/\/login\?returnTo=%2Fperfil/)
   const email = await signup(page)
@@ -42,10 +42,12 @@ test('cadastro, retorno protegido, perfil persistente e logout reais', async ({ 
   expect(cookies.find(cookie => cookie.name === 'wikichem_session')).toMatchObject({ httpOnly: true, sameSite: 'Lax', path: '/' })
   expect(await page.evaluate(() => document.cookie)).not.toContain('wikichem_session')
   expect(await page.evaluate(() => localStorage.length)).toBe(0)
+  await page.getByRole('button', { name: 'Perfil', exact: true }).click()
   await page.getByRole('button', { name: 'Sair', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
   expect((await context.request.get('/api/v1/me')).status()).toBe(401)
 })
+
 test('duplicidade e credencial inválida não geram sucesso fictício', async ({ page }) => {
   await page.goto('/login')
   const email = await signup(page)
@@ -61,14 +63,20 @@ test('duplicidade e credencial inválida não geram sucesso fictício', async ({
   await expect(page.getByRole('alert')).toHaveText('E-mail ou senha inválidos.')
   await expect(page).toHaveURL(/\/login/)
 })
-test('retorno externo é rejeitado e abre a pesquisa autenticada funcional', async ({ page }) => {
+
+test('retorno externo é rejeitado e abre a pesquisa autenticada simplificada com filtros recolhidos', async ({ page }) => {
   await page.goto('/login?returnTo=https%3A%2F%2Fevil.invalid')
   await login(page, await signup(page))
   await expect(page).toHaveURL(/\/consultas$/)
   await expect(page.getByRole('heading', { name: 'Pesquisar metodologias' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Pesquisar', exact: true })).toBeEnabled()
+  const filterBtn = page.getByRole('button', { name: 'Filtros avançados' })
+  await expect(filterBtn).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.getByRole('group', { name: 'Analitos', exact: true })).toHaveCount(0)
+  await filterBtn.click()
   await expect(page.getByRole('group', { name: 'Analitos', exact: true })).toBeVisible()
 })
+
 test('protege escritas com origem e CSRF reais', async ({ page, context }) => {
   await page.goto('/login')
   await login(page, await signup(page))
@@ -81,16 +89,19 @@ test('protege escritas com origem e CSRF reais', async ({ page, context }) => {
   await page.goto('/perfil')
   await expect(page.getByLabel('Nome de exibição')).toHaveValue('Nome via API')
 })
+
 test('sessão revogada é removida da interface ao retomar o foco', async ({ page, context }) => {
   await page.goto('/login')
   await login(page, await signup(page))
-  await page.getByRole('link', { name: 'Perfil', exact: true }).click()
+  await page.getByRole('button', { name: 'Perfil', exact: true }).click()
+  await page.getByRole('link', { name: 'Dados pessoais', exact: true }).click()
   const session = (await (await context.request.get('/api/v1/auth/session')).json()).data
   expect((await context.request.post('/api/v1/auth/logout', { headers: { Origin: 'http://127.0.0.1:4174', 'X-CSRF-Token': session.csrfToken }, data: {} })).status()).toBe(204)
   await page.evaluate(() => window.dispatchEvent(new Event('focus')))
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
   await expect(page.getByRole('status')).toContainText('Sua sessão expirou')
 })
+
 test('falha de rede no login é recuperável e não libera acesso', async ({ page }) => {
   await page.goto('/login')
   const email = await signup(page)
@@ -99,10 +110,16 @@ test('falha de rede no login é recuperável e não libera acesso', async ({ pag
   await expect(page.getByRole('alert')).toContainText('Não foi possível acessar o serviço')
   await expect(page.getByRole('button', { name: 'Entrar no Wiki-Chem' })).toBeEnabled()
 })
-test('cabeçalho autenticado e perfil preservam responsividade e teclado', async ({ page }) => {
+
+test('cabeçalho autenticado, menu Perfil e dados pessoais preservam responsividade e teclado', async ({ page }) => {
   await page.goto('/login')
   await login(page, await signup(page))
-  await page.getByRole('link', { name: 'Perfil', exact: true }).click()
+  await page.getByRole('button', { name: 'Perfil', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Minha biblioteca', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Pedidos', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Administração', exact: true })).toHaveCount(0)
+  await page.getByRole('link', { name: 'Dados pessoais', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Meu perfil' })).toBeVisible()
   for (const width of [320, 375, 600, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 })
     await page.evaluate(() => document.fonts.ready)
@@ -114,6 +131,11 @@ test('cabeçalho autenticado e perfil preservam responsividade e teclado', async
       expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width)
     }
   }
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.getByRole('button', { name: 'Perfil', exact: true }).click()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'Perfil', exact: true })).toBeFocused()
   await page.getByLabel('Nome de exibição').focus()
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')

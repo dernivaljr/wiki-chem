@@ -2,29 +2,29 @@
 
 ## Problema
 
-A consulta de metodologias de química analítica exige relacionar técnicas, tecnologias, equipamentos, matrizes, analitos, documentos normativos e segmentos. Informações dispersas e diferenças de versão dificultam localizar conteúdos pertinentes e identificar sua origem. O Wiki-Chem explora uma solução de software para organizar esses metadados, recuperar fichas técnicas pertinentes e controlar o acesso a conteúdo digital próprio adquirido em uma demonstração acadêmica.
+A consulta e a obtenção de metodologias de química analítica exigem relacionar técnicas instrumentais, tecnologias, equipamentos, matrizes, analitos, referências normativas e segmentos de aplicação. Informações dispersas e diferenças de versão dificultam localizar protocolos pertinentes, distinguir documentos públicos de guias interpretativos estruturados e controlar o acesso a versões adquiridas. O Wiki-Chem apresenta uma plataforma web para organizar esses metadados, pesquisar metodologias com precisão terminológica e disponibilizar guias técnicos digitais autorais com controle de acesso por titularidade.
 
-O trabalho não demonstra eficácia analítica de procedimentos nem substitui normas, validação laboratorial ou avaliação de direitos de uso. No ambiente demonstrativo isolado, as 15 fichas técnicas de química analítica apresentam descrições originais e limitações documentadas com referência a fontes públicas oficiais (sem reproduzir procedimentos integrais e sem comercialização), enquanto os fluxos comerciais utilizam cinco fixtures sintéticas de software.
+O sistema não substitui normas oficiais, acreditação laboratorial ou validação experimental em matriz real. No ambiente acadêmico demonstrativo, as 15 metodologias comercializáveis constituem **produtos digitais interpretativos originais do Wiki-Chem** (`WK-ANL-001` a `WK-ANL-015`), tecnicamente fundamentados em publicações públicas verificadas da U.S. EPA e do USGS, sem vender nem reproduzir documentos de terceiros como normas licenciadas.
 
 ## Objetivo geral
 
-Desenvolver e verificar um MVP integrado de pesquisa técnica e aquisição demonstrativa de metodologias, com autenticação, classificação analítica em sete eixos, versionamento editorial, histórico de pedidos e biblioteca autorizada pelo backend.
+Desenvolver e verificar um MVP integrado de pesquisa técnica, apresentação comercial inspirada na organização de catálogos normativos (como a ASTM, preservando identidade e conteúdo próprios do Wiki-Chem) e aquisição isenta de cobrança de guias analíticos digitais, com autenticação, sete taxonomias, versionamento editorial, histórico de pedidos e biblioteca digital autorizada pelo backend.
 
 ## Objetivos específicos
 
-1. Pesquisar texto com aliases químicos controlados (`ferro`/`Fe`, `UV-Vis`, `GC-MS`, `ICP-OES`) e combinar sete categorias de filtros com OR na mesma categoria e AND entre categorias.
-2. Separar prévias gratuitas e fichas informativas de referências externas (sem oferta comercial) dos conteúdos próprios com acesso integral controlado.
-3. Implementar sessão revogável, proteção de operações e isolamento entre usuários.
-4. Persistir preços e fatos históricos da aquisição simulada, com confirmação demonstrativa transacional e idempotência.
-5. Permitir acesso ao original e às atualizações publicadas da mesma metodologia adquirida, condicionado ao direito e à disponibilidade de cada versão.
-6. Verificar o sistema por testes de regras, contratos, interface, MySQL real e navegador, apresentando evidências e limitações.
+1. Disponibilizar pesquisa simplificada sob demanda — exigindo termo textual válido, mantendo os sete filtros analíticos recolhidos por padrão e tratando aliases químicos controlados (`ferro`/`Fe`, `UV-Vis`, `GC-MS`, `ICP-OES`) sem falsos positivos.
+2. Estruturar páginas de produto claras com identificação documental, versão, escopo resumido, classificações essenciais, referências rastreáveis, preço em BRL e distinção transparente entre prévia gratuita e conteúdo autoral protegido.
+3. Implementar cabeçalho responsivo com menu suspenso `Perfil` (`Minha biblioteca`, `Pedidos`, `Administração` restrita a `ADMIN`, `Dados pessoais` e `Sair`), contador dinâmico do carrinho, sessão revogável e isolamento entre usuários.
+4. Persistir preços em BRL configuráveis e snapshots históricos da aquisição, informando de maneira discreta e inequívoca no checkout a ausência de cobrança financeira, com confirmação explícita e idempotência.
+5. Liberar exclusivamente na biblioteca digital do titular o guia técnico integral organizado em seções e referências rastreáveis, incluindo acesso à versão adquirida e às atualizações publicadas elegíveis.
+6. Verificar a solução por testes automatizados de regras, contratos, componentes, banco MySQL real e navegador em desktop e mobile, documentando evidências e limitações.
 
 ## Escopo entregue e exclusões
 
-O MVP inclui cadastro/login/perfil, catálogo editorial administrativo, sete taxonomias N:N com vocabulário real de química analítica na demonstração isolada, pesquisa otimizada, prévias e fichas informativas, ofertas BRL para conteúdo próprio sintético, carrinho, pedido pendente/confirmação simulada, histórico, biblioteca e suspensão/restauração editorial. A identidade visual React é preservada. Aquisição e valores dos exemplos sintéticos são demonstrativos; não existe pagamento real.
+O MVP compreende cadastro, autenticação, dados pessoais, cabeçalho com menu `Perfil` e contador dinâmico em `Carrinho`, pesquisa simplificada com sete taxonomias N:N de química analítica recolhidas por padrão, cartões compactos de resultado, página de metodologia inspirada na ASTM, 15 guias técnicos digitais autorais em português com preços em BRL configuráveis no ambiente demonstrativo, carrinho persistente, checkout com aviso discreto de isenção de cobrança, histórico de pedidos, biblioteca digital estruturada e administração editorial/comercial separada. Os cinco registros sintéticos anteriores permanecem arquivados (`RETIRED`) sem perda de histórico.
 
-Não integram o escopo pagamentos reais, downloads, assinaturas, hospedagem pública, IA/RAG, e-mail verificado, recuperação de senha, seed de produção ou comercialização de conteúdos externos. Curadoria científica humana, condições comerciais definitivas e permissões contratuais exigem validação posterior.
+Não integram o escopo pagamentos reais, geração de documentos fiscais, downloads em PDF, assinaturas, hospedagem pública, IA/RAG, e-mail verificado, recuperação de senha, seed de produção ou licenciamento comercial de normas externas. Revisão científica humana por pares e precificação comercial definitiva permanecem fora deste recorte acadêmico.
 
-## Abordagem de desenvolvimento e verificação
+## Abordagem de verificação
 
-O desenvolvimento utiliza especificação verificável, modelagem relacional, contratos de entrada/saída e incrementos pequenos com validação automatizada. Requisitos, decisões adotadas e propostas são diferenciados na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md). A execução demonstrativa é isolada de produção e reconcilia idempotentemente o banco demonstrativo preservando contas e pedidos existentes. A rastreabilidade relaciona cada requisito a testes e evidências, sem confundir aprovação de testes com validação científica ou jurídica.
+A solução é validada sobre especificações verificáveis, modelagem relacional com integridade referencial e triggers de imutabilidade histórica, contratos REST estritos e suítes automatizadas sem dependência de etapas manuais. Os requisitos e decisões constam na [especificação](../especificacoes/MVP-WIKI-CHEM-v1.md), e cada requisito funcional é associado a testes executáveis e capturas reais na [matriz de rastreabilidade](RASTREABILIDADE.md).

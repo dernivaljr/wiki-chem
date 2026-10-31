@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 // Respostas controladas somente para regressão visual; auth.spec.ts testa identidade real.
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/v1/taxonomies', route => route.fulfill({ json: { data: { techniques: [], technologies: [], equipment: [], matrices: [], analytes: [], standards: [], segments: [] } } }))
+  await page.route('**/api/v1/cart', route => route.fulfill({ json: { data: { revision: 1, items: [], currency: 'BRL', totalCentavos: '0', unavailableCount: 0 } } }))
   await page.route('**/api/v1/methodologies?*', route => route.fulfill({ json: { data: [], page: 1, pageSize: 20, total: 0 } }))
   await page.route('**/api/v1/auth/session', route => {
     const ref = route.request().headers().referer ?? ''
