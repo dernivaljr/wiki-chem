@@ -1,22 +1,23 @@
 # Wiki-Chem
 
-Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodologias de química analítica, desenvolvida no curso DSM da FATEC, disciplina de Engenharia de Software II.
+Plataforma acadêmica de pesquisa, apresentação e aquisição digital de metodologias de química analítica, desenvolvida no curso DSM da FATEC, disciplina de Engenharia de Software II.
 
 ## Estado do sistema
 
 | Implementado | Limites |
 | --- | --- |
-| Identidade real, sessão, logout, perfil e rotas protegidas | Recuperação e e-mail verificado continuam fora do incremento |
-| Administração /admin exclusiva de ADMIN | CUSTOMER não recebe conteúdo editorial nem modifica o catálogo |
-| Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulário analítico demonstrativo restrito a `NODE_ENV=test`; curadoria humana continua exigida fora de testes |
-| Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Produção permanece sem seed; demonstração isolada separa fichas informativas (sem venda) de fixtures comerciais sintéticas |
+| Identidade real, sessão, logout, perfil e rotas protegidas | Recuperação de senha e e-mail verificado permanecem fora do escopo |
+| Cabeçalho com menu suspenso `Perfil` e `Carrinho` com contador dinâmico | Item `Administração` exibido somente para `ADMIN`; autorização validada no servidor |
+| Administração `/admin` exclusiva de `ADMIN` | `CUSTOMER` não recebe conteúdo editorial nem modifica o catálogo |
+| Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulário analítico demonstrativo restrito a `NODE_ENV=test`; curadoria humana exigida fora de testes |
+| Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Produção permanece sem seed; demonstração isolada publica 15 guias digitais autorais (`WK-ANL-001`–`WK-ANL-015`) fundamentados em fontes públicas EPA/USGS e arquiva registros sintéticos legados |
 | Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
-| Pesquisa autenticada e detalhes gratuitos | Texto com aliases químicos controlados (`ferro`/`Fe`, `UV-Vis`, `GC-MS`, `ICP-OES`), sete filtros compactos, paginação e ordenação; sem procedimento/evidência privada |
-| Ofertas, histórico imutável de preços BRL e carrinho por usuário | Valores comerciais reais exigem definição |
-| Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; biblioteca integral autenticada está implementada |
-| Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem nas suítes e na demonstração isolada NODE_ENV=test |
+| Pesquisa autenticada simplificada e página de produto inspirada na ASTM | Exige termo não vazio, recolhe os sete filtros por padrão, preserva aliases (`ferro`/`Fe`, `UV-Vis`, `GC-MS`, `ICP-OES`) e exibe prévia concisa sem expor o conteúdo integral |
+| Ofertas, histórico imutável de preços BRL configuráveis e carrinho por usuário | Valores acadêmicos configuráveis (`WIKICHEM_DEMO_DEFAULT_PRICE_CENTAVOS` / `WIKICHEM_DEMO_PRICES`), sem cobrança financeira |
+| Checkout sem cobrança financeira, pedidos/histórico e direitos persistidos | Aviso discreto e inequívoco de isenção de cobrança no checkout; biblioteca integral estruturada liberada após confirmação |
+| Migrações controladas, pool MySQL e testes automatizados | Reconciliação demonstrativa idempotente restrita a `NODE_ENV=test`, preservando contas, pedidos e direitos |
 
-A identidade visual React foi preservada. `/consultas` pesquisa prévias por texto (incluindo símbolos e siglas analíticas controladas) e sete filtros compactos com identificação normativa sob demanda; `/metodologias/:id` apresenta detalhes gratuitos e atribuição documental. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. Na demonstração isolada (`NODE_ENV=test`), fichas técnicas informativas baseadas em referências oficiais públicas (EPA e USGS) nunca reproduzem procedimentos integrais nem oferecem compra comercial, permanecendo separadas das cinco fixtures sintéticas de aquisição simulada. IA/RAG permanece fora do MVP.
+A identidade visual do Wiki-Chem foi preservada e refinada em tipografia, ícones e hierarquia visual. O cabeçalho principal apresenta `Home`, `Sobre`, `Consultas`, o menu suspenso `Perfil` (`Minha biblioteca`, `Pedidos`, `Administração` apenas para `ADMIN`, `Dados pessoais` e `Sair`) e `Carrinho` com contador dinâmico de itens. `/consultas` exige termo de pesquisa não vazio (inclusive com filtros selecionados), mantém os sete filtros recolhidos sob demanda (`Filtros avançados`) e apresenta cartões compactos apenas após pesquisa válida. `/metodologias/:id` organiza título, identificação documental (`WK-ANL-*`), versão, escopo resumido, classificações essenciais, referências rastreáveis e quadro de compra em BRL inspirado na organização comercial da ASTM, sem copiar identidade ou comercializar normas de terceiros. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. IA/RAG e pagamentos reais permanecem fora do MVP.
 
 ## Instalação
 
@@ -58,14 +59,13 @@ Cada arquivo `backend/migrations/NNNN_nome.sql` contém **um único statement**,
 
 Não edite ou remova migrações aplicadas. Falha/execução interrompida deixa APPLYING e bloqueia novas execuções para inspeção. DDL do MySQL faz commit implícito: não existe rollback automático de esquema. Faça backup antes de mudanças futuras, examine o estado real e use correção progressiva controlada ou restauração; não apague o marcador para repetir DDL às cegas. A API inicia sem migrar, permitindo distinguir liveness de falha do banco.
 
-
 ## Identidade e administrador inicial
 
 Configure APP_ORIGIN com a **origem exata do navegador**, incluindo porta (padrão http://localhost:5173). Usar 127.0.0.1 no navegador exige configurar essa origem; não usar wildcard. Em produção, APP_ORIGIN deve usar HTTPS e DB_TLS deve ser true. Cookie de produção usa prefixo __Host-, Secure, HttpOnly, SameSite=Lax e Path=/.
 
 SESSION_ABSOLUTE_SECONDS=28800 e SESSION_IDLE_SECONDS=1800 são os padrões; o prazo de inatividade não pode superar o absoluto. AUTH_RATE_LIMIT_MAX=10 limita tentativas por IP/rota por minuto e por conta no login. Limites são locais em memória; coordenação entre instâncias e operação atrás de proxy exigem revisão antes de escalar. O servidor não confia em X-Forwarded-For arbitrário.
 
-A senha aceita 12–128 caracteres e é armazenada com Argon2id (19 MiB, duas iterações, paralelismo um). Cadastro não inicia sessão. Nome pode ser editado no perfil; e-mail e papel não. Sessão/CSRF ficam em cookie HttpOnly e memória React, sem credencial em localStorage. A consulta de bootstrap não renova inatividade. As [decisões de identidade](docs/arquitetura/IDENTIDADE.md) detalham contratos e limites.
+A senha aceita 12–128 caracteres e é armazenada com Argon2id (19 MiB, duas iterações, paralelismo um). Cadastro não inicia sessão. Nome pode ser editado em Dados pessoais (`/perfil`); e-mail e papel não. Sessão/CSRF ficam em cookie HttpOnly e memória React, sem credencial em localStorage. A consulta de bootstrap não renova inatividade. As [decisões de identidade](docs/arquitetura/IDENTIDADE.md) detalham contratos e limites.
 
 Nenhum administrador é criado ao instalar, migrar ou iniciar. Para provisionar o primeiro ADMIN, o responsável autorizado prepara uma **conta MySQL operacional distinta**, com SELECT/INSERT/UPDATE somente em users (sem DDL), configura ADMIN_DB_USER/ADMIN_DB_PASSWORD localmente e habilita temporariamente ADMIN_BOOTSTRAP_ENABLED=true. Então, em terminal interativo:
 
@@ -75,16 +75,15 @@ npm run admin:bootstrap
 
 O comando solicita responsável, nome, e-mail e senha com confirmação **sem eco**. Não aceita argumentos; não passe senha de usuário em ambiente, linha de comando, arquivo ou histórico. Configure a senha somente na entrada interativa. Repetição para o mesmo admin não altera credencial; e-mail de CUSTOMER ou outro primeiro administrador gera conflito. O responsável é registrado em provisioned_by. Desabilite ADMIN_BOOTSTRAP_ENABLED ao concluir e preserve o acesso operacional. Este comando não cria regras ou telas de administração editorial.
 
-
 ## Catálogo administrativo
 
-Depois das migrações e do provisionamento operacional do primeiro ADMIN, acesse /admin pela conta correspondente. A navegação administrativa aparece somente para ADMIN, com autorização independente no backend. CUSTOMER não pode ler o formulário editorial nem utilizar seus endpoints, mesmo conhecendo IDs.
+Depois das migrações e do provisionamento operacional do primeiro ADMIN, acesse `/admin` pelo menu `Perfil → Administração`. A opção administrativa aparece somente para `ADMIN`, com autorização independente no backend. `CUSTOMER` não pode ler o formulário editorial nem utilizar seus endpoints, mesmo conhecendo IDs.
 
 Em Classificações, crie termos para os sete eixos. Normas exigem emissor/identificador/edição e conferência da identificação. Não confunda esse registro com declaração de vigência regulatória ou permissão de reprodução. Vocabulário e conteúdo real precisam de curadoria; nenhuma migração popula conteúdo ou termos.
 
-Em Metodologias e versões, crie identidade e rascunho; registre prévia, procedimento, múltiplos termos, fontes, condições de uso e autoria/curadoria. Fonte verificada exige evidência e conferência explícita. Salve antes de revisar/publicar: mudanças locais não salvas desabilitam publicação. Alterações concorrentes produzem 409 e exigem recarregar, sem sobrescrita automática.
+Em Metodologias e versões, crie identidade e rascunho; registre prévia, conteúdo integral protegido, múltiplos termos, fontes, condições de uso e autoria/curadoria. Fonte verificada exige evidência e conferência explícita. Salve antes de revisar/publicar: mudanças locais não salvas desabilitam publicação. Alterações concorrentes produzem 409 e exigem recarregar, sem sobrescrita automática.
 
-A publicação valida completude/revisão em transação e preserva versões anteriores. Copiar versão exige nova conferência das condições de uso. Arquivar retira a prévia e preserva história. Exclusão é lógica e restrita a rascunhos/metodologias sem publicação. Consulte [Catálogo editorial](docs/arquitetura/CATALOGO-EDITORIAL.md) para contratos REST, limites, modelo e pendências.
+A publicação valida completude/revisão em transação e preserva versões anteriores. Copiar versão exige nova conferência das condições de uso. Arquivar retira a prévia da vitrine e preserva história. Exclusão é lógica e restrita a rascunhos/metodologias sem publicação. Consulte [Catálogo editorial](docs/arquitetura/CATALOGO-EDITORIAL.md) para contratos REST, limites, modelo e pendências.
 
 ## Execução
 
@@ -102,7 +101,7 @@ npm run build
 npm run start:api
 ```
 
-O build gera `frontend/dist/` e `backend/dist/`. `npm run preview` serve apenas o frontend compilado; proxy Vite e preview não são configuração de hospedagem em produção. Hospedagem, HTTPS, limites de carga e backup/restauração continuam pendentes.
+O build gera `frontend/dist/` e `backend/dist/`. `npm run preview` serve apenas o frontend compilado; proxy Vite e preview não são configuração de hospedagem em produção. Hospedagem, HTTPS, limites de carga e backup/restauração de produção continuam pendentes.
 
 ## Comandos de qualidade
 
@@ -110,11 +109,11 @@ O build gera `frontend/dist/` e `backend/dist/`. `npm run preview` serve apenas 
 | --- | --- |
 | `npm run install:clean` | Instalação limpa dos dois pacotes pelos lockfiles |
 | `npm run build` | Build de frontend e backend |
-| `npm run lint` | ESLint dos dois pacotes e TypeScript strict do backend/testes |
+| `npm run lint` | ESLint dos dois pacotes, TypeScript strict do backend e checagem de scripts |
 | `npm test` | Testes de apresentação frontend e unidade/contrato backend |
 | `npm run test:integration` | MySQL 8.4 real e proxy Vite/API |
 | `npm run test:auth` | Navegador com backend e MySQL reais; exige ambiente de testes isolado |
-| `npm run test:e2e` | Playwright/Chromium: navegação, responsividade, foco e contraste |
+| `npm run test:e2e` | Playwright/Chromium: navegação, responsividade, foco, contraste e ativos |
 | `npm run test:watch` | Vitest interativo do frontend |
 | `npm run audit:deps` | Auditoria completa dos dois pacotes |
 | `npm run audit:prod` | Auditoria de dependências de produção dos dois pacotes |
@@ -123,13 +122,11 @@ Comandos por pacote: `build:frontend`, `build:backend`, `lint:frontend`, `lint:b
 
 ### Integração automatizada
 
-A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. Use somente banco descartável de testes; as suítes podem recriar todas as tabelas versionadas, recusando qualquer tabela desconhecida. FKs permanecem habilitadas; o ciclo do ponteiro corrente é desmontado explicitamente na limpeza. A suíte recusa nomes não permitidos e tabelas inesperadas. Não execute sobre dados que deseja preservar.
+A suíte não pula testes quando o banco está indisponível. Para executá-la, configure no ambiente (ou em `backend/.env`) **NODE_ENV=test**, **MYSQL_TEST_ALLOW=true**, **DB_NAME=wikichem_test_<sufixo>** e as credenciais de uma conta restrita a esse banco descartável. Execute `npm run build:backend` antes da integração, pois a suíte também inicia o servidor compilado. Todos os pacotes precisam estar instalados, pois o teste inicia o Vite em `127.0.0.1:5175`; a porta precisa estar livre. Use somente banco descartável de testes; as suítes podem recriar todas as tabelas versionadas, recusando qualquer tabela desconhecida. FKs permanecem habilitadas; o ciclo do ponteiro corrente é desmontado explicitamente na limpeza. Não execute sobre dados que deseja preservar.
 
-São exercitados migração inicial/repetida, status sem escrita, checksum/histórico inválidos, lock concorrente, falha DDL, statements múltiplos rejeitados, precisão BIGINT, FKs, unicidade, commit/rollback, credenciais inválidas, banco inexistente, pool encerrado e proxy. A suite usa tabelas genéricas de teste, sem antecipar entidades ou regras comerciais.
+Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste. Exige MIGRATION_DB_USER/MIGRATION_DB_PASSWORD; cookie temporário fica em `frontend/.test-fixtures/` ignorado pelo Git. Não contém senha padrão nem semente de produção.
 
-Para o navegador integrado, prepare o esquema com `npm run db:migrate` após a integração, instale Chromium e execute `npm run test:auth`. A configuração exige NODE_ENV=test, MYSQL_TEST_ALLOW=true e banco wikichem_test_<sufixo>; inicia backend e Vite em portas 3002/4174, sem reutilizar processos existentes. As contas criadas são exclusivamente de teste. O setup desse comando recria todas as tabelas conhecidas no banco descartável e prepara uma sessão ADMIN com senha aleatória, usada apenas para preparar testes de administração e pesquisa. Exige MIGRATION_DB_USER/MIGRATION_DB_PASSWORD; cookie temporário fica em frontend/.test-fixtures/ ignorado pelo Git. Não contém senha padrão nem semente de produção.
-
-O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) preserva as verificações frontend e adiciona job backend com serviço MySQL 8.4 isolado, migrações, integração, jornadas reais de autenticação, administração, pesquisa, carrinho e checkout demonstrativo no navegador e auditorias. Suas credenciais são efêmeras de demonstração, exclusivas do serviço descartável. Não há credencial de produção no repositório nem deploy automático. Testes são executados pela automação, sem exigir verificações manuais do usuário.
+O workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) executa as verificações frontend, o job backend com MySQL 8.4 isolado, migrações, integração, jornadas reais no navegador e a demonstração Compose com reconciliação idempotente e backup/restauração. Não há credencial de produção no repositório nem deploy automático.
 
 ## Organização e documentação
 
@@ -139,7 +136,7 @@ backend/
   src/
     config/            # Validação do ambiente
     database/          # Pool, transações e executor de migrações
-    modules/health/    # Rotas, serviço e repositório
+    modules/           # Identidade, catálogo, comércio, checkout, biblioteca e saúde
     shared/            # Contratos, validação e erros
     app.ts             # Composição testável, sem listen
     server.ts          # Inicialização HTTP e encerramento
@@ -147,44 +144,36 @@ backend/
     unit/
     contract/
     integration/
-frontend/              # Interface React e seus testes existentes
+    demo/              # Catálogo técnico autoral e reconciliação demonstrativa
+frontend/              # Interface React, estado do carrinho e suítes Vitest/Playwright
 docs/
+  academico/           # Material acadêmico estruturado (FATEC)
   especificacoes/      # Objetivos, requisitos e critérios de aceitação
-  arquitetura/         # Solução, modelo e regras propostas
+  arquitetura/         # Solução, modelo e regras implementadas
   planejamento/        # Incrementos e rastreabilidade
   desenvolvimento/     # Registros operacionais internos
   auditoria/           # Diagnóstico histórico interno
   etapas/              # Registros históricos internos
 ```
 
-O [mapa documental](docs/README.md) separa material acadêmico de registros operacionais. Não existe ainda relatório acadêmico final. A especificação diferencia comportamento implementado de propostas de produto/comércio pendentes.
-
-Identidade preservada: React, Inter, paleta azul e ativos atuais. A página 404 React recuperável está implementada; as abas de acesso suportam teclado. Permanecem pendentes foco geral após navegação SPA, otimização de ativos; o favicon está presente e os builds de verificação não apresentaram alerta de favicon. A resposta 404 JSON da API não substitui a página 404 da interface. As abas de acesso e o cabeçalho autenticado recebem verificação de teclado/responsividade neste incremento.
-
-Projeto licenciado sob a [GNU GPL v2](LICENSE).
+O [mapa documental](docs/README.md) separa material acadêmico de registros operacionais. Projeto licenciado sob a [GNU GPL v2](LICENSE).
 
 ## Ofertas e carrinho
 
-Selecione uma metodologia em /admin e abra “Gerenciar oferta e preços”. Crie produto inativo, cadastre preço em centavos BRL e ative somente após publicação revisada. Novo preço preserva o histórico; arquivamento desativa a oferta e restauração exige ativação explícita. A pesquisa funciona sem produto/preço.
+Selecione uma metodologia em `/admin` e abra “Gerenciar oferta e preços”. Crie produto inativo, cadastre preço em centavos BRL e ative somente após publicação revisada. Novo preço preserva o histórico; arquivamento desativa a oferta e restauração exige ativação explícita.
 
-Clientes adicionam ofertas disponíveis e consultam /carrinho. A API calcula os valores, mantém itens indisponíveis visíveis, registra mudanças e preserva o carrinho entre sessões. O checkout demonstrativo cria revisão e exige confirmação explícita, com pedidos e direitos persistidos. A leitura integral depende de autorização na biblioteca. FX01–FX05 existem apenas nos testes e não são carregadas em produção. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
+Clientes adicionam produtos elegíveis a partir da pesquisa ou da página de metodologia, acompanhando o contador dinâmico em `Carrinho` no cabeçalho e gerenciando a seleção em `/carrinho`. A API calcula valores com precisão inteira, mantém itens indisponíveis visíveis, sinaliza alterações e preserva o carrinho entre sessões. [Modelo e contratos](docs/arquitetura/OFERTAS-CARRINHO.md).
 
-## Checkout demonstrativo
+## Checkout e pedidos
 
-Em /carrinho, avance para criar pedido pendente; /checkout/:id exibe snapshots, prazo e aceite obrigatório. Confirme ou cancele explicitamente. /pedidos e /pedidos/:id consultam registros persistidos. Todas as etapas identificam DEMONSTRAÇÃO — SEM COBRANÇA. Não existe pagamento real; a leitura autorizada está disponível em /biblioteca.
-
-CHECKOUT_TTL_SECONDS=900 (5–3600) e CHECKOUT_RATE_LIMIT_MAX=60 definem prazo e mutações/minuto por usuário. Copie somente nomes/defaults seguros do exemplo de ambiente. As migrações continuam pelo comando db:migrate e conta operacional; a API não executa DDL. CREATE TRIGGER com BEGIN/END é um statement SQL, sem DELIMITER no arquivo e sem habilitar multipleStatements.
-
-Os comandos existentes install:clean, build, lint, test, test:integration, test:e2e, test:auth, audit:deps e audit:prod verificam o incremento. Integração/navegador exigem banco descartável e credenciais operacionais conforme seção de testes. Falhas e relógio de checkout são injetados somente por composição dos testes, sem flags HTTP de produção. Nenhuma fixture comercial é carregada pela aplicação. [Regras e contratos](docs/arquitetura/CHECKOUT-DEMONSTRATIVO.md).
+Em `/carrinho`, avance para criar a revisão pendente do pedido; `/checkout/:id` exibe itens e valores consolidados, prazo de confirmação, aviso discreto e inequívoco de isenção de cobrança financeira e confirmação explícita obrigatória. `/pedidos` e `/pedidos/:id` consultam o histórico persistido. Não existe cobrança real; o acesso ao guia completo é liberado em `/biblioteca` após confirmação. [Regras e contratos](docs/arquitetura/CHECKOUT-DEMONSTRATIVO.md).
 
 ## Biblioteca digital
 
-/biblioteca lista aquisições e /biblioteca/:methodologyId consulta a versão publicada atual, com seleção explícita de histórico elegível. Direito próprio ACTIVE e condições de fontes são verificados no backend em cada leitura; ADMIN não recebe acesso de cliente sem aquisição. Suspensão/restauração por versão exige justificativa em /admin, com revisão concorrente e auditoria. Execute db:migrate pela conta operacional para aplicar a migração 0048 antes de utilizar o novo controle editorial. Os comandos de testes existentes incluem biblioteca, navegador integrado e inspeção de ativos de produção. [Regras e contratos](docs/arquitetura/BIBLIOTECA-DIGITAL.md).
+`/biblioteca` lista metodologias adquiridas e `/biblioteca/:methodologyId` apresenta o conteúdo técnico integral estruturado em seções e referências rastreáveis da versão vigente, com seleção explícita de histórico elegível. Direito próprio `ACTIVE` e condições de fontes são verificados no backend em cada leitura; `ADMIN` não recebe acesso de cliente sem aquisição. [Regras e contratos](docs/arquitetura/BIBLIOTECA-DIGITAL.md).
 
 ## Demonstração acadêmica isolada
 
-Com Docker/Compose v2 e Node.js 24 disponíveis, execute `npm run demo:prepare` (ou `npm run demo:up` para reconciliar de forma idempotente um ambiente demonstrativo já preparado sem apagar contas, pedidos ou volumes). Abra http://127.0.0.1:4180. O sistema completo utiliza MySQL 8.4 privado, API Fastify e React com 20 registros publicados exclusivamente no banco de testes (`wikichem_test_demo`, `NODE_ENV=test`, `DEMO_ALLOW=true`): **15 fichas técnicas informativas** em português com referências oficiais verificáveis da U.S. EPA e do USGS (incluindo ferro por 1,10-fenantrolina UV-Vis / USGS TEI-223, EPA 200.7, EPA 300.0 e EPA 8260D), sem reprodução de procedimento integral e sem oferta comercial (`offer: null`), além de **5 exemplos sintéticos originais** (`DEMO 01`–`DEMO 05`) reservados exclusivamente aos testes de carrinho, checkout simulado e biblioteca digital. Não existe seed de produção, revisão científica humana presumida nem comercialização de documentos de terceiros.
+Com Docker/Compose v2 e Node.js 24 disponíveis, execute `npm run demo:prepare` (ou `npm run demo:up` para reconciliar de forma idempotente um ambiente demonstrativo já preparado sem apagar contas, pedidos, direitos ou volumes). Abra `http://127.0.0.1:4180`. O ambiente utiliza MySQL 8.4 privado, API Fastify e React exclusivamente no banco de testes (`wikichem_test_demo`, `NODE_ENV=test`, `DEMO_ALLOW=true`), com **15 produtos digitais autorais de química analítica** (`WK-ANL-001` a `WK-ANL-015`) fundamentados em referências públicas oficiais verificadas da U.S. EPA e do USGS (incluindo ferro por 1,10-fenantrolina UV-Vis / USGS TEI-223, EPA 200.7, EPA 300.0 e EPA 8260D), preços configuráveis em BRL (`R$ 29,00` a `R$ 68,00` por padrão) e conteúdo técnico interpretativo original protegido por aquisição, além dos cinco registros sintéticos legados arquivados (`RETIRED`) sem perda histórica. Não existe seed de produção, revisão científica humana presumida nem venda ou reprodução de normas de terceiros como documentos licenciados.
 
-`npm run demo:access` gera acesso administrativo sintético aleatório em terminal interativo, sem senha padrão ou arquivo de credenciais. Cadastre uma conta cliente para apresentação. Segredos de infraestrutura e backups ficam fora do repositório, em diretório temporário restrito do sistema. `demo:down` preserva dados, `demo:up` retoma, `demo:backup` e `demo:restore -- CAMINHO` ensaiam recuperação apenas desse ambiente. Consulte o [guia operacional](docs/desenvolvimento/DEMONSTRACAO-LOCAL.md) para requisitos, isolamento, recuperação e reset explícito. Nenhum serviço pago ou hospedagem é configurado.
-
-O [material acadêmico estruturado](docs/academico/README.md) reúne problema, objetivos, requisitos, arquitetura, ER, BPMN, rastreabilidade, evidências e limitações, sem constituir o relatório final. `npm run evidence:academic` produz capturas mascaradas no navegador e `npm run test:integration` mede pesquisas com corpus sintético em MySQL real. Esses comandos exigem banco descartável e as habilitações de teste descritas no guia; não apontar a ambientes com dados a preservar.
+`npm run demo:access` gera acesso administrativo aleatório em terminal interativo, sem senha padrão ou arquivo de credenciais. Segredos de infraestrutura e backups ficam fora do repositório, em diretório temporário restrito do sistema. Consulte o [guia operacional](docs/desenvolvimento/DEMONSTRACAO-LOCAL.md) para requisitos, reconciliação, recuperação e reset explícito.

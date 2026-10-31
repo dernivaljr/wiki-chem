@@ -14,4 +14,10 @@ export function brl(amount: string) {
   const value = BigInt(amount)
   return 'R$ ' + new Intl.NumberFormat('pt-BR').format(value / 100n) + ',' + (value % 100n).toString().padStart(2, '0')
 }
-export const issueLabels = { ALREADY_OWNED: 'Aquisição simulada já registrada. Este item não será adquirido novamente.', PRICE_CHANGED: 'O preço mudou desde a inclusão.', VERSION_CHANGED: 'Há uma nova versão publicada.', OFFER_CHANGED: 'A oferta foi alterada desde a inclusão.', UNAVAILABLE: 'Item indisponível; mantido no carrinho e excluído do total disponível.' }
+export const issueLabels = {
+  ALREADY_OWNED: 'Metodologia já disponível na sua biblioteca. Este item não será adquirido novamente.',
+  PRICE_CHANGED: 'O preço mudou desde a inclusão.',
+  VERSION_CHANGED: 'Há uma nova versão publicada.',
+  OFFER_CHANGED: 'A oferta foi alterada desde a inclusão.',
+  UNAVAILABLE: 'Item indisponível; mantido no carrinho e excluído do total disponível.',
+}

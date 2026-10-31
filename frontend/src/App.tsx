@@ -1,4 +1,5 @@
 import Cart from './commerce/Cart'
+import { CartSummaryProvider } from './commerce/CartContext'
 import Library from './library/Library'
 import LibraryReader from './library/LibraryReader'
 import Orders from './checkout/Orders'
@@ -18,7 +19,7 @@ import './App.css'
 
 function AppContent() {
   return (
-    <>
+    <CartSummaryProvider>
       <Header />
 
       <Routes>
@@ -37,7 +38,7 @@ function AppContent() {
         <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<main className="session-status"><h1>Página não encontrada</h1><p>O endereço solicitado não está disponível.</p><Link to="/">Voltar à página inicial</Link></main>} />
       </Routes>
-    </>
+    </CartSummaryProvider>
   )
 }
 

@@ -23,20 +23,24 @@ test('ADMIN cria oferta inativa, cadastra preços, ativa e preserva histórico p
   await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toBeEnabled()
 })
 
-test('CUSTOMER adiciona FX01–FX05, conserva carrinho após login e remove sem afetar outro usuário', async ({ context, browser }) => {
+test('CUSTOMER adiciona FX01–FX05 com contador dinâmico no cabeçalho, conserva carrinho após login e remove sem afetar outro usuário', async ({ context, browser }) => {
   test.setTimeout(60000)
   const data = await seed(context, 5), user = await customer(browser), other = await customer(browser), { page } = user
   try {
     await page.goto('/consultas?q=' + data.token)
     await expect(page.getByRole('status')).toContainText('5 metodologias encontradas')
-    for (const item of data.items) {
+    await expect(page.getByRole('link', { name: 'Carrinho (0 itens)' })).toBeVisible()
+    for (const [idx, item] of data.items.entries()) {
       const card = page.getByRole('article').filter({ has: page.getByRole('link', { name: item.title, exact: true }) })
       await card.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
       await expect(card.getByRole('status')).toContainText('Produto no carrinho')
+      const count = idx + 1
+      await expect(page.getByRole('link', { name: `Carrinho (${count} ${count === 1 ? 'item' : 'itens'})` })).toBeVisible()
     }
-    await page.getByRole('link', { name: 'Carrinho', exact: true }).click()
+    await page.getByRole('link', { name: 'Carrinho (5 itens)' }).click()
     await expect(page.getByText('R$ 120,00', { exact: true })).toBeVisible()
     await expect(page.getByRole('article')).toHaveCount(5)
+    await page.getByRole('button', { name: 'Perfil', exact: true }).click()
     await page.getByRole('button', { name: 'Sair', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
     await page.getByLabel('E-mail', { exact: true }).fill(user.email)
@@ -44,15 +48,18 @@ test('CUSTOMER adiciona FX01–FX05, conserva carrinho após login e remove sem 
     await page.getByRole('button', { name: 'Entrar no Wiki-Chem' }).click()
     await expect(page.getByRole('heading', { name: 'Meu carrinho' })).toBeVisible()
     await expect(page.getByRole('article')).toHaveCount(5)
+    await expect(page.getByRole('link', { name: 'Carrinho (5 itens)' })).toBeVisible()
     await page.reload(); await expect(page.getByText('R$ 120,00', { exact: true })).toBeVisible()
     await other.page.goto('/carrinho')
     await expect(other.page.getByText(/Seu carrinho está vazio/)).toBeVisible()
+    await expect(other.page.getByRole('link', { name: 'Carrinho (0 itens)' })).toBeVisible()
     expect((await other.context.request.get('/api/v1/admin/products')).status()).toBe(403)
     await page.getByRole('button', { name: 'Remover ' + data.items[0]!.title, exact: true }).click()
     await expect(page.getByRole('article')).toHaveCount(4)
+    await expect(page.getByRole('link', { name: 'Carrinho (4 itens)' })).toBeVisible()
     await expect(page.getByText('R$ 110,00', { exact: true })).toBeVisible()
     expect((await (await other.context.request.get('/api/v1/cart')).json()).data.items).toHaveLength(0)
-    await expect(page.getByRole('button', { name: 'Avançar para checkout demonstrativo' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Prosseguir para revisão do pedido' })).toBeEnabled()
   } finally { await user.context.close(); await other.context.close() }
 })
 

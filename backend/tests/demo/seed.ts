@@ -3,43 +3,82 @@ import type { Pool, RowDataPacket } from 'mysql2/promise'
 import type { Config } from '../../src/config/env.js'
 import { provisionInitialAdmin } from '../../src/modules/identity/admin-bootstrap.js'
 import { createCatalogRepository } from '../../src/modules/catalog/catalog.repository.js'
-import { facets, facetTables } from '../../src/modules/catalog/catalog.contracts.js'
+import { facets } from '../../src/modules/catalog/catalog.contracts.js'
 import type { Facet, TermInput } from '../../src/modules/catalog/catalog.contracts.js'
 import { createCommerceRepository } from '../../src/modules/commerce/commerce.repository.js'
 import { academicEditor, assertDemo, demoNotice } from './examples.js'
-import { informativeEditor, technicalSheets, technicalTaxonomies } from './technical-catalog.js'
+import {
+  resolveAcademicPriceCentavos,
+  technicalCatalogEditor,
+  technicalSheets,
+  technicalTaxonomies,
+  validateCommercialProductContent,
+} from './technical-catalog.js'
+
+export interface DemoCommercialMethod {
+  id: string
+  versionId: string
+  slug: string
+  title: string
+  productId: string
+  priceCentavos: string
+}
+
+export interface DemoInformativeMethod {
+  id: string
+  versionId: string
+  slug: string
+  title: string
+}
+
+export interface DemoRetiredMethod {
+  id: string
+  versionId: string
+  slug: string
+  title: string
+  productId: string
+}
 
 export interface DemoCatalog {
   notice: string
   ids: Record<Facet, string[]>
-  methods: { id: string; versionId: string; slug: string; title: string; productId: string }[]
-  informativeMethods: { id: string; versionId: string; slug: string; title: string }[]
+  methods: DemoCommercialMethod[]
+  informativeMethods: DemoInformativeMethod[]
+  retiredLegacyMethods: DemoRetiredMethod[]
 }
 
 export const demoOperator = 'DEMO_TEST_AUTOMATION_ONLY'
-const demoAmounts = ['1000', '1750', '2500', '3250', '3500'] as const
-
-async function hasLegacySyntheticLinks(pool: Pool, versionId: string): Promise<boolean> {
-  for (const facet of facets) {
-    const map = facetTables[facet]
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT 1 FROM ' + map.link + ' x JOIN ' + map.table + " t ON t.id = x." + map.column + " WHERE x.version_id = ? AND t.code LIKE 'academic-demo-%' LIMIT 1",
-      [versionId],
-    )
-    if (rows.length > 0) return true
-  }
-  return false
-}
+const legacyDemoAmounts = ['1000', '1750', '2500', '3250', '3500'] as const
 
 async function nextReconciledLabel(pool: Pool, methodologyId: string): Promise<string> {
   const [rows] = await pool.execute<RowDataPacket[]>('SELECT version_label FROM methodology_versions WHERE methodology_id = ?', [methodologyId])
   const used = new Set(rows.map(row => String(row.version_label)))
-  if (!used.has('v1')) return 'v1'
-  for (let suffix = 1; suffix < 100; suffix++) {
-    const candidate = `v1.${suffix}`
+  for (let major = 1; major <= 100; major++) {
+    const candidate = `v${major}`
     if (!used.has(candidate)) return candidate
   }
-  return 'v1-' + randomUUID().slice(0, 8)
+  return 'v-' + randomUUID().slice(0, 8)
+}
+
+async function versionMatchesEditor(
+  pool: Pool,
+  versionId: string,
+  expected: { title: string; freeSummary: string; publicDescription: string; fullDescription: string; fullProcedure: string; sourceCount: number },
+): Promise<boolean> {
+  const [vRows] = await pool.execute<RowDataPacket[]>(
+    'SELECT v.title, v.free_summary, v.public_description, c.full_description, c.full_procedure, (SELECT COUNT(*) FROM version_sources vs WHERE vs.version_id = v.id) AS source_count FROM methodology_versions v LEFT JOIN methodology_contents c ON c.version_id = v.id WHERE v.id = ? LIMIT 1',
+    [versionId],
+  )
+  const row = vRows[0]
+  if (!row) return false
+  return (
+    String(row.title) === expected.title &&
+    String(row.free_summary) === expected.freeSummary &&
+    String(row.public_description) === expected.publicDescription &&
+    String(row.full_description ?? '') === expected.fullDescription &&
+    String(row.full_procedure ?? '') === expected.fullProcedure &&
+    Number(row.source_count) === expected.sourceCount
+  )
 }
 
 export async function seedAcademic(config: Config, pool: Pool, env = process.env): Promise<DemoCatalog> {
@@ -75,6 +114,7 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
     ids: {} as Record<Facet, string[]>,
     methods: [],
     informativeMethods: [],
+    retiredLegacyMethods: [],
   }
 
   for (const facet of facets) {
@@ -142,10 +182,12 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
     }
   }
 
+  // Preserva os 5 registros sintéticos legados no banco (sem apagar pedidos, direitos ou histórico),
+  // arquivando-os (RETIRED) para retirá-los da vitrine/pesquisa principal.
   for (let index = 0; index < 5; index++) {
     const slug = 'academic-demo-' + (index + 1)
     const [existingMethod] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, current_published_version_id FROM methodologies WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
+      'SELECT id, lifecycle, revision, current_published_version_id FROM methodologies WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
       [slug],
     )
     let methodId: string
@@ -159,7 +201,7 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
       const saved = await catalog.saveVersion(draft.id, { ...editor, expectedRevision: draft.revision }, actor())
       const published = await catalog.publish(draft.id, {
         expectedRevision: saved.revision,
-        reviewNote: 'Conferência automatizada de fixture original de software. Não representa revisão humana, validade científica, licença externa ou autorização comercial. ' + demoNotice,
+        reviewNote: 'Registro sintético legado preservado fora da vitrine ativa. ' + demoNotice,
       }, actor())
       methodId = created.id
       versionId = published.id
@@ -169,15 +211,17 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
       const currentVersionId = existingMethod[0]!.current_published_version_id === null
         ? null
         : String(existingMethod[0]!.current_published_version_id)
-      const needsReconcile = !currentVersionId || await hasLegacySyntheticLinks(pool, currentVersionId)
-      if (needsReconcile) {
+      if (!currentVersionId) {
+        if (existingMethod[0]!.lifecycle === 'RETIRED') {
+          await catalog.updateMethod(methodId, { expectedRevision: Number(existingMethod[0]!.revision), retired: false }, actor())
+        }
         const label = await nextReconciledLabel(pool, methodId)
         const draft = await catalog.createVersion(methodId, { versionLabel: label }, actor())
         const editor = academicEditor(index, undefined, label)
         const saved = await catalog.saveVersion(draft.id, { ...editor, expectedRevision: draft.revision }, actor())
         const published = await catalog.publish(draft.id, {
           expectedRevision: saved.revision,
-          reviewNote: 'Reconciliação automatizada de fixture sintética sem termos artificiais na taxonomia ativa. ' + demoNotice,
+          reviewNote: 'Reconciliação de registro sintético legado preservado para histórico. ' + demoNotice,
         }, actor())
         versionId = published.id
         title = published.title
@@ -194,17 +238,23 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
       product = await commerce.createProduct(methodId, actor())
     }
     if (!product.offer.priceId) {
-      product = await commerce.createPrice(product.id, { expectedRevision: product.revision, amountCentavos: demoAmounts[index]!, currency: 'BRL' }, actor())
+      product = await commerce.createPrice(product.id, { expectedRevision: product.revision, amountCentavos: legacyDemoAmounts[index]!, currency: 'BRL' }, actor())
     }
-    if (!product.active) {
-      product = await commerce.updateProduct(product.id, { expectedRevision: product.revision, active: true }, actor())
+
+    const latestMethod = await catalog.getMethod(methodId)
+    if (latestMethod.lifecycle !== 'RETIRED') {
+      await catalog.updateMethod(methodId, { expectedRevision: latestMethod.revision, retired: true }, actor())
     }
-    result.methods.push({ id: methodId, versionId, slug, title, productId: product.id })
+    result.retiredLegacyMethods.push({ id: methodId, versionId, slug, title, productId: product.id })
   }
 
+  // Reconcilia as 15 metodologias técnicas reais com conteúdo autoral original do Wiki-Chem e preços BRL configuráveis.
   for (const sheet of technicalSheets) {
+    const priceCentavos = resolveAcademicPriceCentavos(sheet, env)
+    const commercial = priceCentavos !== null
+
     const [existingMethod] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, current_published_version_id FROM methodologies WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
+      'SELECT id, lifecycle, revision, current_published_version_id FROM methodologies WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
       [sheet.slug],
     )
     let methodId: string
@@ -214,42 +264,85 @@ export async function seedAcademic(config: Config, pool: Pool, env = process.env
     if (existingMethod.length === 0) {
       const created = await catalog.createMethod(sheet.slug, actor())
       const draft = await catalog.createVersion(created.id, { versionLabel: 'v1' }, actor())
-      const editor = informativeEditor(sheet, codeToId)
+      const editor = technicalCatalogEditor(sheet, codeToId, 'v1', commercial)
       const saved = await catalog.saveVersion(draft.id, { ...editor, expectedRevision: draft.revision }, actor())
       const published = await catalog.publish(draft.id, {
         expectedRevision: saved.revision,
-        reviewNote: 'Conferência automatizada estrutural de ficha técnica informativa com referência pública verificada. Não representa revisão humana científica nem habilita oferta comercial.',
+        reviewNote: commercial
+          ? 'Conferência estrutural de produto digital interpretativo original do Wiki-Chem com referência pública verificada (sem revisão científica humana).'
+          : 'Catalogação referencial de metadados públicos verificados; produto autoral pendente, sem oferta comercial.',
       }, actor())
       methodId = created.id
       versionId = published.id
       title = published.title
     } else {
       methodId = String(existingMethod[0]!.id)
+      if (existingMethod[0]!.lifecycle === 'RETIRED') {
+        await catalog.updateMethod(methodId, { expectedRevision: Number(existingMethod[0]!.revision), retired: false }, actor())
+      }
       const currentVersionId = existingMethod[0]!.current_published_version_id === null
         ? null
         : String(existingMethod[0]!.current_published_version_id)
-      if (!currentVersionId) {
+
+      let matchesCurrent = false
+      if (currentVersionId) {
+        const [labelRow] = await pool.execute<RowDataPacket[]>('SELECT version_label, title FROM methodology_versions WHERE id = ? LIMIT 1', [currentVersionId])
+        if (labelRow[0]) {
+          const checkEditor = technicalCatalogEditor(sheet, codeToId, String(labelRow[0].version_label), commercial)
+          matchesCurrent = await versionMatchesEditor(pool, currentVersionId, {
+            title: checkEditor.title,
+            freeSummary: checkEditor.freeSummary,
+            publicDescription: checkEditor.publicDescription,
+            fullDescription: checkEditor.fullDescription,
+            fullProcedure: checkEditor.fullProcedure,
+            sourceCount: checkEditor.sources.length,
+          })
+          if (matchesCurrent) {
+            versionId = currentVersionId
+            title = String(labelRow[0].title)
+          }
+        }
+      }
+
+      if (!matchesCurrent) {
         const label = await nextReconciledLabel(pool, methodId)
         const draft = await catalog.createVersion(methodId, { versionLabel: label }, actor())
-        const editor = informativeEditor(sheet, codeToId)
+        const editor = technicalCatalogEditor(sheet, codeToId, label, commercial)
         const saved = await catalog.saveVersion(draft.id, { ...editor, expectedRevision: draft.revision }, actor())
         const published = await catalog.publish(draft.id, {
           expectedRevision: saved.revision,
-          reviewNote: 'Conferência automatizada estrutural de ficha técnica informativa com referência pública verificada. Não representa revisão humana científica nem habilita oferta comercial.',
+          reviewNote: commercial
+            ? `Reconciliação editorial ${label}: guia técnico interpretativo original do Wiki-Chem com referência pública verificada.`
+            : `Reconciliação referencial ${label}: metadados públicos verificados sem comercialização.`,
         }, actor())
         versionId = published.id
         title = published.title
-      } else {
-        const [vRows] = await pool.execute<RowDataPacket[]>('SELECT id, title FROM methodology_versions WHERE id = ? LIMIT 1', [currentVersionId])
-        versionId = String(vRows[0]!.id)
-        title = String(vRows[0]!.title)
       }
     }
 
-    const [unexpectedProducts] = await pool.execute<RowDataPacket[]>('SELECT id FROM products WHERE methodology_id = ? LIMIT 1', [methodId])
-    if (unexpectedProducts.length > 0) throw new Error('INFORMATIVE_SHEET_MUST_NOT_HAVE_COMMERCIAL_PRODUCT')
-
-    result.informativeMethods.push({ id: methodId, versionId, slug: sheet.slug, title })
+    if (commercial) {
+      const checkEditor = technicalCatalogEditor(sheet, codeToId, 'v1', true)
+      validateCommercialProductContent(checkEditor)
+      const products = await commerce.listProducts(1, 5, methodId)
+      let product = products.data[0]
+      if (!product) {
+        product = await commerce.createProduct(methodId, actor())
+      }
+      if (product.offer.amountCentavos !== priceCentavos) {
+        product = await commerce.createPrice(product.id, { expectedRevision: product.revision, amountCentavos: priceCentavos, currency: 'BRL' }, actor())
+      }
+      if (!product.active) {
+        product = await commerce.updateProduct(product.id, { expectedRevision: product.revision, active: true }, actor())
+      }
+      result.methods.push({ id: methodId, versionId: versionId!, slug: sheet.slug, title: title!, productId: product.id, priceCentavos })
+    } else {
+      const products = await commerce.listProducts(1, 5, methodId)
+      const existingProduct = products.data[0]
+      if (existingProduct?.active) {
+        await commerce.updateProduct(existingProduct.id, { expectedRevision: existingProduct.revision, active: false }, actor())
+      }
+      result.informativeMethods.push({ id: methodId, versionId: versionId!, slug: sheet.slug, title: title! })
+    }
   }
 
   const [done] = await pool.execute<RowDataPacket[]>("SELECT id FROM audit_events WHERE action = 'ACADEMIC_DEMO_PREPARED' LIMIT 1")

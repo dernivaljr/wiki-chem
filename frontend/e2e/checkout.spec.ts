@@ -9,21 +9,21 @@ async function add(page: Page, id: string) {
 }
 async function review(page: Page) {
   await page.goto('/carrinho')
-  await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
+  await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
   await expect(page.getByRole('heading', { name: 'Aguardando confirmação' })).toBeVisible()
 }
 async function confirm(page: Page) {
   await page.getByRole('checkbox').check()
-  await page.getByRole('button', { name: 'Confirmar aquisição de demonstração' }).click()
+  await page.getByRole('button', { name: 'Confirmar pedido' }).click()
 }
-test('FX01–FX05: revisão, confirmação explícita, histórico e isolamento persistidos em MySQL', async ({ context, browser }) => {
+test('FX01–FX05: revisão, confirmação explícita, aviso discreto sem cobrança, histórico e isolamento persistidos em MySQL', async ({ context, browser }) => {
   test.setTimeout(60000)
   const data = await seed(context, 5), user = await customer(browser), other = await customer(browser), { page } = user
   try {
     for (const item of data.items) await add(page, item.methodologyId)
     await review(page)
-    await expect(page.getByText('DEMONSTRAÇÃO — SEM COBRANÇA')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Confirmar aquisição de demonstração' })).toBeDisabled()
+    await expect(page.getByText(/Transação isenta de cobrança:/)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Confirmar pedido' })).toBeDisabled()
     await expect(page.getByRole('article')).toHaveCount(5)
     const id = page.url().split('/').pop()!
     expect((await (await user.context.request.get('/api/v1/orders/' + id)).json()).data.status).toBe('PENDING_CONFIRMATION')
@@ -35,9 +35,10 @@ test('FX01–FX05: revisão, confirmação explícita, histórico e isolamento p
     await page.getByRole('checkbox').focus()
     await expect(page.getByRole('checkbox')).toBeFocused()
     await confirm(page)
-    await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Carrinho (0 itens)' })).toBeVisible()
     await page.reload()
-    await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     expect((await (await user.context.request.get('/api/v1/cart')).json()).data.items).toHaveLength(0)
     expect((await other.context.request.get('/api/v1/orders/' + id)).status()).toBe(404)
     expect((await (await other.context.request.get('/api/v1/orders')).json()).data).toHaveLength(0)
@@ -47,7 +48,7 @@ test('FX01–FX05: revisão, confirmação explícita, histórico e isolamento p
     expect(await page.locator('body').textContent()).not.toContain(data.items[0]!.marker)
     await page.goto('/metodologias/' + data.items[0]!.methodologyId)
     await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toHaveCount(0)
-    await expect(page.getByText(/Aquisição simulada já registrada/)).toBeVisible()
+    await expect(page.getByText(/Disponível no seu acervo digital/)).toBeVisible()
   } finally { await user.context.close(); await other.context.close() }
 })
 test('respostas perdidas são recuperadas com a mesma intenção e consulta, sem duplicar pedidos', async ({ context, browser }) => {
@@ -60,12 +61,12 @@ test('respostas perdidas são recuperadas com a mesma intenção e consulta, sem
       const response = await route.fetch(); expect(response.status()).toBe(201); id = (await response.json()).data.id
       await route.abort('failed')
     })
-    await page.goto('/carrinho'); await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
+    await page.goto('/carrinho'); await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
     await expect(page.getByRole('alert')).toContainText('repita a mesma tentativa')
     await page.unroute('**/api/v1/checkout/simulations')
     await page.reload()
     const replay = page.waitForRequest('**/api/v1/checkout/simulations')
-    await page.getByRole('button', { name: 'Recuperar checkout demonstrativo' }).click()
+    await page.getByRole('button', { name: 'Recuperar revisão do pedido' }).click()
     expect((await replay).headers()['idempotency-key']).toBe(key)
     await expect(page).toHaveURL(new RegExp('/checkout/' + id + '$'))
     await expect(page.getByRole('checkbox')).toBeVisible()
@@ -74,7 +75,7 @@ test('respostas perdidas são recuperadas com a mesma intenção e consulta, sem
     await expect(page.getByRole('alert')).toContainText('Resultado ainda não confirmado')
     await page.unroute('**/api/v1/orders/*/confirm-simulation')
     await page.getByRole('button', { name: 'Consultar estado do pedido' }).click()
-    await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     expect((await (await user.context.request.get('/api/v1/orders')).json()).total).toBe(1)
   } finally { await user.context.close() }
 })
@@ -86,15 +87,15 @@ test('mudança de preço exige outra revisão, preserva snapshot e permite cance
     await price(context, item.product!.id, '1250')
     await confirm(page)
     await expect(page.getByRole('alert')).toContainText('Preço, versão ou oferta mudou')
-    await expect(page.getByRole('button', { name: 'Confirmar aquisição de demonstração' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Confirmar pedido' })).toBeDisabled()
     expect((await (await user.context.request.get('/api/v1/orders/' + id)).json()).data.totalCentavos).toBe('1000')
     await page.getByRole('button', { name: 'Cancelar revisão' }).click()
     await expect(page.getByRole('heading', { name: 'Revisão cancelada' })).toBeVisible()
     await page.getByRole('button', { name: 'Voltar ao carrinho para nova revisão' }).click()
-    await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
+    await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
     await expect(page.getByText('R$ 12,50', { exact: true })).toHaveCount(2)
     await confirm(page)
-    await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     expect((await (await user.context.request.get('/api/v1/orders/' + id)).json()).data.status).toBe('CANCELLED')
   } finally { await user.context.close() }
 })
@@ -105,7 +106,7 @@ test('duas abas confirmam o mesmo pedido uma vez e sessão expirada retorna sem 
     const url = page.url(), second = await user.context.newPage()
     await second.goto(url); await expect(second.getByRole('checkbox')).toBeVisible()
     await Promise.all([confirm(page), confirm(second)])
-    for (const tab of [page, second]) await expect(tab.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    for (const tab of [page, second]) await expect(tab.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     expect((await (await user.context.request.get('/api/v1/orders')).json()).total).toBe(1)
     expect((await user.context.request.post('/api/v1/auth/logout', { headers: await signed(user.context), data: {} })).status()).toBe(204)
     await page.getByRole('button', { name: 'Consultar estado do pedido' }).click()
@@ -116,7 +117,7 @@ test('duas abas confirmam o mesmo pedido uma vez e sessão expirada retorna sem 
     await page.getByLabel('E-mail', { exact: true }).fill(user.email)
     await page.getByPlaceholder('••••••••').fill(user.password)
     await page.getByRole('button', { name: 'Entrar no Wiki-Chem' }).click()
-    await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     expect(posts).toBe(0)
   } finally { await user.context.close() }
 })

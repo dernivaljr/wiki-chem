@@ -6,11 +6,11 @@ async function purchase(page: Page, methodologyId: string) {
   await page.goto('/metodologias/' + methodologyId)
   await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
   await page.getByRole('link', { name: 'Ver carrinho', exact: true }).click()
-  await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
+  await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
   await expect(page.getByRole('checkbox')).toBeVisible()
   const orderId = page.url().split('/').pop()!
-  await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar aquisição de demonstração' }).click()
-  await expect(page.getByRole('heading', { name: 'Aquisição simulada concluída' })).toBeVisible()
+  await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar pedido' }).click()
+  await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
   return orderId
 }
 async function readState(context: BrowserContext, id: string, state: string) {
@@ -29,19 +29,20 @@ test('login → pesquisa → carrinho → revisão → pedido → biblioteca →
     await page.getByRole('link', { name: item.title, exact: true }).click()
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click()
     await page.getByRole('link', { name: 'Ver carrinho', exact: true }).click()
-    await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
+    await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
     await expect(page.getByRole('checkbox')).toBeVisible()
     const id = page.url().split('/').pop()!
     expect((await user.context.request.get('/api/v1/library/' + item.methodologyId + '/content')).status()).toBe(403)
-    await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar aquisição de demonstração' }).click()
+    await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar pedido' }).click()
     await page.getByRole('link', { name: 'Ver pedido persistido', exact: true }).click()
     await page.getByRole('link', { name: 'Ler ' + item.title + ' na minha biblioteca', exact: true }).click()
     await expect(page.getByRole('region', { name: 'Leitura autorizada' })).toContainText(item.marker)
-    await expect(page.getByText('DEMONSTRAÇÃO — SEM COBRANÇA')).toBeVisible()
+    await expect(page.getByText('DEMONSTRAÇÃO — SEM COBRANÇA')).toHaveCount(0)
     expect((await other.context.request.get('/api/v1/library/' + item.methodologyId + '/content')).status()).toBe(403)
     expect((await context.request.get('/api/v1/library/' + item.methodologyId + '/content')).status()).toBe(403)
     const response = await user.context.request.get('/api/v1/library/' + item.methodologyId + '/content')
     expect(response.headers()['cache-control']).toContain('private, no-store')
+    await page.getByRole('button', { name: 'Perfil', exact: true }).click()
     await page.getByRole('link', { name: 'Minha biblioteca', exact: true }).click()
     await expect(page).toHaveURL(/\/biblioteca$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Minha biblioteca' })).toBeVisible()

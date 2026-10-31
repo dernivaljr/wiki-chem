@@ -5,4 +5,9 @@ export interface OrderSummary {
 }
 export interface OrderItem { id: string; productId: string; methodologyId: string; methodologyVersionId: string; priceId: string; titleSnapshot: string; versionLabelSnapshot: string; unitAmountCentavos: string; lineTotalCentavos: string; quantity: 1 }
 export interface OrderDetail extends OrderSummary { items: OrderItem[] }
-export const statusLabels: Record<OrderStatus, string> = { PENDING_CONFIRMATION: 'Aguardando confirmação', COMPLETED_SIMULATED: 'Aquisição simulada concluída', CANCELLED: 'Revisão cancelada', EXPIRED: 'Prazo encerrado' }
+export const statusLabels: Record<OrderStatus, string> = {
+  PENDING_CONFIRMATION: 'Aguardando confirmação',
+  COMPLETED_SIMULATED: 'Pedido concluído',
+  CANCELLED: 'Revisão cancelada',
+  EXPIRED: 'Prazo encerrado',
+}

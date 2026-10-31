@@ -2,11 +2,9 @@
 
 ## Objetivo e recorte funcional
 
-O sistema associa um produto digital a cada metodologia e apresenta preço BRL e disponibilidade nas prévias de pesquisa e detalhe. A metodologia continua pesquisável sem produto, preço ou oferta ativa; a elegibilidade editorial continua sendo a condição de recuperação da prévia. Somente ofertas com preço e versão publicada corrente, revisada e permitida podem ser adicionadas ao carrinho.
+O sistema associa um produto digital original a cada metodologia elegível e apresenta preço BRL e ação de compra nos cartões compactos de pesquisa e na página de metodologia inspirada na ASTM (`/metodologias/:id`). O cabeçalho autenticado exibe o botão `Carrinho` com ícone e contador dinâmico de itens (`0`, `1`, `2`...), sincronizado por `CartSummaryProvider` em tempo real nas operações de inclusão, remoção e conclusão de pedido. Somente ofertas ativas com preço vigente e versão publicada corrente, revisada e permitida podem ser adicionadas ao carrinho.
 
-A administração comercial está integrada à metodologia em /admin. ADMIN cria produto inativo, cadastra novo preço, consulta histórico e ativa/desativa oferta. O cliente usa /carrinho para consultar valores atuais, identificar alterações e remover itens. Cabeçalho, retorno após login, carregamento, erros, revisão concorrente e navegação por teclado preservam os padrões de identidade e apresentação existentes.
-
-Este recorte implementa a apresentação comercial de RF07, a estrutura de ofertas de RF09 e o carrinho de RF10. O recorte A13 isolado não inclui checkout; o recorte A14 acrescenta confirmação, pedidos e registro de direitos conforme a seção final. Não há pagamento; a leitura integral autorizada existe no módulo separado de biblioteca A15. Adicionar ao carrinho não reserva valores nem libera o procedimento. Preços reais, condições comerciais e direitos propostos continuam sujeitos a validação; a existência da estrutura não aprova conteúdo ou permissões reais das fontes.
+A administração comercial permanece integrada à metodologia em `/admin` (acessível pelo menu `Perfil → Administração` exclusivamente para `ADMIN`). O cliente utiliza `/carrinho` para revisar valores atuais, identificar eventuais alterações e remover itens antes de prosseguir à revisão do pedido. Adicionar ao carrinho não realiza cobrança nem libera o conteúdo protegido antes da confirmação em `/checkout/:id`.
 
 ## Modelo físico e invariantes
 
@@ -21,41 +19,33 @@ erDiagram
   METHODOLOGY_VERSIONS ||--o{ CART_ITEMS : versao_observada
 ```
 
-products tem metodologia única, active, current_price_id, revision e datas UTC. O produto nasce inativo. product_prices registra centavos inteiros positivos, BRL, autor e data. O preço corrente deve pertencer ao próprio produto por FK composta; cada sucessor é um novo registro. Triggers rejeitam UPDATE e DELETE de preços históricos, além da ausência dessas operações na API. O histórico não é reescrito ao alterar oferta ou publicar versão.
+`products` tem metodologia única, `active`, `current_price_id`, `revision` e datas UTC. O produto nasce inativo. `product_prices` registra centavos inteiros positivos, `BRL`, autor e data. O preço corrente pertence ao próprio produto por FK composta; triggers rejeitam `UPDATE` e `DELETE` de preços históricos. Arquivar uma metodologia (`RETIRED`) desativa automaticamente sua oferta (`active = FALSE`), retirando-a da vitrine sem apagar histórico de preços, pedidos ou direitos.
 
-carts tem user_id único e revision. É criado na primeira mutação; uma leitura sem carrinho retorna uma representação vazia com revisão inicial 1. cart_items possui PK(cart_id, product_id), quantidade implicitamente um, referência à metodologia, preço/versão/revisão observados e snapshots de título/rótulo gratuitos. FKs compostas garantem que produto, preço e versão pertencem à mesma metodologia/produto. Esses registros de observação servem à revalidação; não são pedido nem aquisição.
+`carts` tem `user_id` único e `revision`. `cart_items` possui `PK(cart_id, product_id)`, quantidade unitária implícita, referência à metodologia, preço/versão/revisão observados e snapshots gratuitos. Revisão divergente resulta em `409`, preservando o estado anterior.
 
-A revisão do produto muda com novo preço, ativação/desativação e publicação/arquivamento/restauração editorial. Arquivar desativa a oferta; restaurar ou publicar não reativa uma oferta inativa. A revisão do carrinho muda somente com inclusão/remoção efetiva. Inclusão já existente e remoção ausente são idempotentes quando a revisão esperada é válida. Revisão divergente resulta em 409, preservando o estado anterior.
+## Valores, configuração acadêmica e disponibilidade
 
-## Valores e disponibilidade
+Centavos trafegam como strings decimais (`1` a `9223372036854775807`), somados com `BigInt` no servidor e formatados sem ponto flutuante no frontend. No ambiente acadêmico demonstrativo (`NODE_ENV=test`, `DEMO_ALLOW=true`), os 15 guias técnicos autorais do Wiki-Chem (`WK-ANL-001` a `WK-ANL-015`) recebem valores padrão em BRL entre `R$ 29,00` e `R$ 68,00`, configuráveis pelas variáveis de ambiente `WIKICHEM_DEMO_DEFAULT_PRICE_CENTAVOS` (inteiro positivo em centavos) ou `WIKICHEM_DEMO_PRICES` (JSON por slug, aceitando centavos positivos ou `null` para manter uma ficha apenas como referência informativa pendente de produto autoral). A reconciliação demonstrativa bloqueia a criação de oferta comercial caso o conteúdo integral autoral esteja vazio, curto ou composto apenas por avisos genéricos.
 
-Centavos trafegam como strings decimais. O contrato aceita de 1 a 9223372036854775807, limite técnico de armazenamento, sem ponto flutuante, expoente, separadores ou zeros à esquerda. BRL é a única moeda. Esse limite não define faixa comercial aprovada; gratuidade e política de precificação real permanecem pendentes.
-
-O servidor soma com BigInt. Há até 100 produtos por carrinho; a soma informativa pode alcançar 100 vezes o limite individual e permanece uma string exata, sem ser persistida em uma coluna monetária de pedido. A futura criação de pedidos deve validar seu próprio limite de armazenamento antes de confirmar qualquer aquisição. O frontend formata inteiros e centavos sem convertê-los para Number.
-
-O total informado considera somente itens atualmente disponíveis. O carrinho também devolve unavailableCount e mantém todos os itens. Cada linha mostra valor observado, preço atual, versão adicionada, versão corrente quando permitida e problemas PRICE_CHANGED, VERSION_CHANGED, OFFER_CHANGED ou UNAVAILABLE. Preço/revisão observados não são atualizados por GET nem pela repetição de uma inclusão. A interface identifica os itens excluídos do total; nada é removido silenciosamente.
-
-A prévia inclui offer nullable com productId, revision, active, priceId/amountCentavos nullable, currency, available e reason; purchasable indica elegibilidade atual de inclusão. Sem produto, offer é null. Produto sem preço, inativo ou conteúdo indisponível não autoriza inclusão. Não existe owned nem validação de compra anterior, pois ainda não há direitos/pedidos; isso deve ser implementado antes da confirmação demonstrativa.
+O total informado no carrinho considera apenas itens disponíveis, preservando itens alterados ou indisponíveis com sinalização explícita (`PRICE_CHANGED`, `VERSION_CHANGED`, `OFFER_CHANGED`, `UNAVAILABLE`) e identificando metodologias já adquiridas (`owned: true`) com link direto para `/biblioteca/:methodologyId`, impedindo recompra duplicada.
 
 ## Contratos REST implementados
 
-Prefixo /api/v1. Todos exigem sessão válida. Escritas exigem origem permitida e CSRF; JSON é obrigatório nos corpos de inclusão/administração. Remoção usa query e não tem corpo. IDs são strings decimais e Zod rejeita campos desconhecidos, inclusive userId, quantity, preço ou total no carrinho.
+Prefixo `/api/v1`. Todos exigem sessão válida; escritas exigem origem permitida e CSRF.
 
 | Método e recurso | Contrato |
 | --- | --- |
-| GET /admin/products | ADMIN; paginação padrão 20/máximo 100; filtro opcional methodologyId |
-| POST /admin/products | ADMIN; methodologyId; cria um único produto inativo e retorna 201 |
-| GET /admin/products/:id | ADMIN; produto, revisão, oferta e identificação gratuita da metodologia |
-| PATCH /admin/products/:id | ADMIN; active e expectedRevision; valida elegibilidade antes de ativar |
-| POST /admin/products/:id/prices | ADMIN; amountCentavos, currency=BRL e expectedRevision; insere histórico e atualiza ponteiro atomicamente; retorna produto atualizado com 201 |
-| GET /admin/products/:id/prices | ADMIN; histórico paginado, somente leitura, com responsável e data |
-| GET /cart | Carrinho próprio, revisão, itens, total atual em centavos e contagem de indisponíveis |
-| PUT /cart/items/:productId | expectedRevision do carrinho, offerRevision, priceId e versionId observados na prévia; quantidade um; retorna carrinho atualizado |
-| DELETE /cart/items/:productId | Query expectedRevision, sem corpo; retorna carrinho atualizado |
+| `GET /admin/products` | `ADMIN`; paginação padrão 20/máximo 100; filtro opcional `methodologyId` |
+| `POST /admin/products` | `ADMIN`; `methodologyId`; cria produto inativo (`201`) |
+| `GET /admin/products/:id` | `ADMIN`; produto, revisão, oferta e identificação gratuita da metodologia |
+| `PATCH /admin/products/:id` | `ADMIN`; `active` e `expectedRevision`; valida elegibilidade antes de ativar |
+| `POST /admin/products/:id/prices` | `ADMIN`; `amountCentavos`, `currency=BRL` e `expectedRevision` (`201`) |
+| `GET /admin/products/:id/prices` | `ADMIN`; histórico paginado imutável com responsável e data |
+| `GET /cart` | Carrinho próprio, revisão, itens, total atual em centavos e contagem de indisponíveis |
+| `PUT /cart/items/:productId` | `expectedRevision`, `offerRevision`, `priceId` e `versionId` observados; retorna carrinho atualizado |
+| `DELETE /cart/items/:productId` | Query `expectedRevision`, sem corpo; retorna carrinho atualizado |
 
-A inclusão compara a oferta e versão da prévia com os registros correntes bloqueados. Alteração entre exibição e inclusão causa 409 OFFER_CHANGED; indisponibilidade causa OFFER_UNAVAILABLE. Os identificadores são precondições de comparação, não preços confiados ao cliente. Em nova leitura do carrinho, alterações posteriores aparecem como avisos por item com valores recalculados. Erros 401/403/400/404/409/503 seguem o formato seguro da API com requestId.
-
-## Transações e proteção
+## Transações e confidencialidade
 
 ```mermaid
 sequenceDiagram
@@ -63,52 +53,20 @@ sequenceDiagram
   participant UI as Interface React
   participant API as API autenticada
   participant DB as MySQL
-  Cliente->>UI: Adicionar oferta exibida
-  UI->>API: GET cart
-  API-->>UI: Revisao do carrinho proprio
-  UI->>API: PUT item com revisoes e IDs observados
-  API->>DB: Bloquear usuario, carrinho e produtos
-  API->>DB: Revalidar metodologia, versao e preco
-  alt Oferta e revisoes validas
-    API->>DB: Inserir item, incrementar revisao e auditar
-    DB-->>API: Commit atomico
-    API-->>UI: Carrinho atual
-  else Alteracao ou indisponibilidade
+  Cliente->>UI: Adicionar ao carrinho
+  UI->>API: GET /cart
+  API-->>UI: Revisão do carrinho próprio
+  UI->>API: PUT /cart/items/:productId
+  API->>DB: Bloquear usuário, carrinho e produto
+  API->>DB: Revalidar metodologia, versão e preço
+  alt Oferta e revisões válidas
+    API->>DB: Inserir item, incrementar revisão e auditar
+    DB-->>API: Commit atômico
+    API-->>UI: Carrinho atualizado (sincroniza contador no cabeçalho)
+  else Alteração ou indisponibilidade
     DB-->>API: Rollback
-    API-->>UI: Conflito seguro, sem inclusao parcial
+    API-->>UI: Conflito seguro, sem inclusão parcial
   end
 ```
 
-Mutações do mesmo usuário bloqueiam users antes de carts e dos produtos em ID crescente. Operações comerciais/editoriais compartilham a ordem produto → metodologia → versão; publicação não disputa o produto depois de bloquear a metodologia. Restrições únicas/FKs complementam o bloqueio e as revisões. Deadlocks e espera excedida causam 409 EDIT_CONFLICT, com rollback e orientação para nova leitura; não há repetição ilimitada nem confirmação automática.
-
-Leituras de carrinho e ofertas usam snapshot REPEATABLE READ; as respostas de mutação são montadas com leituras correntes sob os bloqueios da transação. Autor e proprietário vêm da sessão, nunca de userId recebido. O papel ADMIN é conferido também dentro da transação de escrita. Auditoria registra criação de produto/preço, ativação/desativação e mudanças efetivas no carrinho, sem procedimento, condições privadas, senha, token ou corpo da requisição. Publicação e arquivamento preservam a auditoria editorial correspondente.
-
-Pesquisa, prévia e carrinho não consultam nem serializam methodology_contents, evidência privada ou notas editoriais. O histórico de preços é restrito a ADMIN; o cliente recebe apenas valores necessários à sua prévia/carrinho. Nenhum caminho desta implementação concede acesso ao conteúdo integral.
-
-A criação dos triggers usa a conta operacional de migração, com privilégio TRIGGER e os requisitos de binary logging da instalação. O proprietário do trigger deve manter os privilégios necessários; a conta da API continua sem DDL. Referência: [MySQL 8.4 — CREATE TRIGGER](https://dev.mysql.com/doc/refman/8.4/en/create-trigger.html).
-
-## Verificação e pendências
-
-Testes de contrato e interface verificam centavos exatos, limites, moeda, campos privilegiados, produto sem preço, histórico, ativação e carrinho. A integração real cobre FKs, triggers imutáveis, revisões concorrentes, duplicidades, isolamento, persistência após nova sessão/recriação da API, preço/versão/disponibilidade alterados e ausência de conteúdo privado. Jornadas de navegador exercitam ofertas pelo administrador e carrinho pelo cliente, incluindo soma FX, rede, expiração, teclado e tela de 320 px.
-
-FX01–FX05 são textos e valores originais sintéticos de teste, claramente DEMO, sem associação às candidatas EPA ou fontes de terceiros. A função de fixtures é exclusiva dos testes/desenvolvimento e recusa produção; não há seed comercial ou importação pelo código da aplicação. Publicação das fixtures passa pela revisão editorial real, com declaração de origem do próprio material de teste, sem forjar autorização científica externa.
-
-Permanecem pendentes: corpus autorizado, vocabulário/curadoria científicos, preços reais e condições comerciais, política de aquisição/atualizações, tratamento de direitos revogados, limites de pedido e implantação/backup. A confirmação demonstrativa com pedidos e direitos transacionais está implementada em A14. A biblioteca autorizada está implementada em A15. Pagamentos, gateway e IA/RAG permanecem fora do MVP.
-
-### Resultados observados
-
-A validação executada aprovou **305 testes**, preservando as verificações anteriores de identidade, catálogo e pesquisa:
-
-| Categoria | Aprovados | Evidência funcional |
-| --- | ---: | --- |
-| Unidade e contrato do backend | 92 | Validação monetária exata, moeda, campos permitidos, segurança e bloqueio das fixtures em produção |
-| Componentes e rotas React | 67 | Oferta, preço, envio de precondições, carrinho, remoção, conflito, rede e sessão |
-| Integração MySQL/processos/proxy | 114 | Inclui 22 casos comerciais: somas FX, precisão, imutabilidade por trigger, FKs, revalidação, concorrência, autorização, isolamento e persistência |
-| Regressões de navegador | 13 | Navegação, responsividade, foco e contraste |
-| Jornadas com API e MySQL reais | 19 | Inclui quatro jornadas comerciais de administração e cliente, com persistência, mudanças de oferta, falhas e tela de 320 px |
-
-As 35 migrações foram aplicadas e executadas novamente sem reaplicação. Instalação limpa, build e análise estática passaram; auditorias completas/de produção reportaram zero vulnerabilidades. O bundle frontend foi verificado sem marcadores das fixtures comerciais. Integração e navegador utilizaram Linux, MySQL 8.4 isolado e Chromium, sem depender de testes manuais. Esses resultados não constituem validação científica, aprovação de preços reais ou autorização jurídica de um corpus.
-
-## Integração com aquisição demonstrativa
-
-O recorte A14 acrescenta checkout demonstrativo, histórico próprio e direitos registrados, conforme [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md). Ofertas e carrinho identificam metodologia já adquirida, impedem recompra e não expõem procedimento. A biblioteca integral está implementada em A15; condições comerciais definitivas continuam pendentes.
+Pesquisa, prévia e carrinho nunca consultam nem serializam `methodology_contents`, evidências privadas ou notas editoriais. O acesso ao texto técnico integral ocorre exclusivamente via [Biblioteca digital](BIBLIOTECA-DIGITAL.md) após conclusão do pedido em [Checkout demonstrativo](CHECKOUT-DEMONSTRATIVO.md).

@@ -1,7 +1,9 @@
 import './Hero.css'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../auth/AuthContext'
 
 function Hero() {
+  const auth = useAuth()
   return (
     <section className="hero">
       <div className="hero__overlay"></div>
@@ -16,11 +18,12 @@ function Hero() {
         </h2>
 
         <p>
-          Explore técnicas, metodologias, conceitos e cálculos aplicados ao
-          laboratório em um ambiente organizado para estudo e consulta.
+          Explore guias técnicos, metodologias analíticas, referências
+          normativas e cálculos aplicados ao laboratório em um acervo digital
+          organizado para consulta profissional e acadêmica.
         </p>
 
-        <Link className="hero__button" to="/login">
+        <Link className="hero__button" to={auth.user ? '/consultas' : '/login'}>
           Explorar conteúdos
         </Link>
       </div>

@@ -1,24 +1,22 @@
 # Roteiro funcional para apresentação
 
-Este roteiro descreve a demonstração acadêmica já exercitada automaticamente. Não exige que o avaliador execute testes manuais para comprovar a entrega. As instruções operacionais de preparação ficam separadas deste material.
+Este roteiro descreve o percurso funcional completo exercitado automaticamente pela suíte integrada, sem exigir testes manuais do avaliador.
 
 ## Percurso do cliente
 
-1. Apresentar o problema de organização de metodologias de química analítica e a delimitação ética/técnica: separação rigorosa entre **15 fichas técnicas informativas** baseadas em fontes públicas oficiais (sem cópia de procedimento integral e sem oferta comercial) e **5 exemplos sintéticos originais de software** (`DEMO 01`–`DEMO 05`) para demonstrar aquisição simulada sem cobrança.
-2. Mostrar Home, cadastro e login reais; explicar que sessão e autorização são verificadas pela API.
-3. Na tela de Consultas, mostrar as 20 entradas publicadas no banco demonstrativo e os sete filtros compactos com vocabulário real de química analítica (`Técnicas`, `Tecnologias`, `Equipamentos`, `Matrizes`, `Analitos`, `Normas`, `Segmentos`), abrindo `Edição` em `Normas` para exibir emissor, identificador e revisão sem poluir os checkboxes.
-4. Pesquisar `"ferro"` (ou o símbolo químico `"Fe"`) combinado com `Espectrofotometria de absorção molecular` e `UV-Vis (complexação molecular)` (ou os sete filtros correspondentes) para localizar a ficha `Determinação espectrofotométrica de ferro total com 1,10-fenantrolina (UV-Vis)` (USGS TEI-223), destacando também fichas como `EPA 200.7` (ICP-OES), `EPA 300.0` (cromatografia de íons) e `EPA 8260D` (COVs por GC-MS). Ressaltar o aviso explícito de ficha informativa de referência pública **sem oferta comercial de conteúdo de terceiros**.
-5. Limpar os filtros, abrir a prévia de uma fixture comercial sintética (`DEMO 01 — Absorbância de marcador em água sintética`) e ressaltar que apenas o material sintético próprio possui oferta demonstrativa (`R$ 10,00`), sem expor o procedimento integral na prévia.
-6. Adicionar `DEMO 01` ao carrinho, avançar à revisão pendente e observar **DEMONSTRAÇÃO — SEM COBRANÇA** e confirmação explícita obrigatória. Pedido pendente não concede acesso à biblioteca.
-7. Confirmar a aquisição simulada e consultar o pedido persistido com título, versão e preço históricos preservados.
-8. Abrir a biblioteca e a leitura integral autorizada do texto sintético de software (`v1`), e em seguida demonstrar a atualização para `v2` com seleção explícita da versão histórica `v1` adquirida, sem nova cobrança.
+1. Apresentar a proposta do Wiki-Chem: catálogo digital de química analítica com **15 produtos digitais interpretativos originais** (`WK-ANL-001` a `WK-ANL-015`), fundamentados em métodos públicos oficiais da U.S. EPA e do USGS, oferecendo prévia gratuita concisa e conteúdo técnico autoral completo mediante aquisição isenta de cobrança financeira, sem reproduzir normas de terceiros como documentos licenciados.
+2. Exibir a página inicial (`Home`), o cadastro e o login reais, destacando no cabeçalho autenticado a navegação enxuta (`Home`, `Sobre`, `Consultas`, menu suspenso `Perfil` e botão `Carrinho` com contador dinâmico inicialmente em `0`).
+3. Acessar `Consultas` e observar a apresentação inicial limpa: apenas o campo `Termo de consulta`, o botão `Pesquisar` e o controle `Filtros avançados` recolhido, com orientação amigável e sem listagem automática do catálogo enquanto não houver termo pesquisado.
+4. Expandir `Filtros avançados` para demonstrar os sete eixos analíticos (`Técnicas`, `Tecnologias`, `Equipamentos`, `Matrizes`, `Analitos`, `Normas` com detalhes de edição sob demanda e `Segmentos`) e verificar que aplicar filtros sem termo textual mantém a exigência de termo não vazio.
+5. Pesquisar `"ferro"` (ou `"Fe"`) combinado aos filtros de espectrofotometria/UV-Vis para localizar o cartão compacto `Determinação espectrofotométrica de ferro total com 1,10-fenantrolina (UV-Vis)` (`WK-ANL-001`, USGS TEI-223, `R$ 39,00`), destacando também guias como `EPA 200.7` (`WK-ANL-002`, ICP-OES, `R$ 59,00`), `EPA 300.0` (`WK-ANL-005`, cromatografia de íons, `R$ 54,00`) e `EPA 8260D` (`WK-ANL-013`, COVs por GC-MS, `R$ 68,00`), sem rótulos de teste ou registros sintéticos legados na vitrine.
+6. Abrir a página de produto de `WK-ANL-001` e apresentar o layout inspirado na ASTM: código documental, referência pública de base, versão, escopo resumido em um parágrafo breve, quadro explicativo do conteúdo incluído no guia autoral, classificações essenciais, referências rastreáveis e quadro lateral de compra com preço em BRL.
+7. Clicar em `Adicionar ao carrinho`, observar a atualização imediata do contador no cabeçalho (`Carrinho 1`), abrir `/carrinho` e avançar para `Revisão do pedido` (`/checkout/:id`), onde consta de maneira discreta e inequívoca a informação de transação isenta de cobrança financeira e a confirmação explícita obrigatória.
+8. Confirmar o pedido, verificar o retorno do contador do carrinho para `0`, consultar o pedido persistido em `Perfil → Pedidos` e acessar `Perfil → Minha biblioteca` para abrir a leitura autorizada estruturada em seções técnicas (`Escopo analítico e princípio físico-químico`, `Matrizes aplicáveis`, `Interferências críticas`, `Estrutura operacional`, `Calibração e cálculos` e `Controle de qualidade`), demonstrando ainda a atualização para `v2` e a consulta à versão `v1` originalmente adquirida sem nova compra.
 
 ## Percurso administrativo separado
 
-Apresentar em `/admin` a gestão das sete taxonomias analíticas reais (incluindo emissor, identificador e edição verificada nas normas), o rascunho versionado, fontes/condições de uso, autoria, conferência explícita e publicação imutável. Nas evidências, a conferência é automatizada e identificada, sem revisão científica humana presumida.
-
-Mostrar que a versão publicada não é sobrescrita e que suspensão/restauração exige justificativa e auditoria. Diferenciar retirada de venda de suspensão de leitura e explicar que o papel `ADMIN` não concede automaticamente direito nas rotas de biblioteca de cliente.
+Demonstrar que o item `Administração` no menu `Perfil` aparece exclusivamente para contas `ADMIN`, abrindo `/admin` para gerenciar as sete taxonomias analíticas, versões editoriais imutáveis após publicação, revisão explícita, suspensão/restauração auditada e ofertas/histórico de preços em BRL — ressaltando que o papel administrativo não concede acesso automático à leitura de cliente sem direito adquirido.
 
 ## Evidências e fechamento
 
-Utilizar as 18 capturas reais para os estados visualizados e a matriz de rastreabilidade para autorização, aliases sem falso positivo, reconciliação idempotente, concorrência e rollback. Apresentar os tempos medidos com escopo e limitações, sem transformá-los em SLA. O relatório final em DOCX não foi gerado nesta etapa.
+Apoiar a exposição nas 18 capturas reais geradas por navegador sobre API e MySQL reais, na matriz de rastreabilidade de requisitos e nos dados observados de desempenho da consulta parametrizada com suas respectivas delimitações.

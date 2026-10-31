@@ -149,6 +149,7 @@ test('CUSTOMER recebe bloqueio na UI e no backend sem conteúdo integral', async
     await page.goto('/admin')
     await expect(page.getByRole('heading', { name: 'Acesso restrito' })).toBeVisible()
     await expect(page.getByLabel('Procedimento completo', { exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Perfil', exact: true }).click()
     await expect(page.getByRole('link', { name: 'Administração', exact: true })).toHaveCount(0)
   } finally { await other.close() }
 })
