@@ -89,13 +89,17 @@ test('três compras consecutivas na mesma sessão (PIX, Cartão de crédito e Bo
     await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toHaveCount(0)
     await expect(page.getByText(/Disponível no seu acervo digital/)).toBeVisible()
     const cartState = (await (await user.context.request.get('/api/v1/cart')).json()).data
+    const previewRes = await user.context.request.get('/api/v1/methodologies/' + data.items[0]!.methodologyId)
+    expect(previewRes.status()).toBe(200)
+    const preview = (await previewRes.json()).data
+    expect(preview.offer?.priceId).toBeTruthy()
     const dupRes = await user.context.request.put('/api/v1/cart/items/' + data.items[0]!.product!.id, {
       headers: await signed(user.context),
       data: {
         expectedRevision: cartState.revision,
-        offerRevision: 1,
-        priceId: data.items[0]!.product!.currentPriceId,
-        versionId: '1',
+        offerRevision: preview.offer.revision,
+        priceId: preview.offer.priceId,
+        versionId: preview.versionId,
       },
     })
     expect(dupRes.status()).toBe(409)
