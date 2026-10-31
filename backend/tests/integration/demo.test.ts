@@ -46,13 +46,17 @@ describe('preparação demonstrativa isolada e medição real', () => {
     const [priceRows] = await pool.execute<RowDataPacket[]>('SELECT id FROM product_prices WHERE product_id = ? ORDER BY id DESC LIMIT 1', [legacy.productId])
     const legacyPriceId = String(priceRows[0]!.id)
     const [orderIns] = await pool.execute<ResultSetHeader>(
-      "INSERT INTO orders (user_id, status, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at, completed_at) VALUES (?, 'COMPLETED_SIMULATED', 'SIMULATED', 'BRL', 1000, 1, UTC_TIMESTAMP(6), DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 15 MINUTE), UTC_TIMESTAMP(6))",
+      "INSERT INTO orders (user_id, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at) VALUES (?, 'SIMULATED', 'BRL', 1000, 1, UTC_TIMESTAMP(6), DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 15 MINUTE))",
       [customer.id],
     )
     const orderId = String(orderIns.insertId)
     const [itemIns] = await pool.execute<ResultSetHeader>(
-      'INSERT INTO order_items (order_id, user_id, product_id, methodology_id, methodology_version_id, price_id, title_snapshot, version_label_snapshot, unit_amount_centavos, line_total_centavos, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1000, 1000, 1)',
+      'INSERT INTO order_items (order_id, user_id, product_id, methodology_id, methodology_version_id, price_id, offer_revision_snapshot, title_snapshot, version_label_snapshot, unit_amount_centavos) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, 1000)',
       [orderId, customer.id, legacy.productId, legacy.id, legacy.versionId, legacyPriceId, legacy.title, 'v1'],
+    )
+    await pool.execute(
+      "UPDATE orders SET status = 'COMPLETED_SIMULATED', completed_at = UTC_TIMESTAMP(6) WHERE id = ?",
+      [orderId],
     )
     await pool.execute(
       "INSERT INTO entitlements (user_id, methodology_id, order_item_id, status, granted_at) VALUES (?, ?, ?, 'ACTIVE', UTC_TIMESTAMP(6))",
