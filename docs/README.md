@@ -26,4 +26,4 @@ Esses documentos explicam o sistema e os objetivos da disciplina. Apresentam est
 
 `desenvolvimento/`, `auditoria/` e `etapas/` reúnem comandos, execução de ferramentas, alterações, verificações e histórico operacional. Esses registros não integram o material destinado à avaliação acadêmica. O [registro de desenvolvimento](desenvolvimento/REGISTRO-DESENVOLVIMENTO.md) mantém a proveniência das etapas anteriores e os resultados da fundação do backend.
 
-O README da raiz é um guia operacional de instalação, execução e manutenção. Resultado de automação não equivale à aprovação de regras de produto, condições comerciais ou permissões de fontes.
+O [README da raiz](../README.md) apresenta o Wiki-Chem como produto, com funcionalidades, capturas reais e inicialização rápida. Os procedimentos detalhados de instalação, configuração, migrações, operação e testes foram preservados no [guia técnico](desenvolvimento/GUIA-TECNICO.md). Resultado de automação não equivale à aprovação de regras de produto, condições comerciais ou permissões de fontes.
