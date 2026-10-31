@@ -10,6 +10,16 @@ A figura foi criada e renderizada diretamente no **Eraser**. O [arquivo de diagr
 
 ![Arquitetura do Wiki-Chem: React, Fastify modular, MySQL e Docker Compose](diagramas/arquitetura-wiki-chem.png)
 
+**DERs exportados do Eraser (visões acadêmicas resumidas):**
+
+![DER identidade comércio biblioteca](diagramas/der-identidade-comercio-biblioteca.png)
+
+![DER editorial](diagramas/der-conhecimento-editorial.png)
+
+![DER sete taxonomias](diagramas/der-sete-taxonomias.png)
+
+[Ver imagens e fontes editáveis no Eraser](diagramas/README.md).
+
 **Representação equivalente em Mermaid (editável no GitHub):**
 
 ```mermaid

@@ -1,0 +1,119 @@
+// Wiki-Chem — DER de identidade, catálogo comercial, pedidos e biblioteca
+// Visão estrutural baseada nas migrações backend/migrations e MODELO-DADOS.md
+// Relações 1:N pelo conector <, 1:1 pelo conector -.
+// Não representa pagamentos reais.
+title Wiki-Chem — DER: identidade, comércio simulado e biblioteca
+notation crows-feet
+colorMode pastel
+styleMode plain
+typeface clean
+
+users [color: blue] {
+  id bigint pk
+  display_name varchar
+  email_normalized varchar unique
+  password_hash varchar
+  role enum
+  status enum
+}
+
+auth_sessions [color: blue] {
+  id bigint pk
+  user_id bigint fk
+  token_hash varchar unique
+  expires_at datetime
+  revoked_at datetime
+}
+
+carts [color: yellow] {
+  id bigint pk
+  user_id bigint fk
+  revision bigint
+}
+
+cart_items [color: yellow] {
+  cart_id bigint pk,fk
+  product_id bigint pk,fk
+  observed_price_id bigint fk
+  observed_version_id bigint fk
+}
+
+methodologies [color: purple] {
+  id bigint pk
+  slug varchar unique
+  current_published_version_id bigint fk
+}
+
+methodology_versions [color: purple] {
+  id bigint pk
+  methodology_id bigint fk
+  version_label varchar
+  editorial_status enum
+}
+
+products [color: yellow] {
+  id bigint pk
+  methodology_id bigint fk
+  current_price_id bigint fk
+  active boolean
+  revision bigint
+}
+
+product_prices [color: yellow] {
+  id bigint pk
+  product_id bigint fk
+  amount_centavos bigint
+  currency char
+}
+
+orders [color: green] {
+  id bigint pk
+  user_id bigint fk
+  status enum
+  mode enum
+  total_centavos bigint
+  created_at datetime
+}
+
+order_items [color: green] {
+  id bigint pk
+  order_id bigint fk
+  product_id bigint fk
+  methodology_version_id bigint fk
+  price_id bigint fk
+  line_total_centavos bigint
+}
+
+entitlements [color: green] {
+  id bigint pk
+  user_id bigint fk
+  methodology_id bigint fk
+  order_item_id bigint fk
+  status enum
+}
+
+idempotency_records [color: gray] {
+  id bigint pk
+  user_id bigint fk
+  order_id bigint fk
+  key_hash varchar
+  request_hash varchar
+}
+
+users.id < auth_sessions.user_id
+users.id - carts.user_id
+carts.id < cart_items.cart_id
+products.id < cart_items.product_id
+methodologies.id - products.methodology_id
+methodologies.id < methodology_versions.methodology_id
+products.id < product_prices.product_id
+users.id < orders.user_id
+orders.id < order_items.order_id
+products.id < order_items.product_id
+product_prices.id < order_items.price_id
+methodology_versions.id < order_items.methodology_version_id
+users.id < entitlements.user_id
+methodologies.id < entitlements.methodology_id
+order_items.id - entitlements.order_item_id
+users.id < idempotency_records.user_id
+orders.id < idempotency_records.order_id

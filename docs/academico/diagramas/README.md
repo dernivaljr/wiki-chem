@@ -1,31 +1,47 @@
-# Diagrama de arquitetura de software — Wiki-Chem (Eraser)
+# Diagramas do Wiki-Chem — exportações do Eraser
 
-**Objetivo:** gerar a imagem de arquitetura solicitada na disciplina de Engenharia de Software II, usando a implementação atual do Wiki-Chem como referência, sem introduzir funcionalidades planejadas mas não entregues.
+As imagens abaixo foram exportadas diretamente do workspace do Eraser. As fontes `.eraser` são editáveis. Os arquivos `.bpmn` e `.svg` originais permanecem no repositório, sem substituição.
 
-## Fonte editável
+## Arquitetura
 
-[**arquitetura-wiki-chem.eraser**](arquitetura-wiki-chem.eraser) é o código Diagram-as-Code do Eraser. Ele descreve:
-- Atores (cliente e administrador) e aplicação React/TypeScript executada no navegador;
-- Servidor do frontend (Vite preview) e proxy de chamadas `/api/v1`;
-- API Node.js 24, Fastify e Zod como **monólito modular** com identidade, catálogo, comércio, checkout, biblioteca e administração;
-- Banco MySQL 8.4 na rede interna e infraestrutura Docker Compose **somente para demonstração local**.
+![Arquitetura](arquitetura-wiki-chem.png)
 
-O checkout representa **PIX, cartão e boleto simulados, sem processamento financeiro real**. IA/RAG, gateway de pagamento externo, microserviços e hospedagem pública **não estão representados porque não integram o MVP**. O diagrama mostra módulos lógicos, não processos separados.
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=4qm0dR5Imeo-I1uG7p_W&layout=canvas) · [PNG](arquitetura-wiki-chem.png) · [Fonte Diagram-as-Code](arquitetura-wiki-chem.eraser)
 
-## Gerar a imagem no Eraser
+## BPMN aquisição
 
-1. Acesse o [diagrama já criado no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=4qm0dR5Imeo-I1uG7p_W&layout=canvas). Para recriar a figura em outro workspace, abra um canvas novo.
-2. Insira um **Diagram as Code** do tipo **Cloud Architecture Diagram** (arquitetura); abra o editor do código do diagrama.
-3. Copie o conteúdo integral de [arquitetura-wiki-chem.eraser](arquitetura-wiki-chem.eraser), cole no editor e confira a renderização, em especial agrupamentos, setas e rótulos.
-4. No menu de exportação (`...` no alto à direita ou `Ctrl+E`), selecione **Canvas** e exporte em **SVG**, com tema claro e fundo sólido. Se necessário para o relatório, exporte também **PNG** em boa resolução.
-5. A [imagem PNG exportada diretamente do Eraser](arquitetura-wiki-chem.png) já está versionada nesta pasta e inserida na seção acadêmica. Para obter uma versão vetorial, exporte manualmente um SVG no próprio Eraser, confira sua renderização e só então anexe-o ao GitHub.
+![BPMN aquisição](aquisicao-demonstrativa-eraser.png)
 
-Se o Eraser reorganizar automaticamente os elementos, mantenha a semântica: no navegador está o React, a API é um único backend modular e o MySQL não é exposto diretamente ao usuário. Não atribua ao sistema IA, pagamentos reais ou infraestrutura de produção.
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=vrzjvOoSsXbaGfzmZTfb&layout=canvas) · [PNG](aquisicao-demonstrativa-eraser.png) · [Fonte Diagram-as-Code](aquisicao-demonstrativa-eraser.eraser)
 
-## Fonte e relacionamento com o relatório
+## BPMN editorial
 
-A [seção acadêmica de arquitetura](../ARQUITETURA-E-MODELO.md) contém um diagrama Mermaid equivalente que o próprio GitHub consegue apresentar antes da exportação do Eraser; o **modelo entidade-relacionamento** fica separado do diagrama de arquitetura para não sobrecarregar a figura.
+![BPMN editorial](publicacao-editorial-eraser.png)
 
-Arquivos que fundamentam o diagrama: `frontend/src/App.tsx`, `backend/src/app.ts`, `demo/compose.yaml`, [arquitetura detalhada](../../arquitetura/ARQUITETURA-MVP.md) e [checkout](../../arquitetura/CHECKOUT-DEMONSTRATIVO.md).
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=qxMYQf5tb9nsKeDB--to&layout=canvas) · [PNG](publicacao-editorial-eraser.png) · [Fonte Diagram-as-Code](publicacao-editorial-eraser.eraser)
 
-**Legenda sugerida para o relatório:** *Figura X — Arquitetura de software do Wiki-Chem: interface React, API Fastify em monólito modular, persistência MySQL e ambiente demonstrativo Docker Compose. Fonte: elaboração própria, 2026.*
+## BPMN conceitual Sprint 1
+
+![BPMN conceitual Sprint 1](bpmn-conceitual-sprint1-eraser.png)
+
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=QNEChmSVtce8KsO2mM6N&layout=canvas) · [PNG](bpmn-conceitual-sprint1-eraser.png) · [Fonte Diagram-as-Code](bpmn-conceitual-sprint1-eraser.eraser)
+
+## DER identidade e comércio
+
+![DER identidade e comércio](der-identidade-comercio-biblioteca.png)
+
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=Le8R-Gmp2YDzIYuEBvF6&layout=canvas) · [PNG](der-identidade-comercio-biblioteca.png) · [Fonte Diagram-as-Code](der-identidade-comercio-biblioteca.eraser)
+
+## DER editorial
+
+![DER editorial](der-conhecimento-editorial.png)
+
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=OdrL9fdLdA6dAYOWU8mK&layout=canvas) · [PNG](der-conhecimento-editorial.png) · [Fonte Diagram-as-Code](der-conhecimento-editorial.eraser)
+
+## DER sete taxonomias
+
+![DER sete taxonomias](der-sete-taxonomias.png)
+
+[Diagrama editável no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=eFtZupHdHs9fpx-ll4NJ&layout=canvas) · [PNG](der-sete-taxonomias.png) · [Fonte Diagram-as-Code](der-sete-taxonomias.eraser)
+
+Os três DERs são visões acadêmicas resumidas, e não o inventário completo de todas as tabelas/colunas. O esquema executável está em `backend/migrations/`. O BPMN conceitual do Sprint 1 registra o planejamento inicial; os BPMNs de aquisição e publicação representam processos do MVP do Sprint 2. IA/RAG e pagamentos reais não estão implementados no MVP.

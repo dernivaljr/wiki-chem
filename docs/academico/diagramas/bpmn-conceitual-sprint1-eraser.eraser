@@ -1,0 +1,55 @@
+// Reprodução conceitual do SVG "Wiki-Chem.svg" exportado do Visual Paradigm.
+// Sprint 1 — análise inicial de autenticação e consulta; fluxo termina na validação de fontes.
+// Pequenas correções de ortografia nos rótulos. Não representa implementação de IA/RAG.
+title Wiki-Chem — BPMN conceitual do Sprint 1 (login e consulta)
+direction right
+colorMode pastel
+styleMode plain
+typeface clean
+
+"Wiki-Chem — processo conceitual" [color: blue] {
+  "Usuário" {
+    inicio [type: event, label: "Início"]
+    acessar [type: activity, label: "Acessar plataforma"]
+    informar_login [type: activity, label: "Informar e-mail e senha"]
+    corrigir [type: activity, label: "Corrigir credenciais"]
+    informar_consulta [type: activity, label: "Informar consulta"]
+  }
+  "Interface" {
+    tela_login [type: activity, label: "Exibir tela de login"]
+    verificar [type: activity, label: "Verificar credenciais"]
+    decisao [type: gateway, label: "Credenciais válidas?"]
+    erro [type: activity, label: "Exibir mensagem de login inválido"]
+    liberar [type: activity, label: "Liberar acesso à página inicial"]
+    encaminhar [type: activity, label: "Encaminhar consulta"]
+  }
+  "Motor de consulta (conceitual)" {
+    interpretar [type: activity, label: "Interpretar demanda do usuário"]
+    identificar [type: activity, label: "Identificar matriz a pesquisar"]
+  }
+  "Banco de dados" {
+    pesquisar [type: activity, label: "Pesquisar fontes de conteúdo"]
+    validar [type: activity, label: "Validar relevância das fontes"]
+  }
+}
+
+inicio > acessar
+acessar > tela_login
+tela_login > informar_login
+informar_login > verificar
+verificar > decisao
+decisao > erro: Não [color: red]
+erro > corrigir
+corrigir > informar_login
+decisao > liberar: Sim
+liberar > informar_consulta
+informar_consulta > encaminhar
+encaminhar > interpretar
+interpretar > identificar
+identificar > pesquisar
+pesquisar > validar
+
+legend {
+  [connection: ">", label: "Sequência conceitual do Sprint 1"]
+  [connection: ">", color: red, label: "Nova tentativa de login"]
+}

@@ -1,0 +1,90 @@
+// Wiki-Chem — modelo editorial do MVP, conforme MODELO-DADOS.md
+// Entidades de conteúdo, fontes, revisão, autoria e rastreabilidade.
+// A revisão registrada não equivale a validação científica independente.
+title Wiki-Chem — DER: conhecimento editorial e fontes
+notation crows-feet
+colorMode pastel
+styleMode plain
+typeface clean
+
+users [color: blue] {
+  id bigint pk
+  display_name varchar
+  role enum
+}
+
+methodologies [color: purple] {
+  id bigint pk
+  slug varchar unique
+  lifecycle enum
+  current_published_version_id bigint fk
+}
+
+methodology_versions [color: purple] {
+  id bigint pk
+  methodology_id bigint fk
+  version_label varchar
+  title varchar
+  editorial_status enum
+  access_state enum
+  created_by bigint fk
+  reviewed_by bigint fk
+  published_at datetime
+}
+
+methodology_contents [color: purple] {
+  version_id bigint pk,fk
+  full_description text
+  full_procedure text
+  content_format varchar
+}
+
+sources [color: green] {
+  id bigint pk
+  reference_text text
+  source_type varchar
+  canonical_url varchar
+  owner_credit varchar
+}
+
+version_sources [color: green] {
+  version_id bigint pk,fk
+  source_id bigint pk,fk
+  locator varchar
+  permission_status enum
+  usage_conditions_snapshot text
+  checked_by bigint fk
+}
+
+contributors [color: orange] {
+  id bigint pk
+  display_name varchar
+  contributor_type varchar
+  linked_user_id bigint fk
+}
+
+version_contributions [color: orange] {
+  version_id bigint pk,fk
+  contributor_id bigint pk,fk
+  contribution_role enum
+  recorded_at datetime
+}
+
+version_access_events [color: gray] {
+  id bigint pk
+  version_id bigint fk
+  user_id bigint fk
+  occurred_at datetime
+}
+
+methodologies.id < methodology_versions.methodology_id
+methodology_versions.id - methodology_contents.version_id
+users.id < methodology_versions.created_by
+users.id < methodology_versions.reviewed_by
+methodology_versions.id < version_sources.version_id
+sources.id < version_sources.source_id
+methodology_versions.id < version_contributions.version_id
+contributors.id < version_contributions.contributor_id
+users.id < contributors.linked_user_id
+users.id < version_access_events.user_id
+methodology_versions.id < version_access_events.version_id

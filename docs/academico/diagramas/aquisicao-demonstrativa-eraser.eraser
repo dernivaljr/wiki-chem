@@ -1,0 +1,48 @@
+typeface:clean
+colorMode:pastel
+styleMode:plain
+direction:right
+
+title Wiki-Chem — Aquisição Simulada e Acesso ao Guia Digital
+direction right
+layout sequential
+
+Wiki-Chem — aquisição simulada [color: blue] {
+  Cliente {
+    inicio [type: event, icon: play-circle, label: "Início"]
+    cadastro [type: activity, icon: user, label: "Cadastrar-se ou fazer login"]
+    selecionar [type: activity, icon: shopping-cart, label: "Selecionar guia e adicionar ao carrinho"]
+    revisar [type: activity, icon: file-text, label: "Revisar resumo do pedido e escolher modalidade demonstrativa (PIX/cartão/boleto; sem transação financeira)"]
+    confirmar [type: gateway, icon: x, label: "Confirmar aquisição?"]
+    biblioteca [type: activity, icon: book, label: "Acessar biblioteca digital"]
+    ler [type: activity, icon: book-open, label: "Ler guia publicado autorizado"]
+    fim_acesso [type: event, icon: check-circle, label: "Acesso concluído"]
+  }
+  Sistema Wiki-Chem {
+    pesquisar [type: activity, icon: search, label: "Pesquisar catálogo publicado (texto e sete filtros)"]
+    criar_pedido [type: activity, icon: clipboard, label: "Criar pedido pendente com valores e versão preservados"]
+    revalidar [type: activity, icon: shield, label: "Revalidar pedido, oferta e elegibilidade; confirmar atomicamente e conceder direito de leitura"]
+    verificar [type: activity, icon: lock, label: "Verificar sessão, titularidade e direito ativo"]
+    cancelar [type: activity, icon: x-circle, label: "Cancelar/expirar pedido sem conceder direito"]
+    fim_sem [type: event, icon: slash, label: "Sem aquisição"]
+  }
+}
+
+inicio > cadastro
+cadastro > pesquisar
+pesquisar > selecionar
+selecionar > criar_pedido
+criar_pedido > revisar
+revisar > confirmar
+confirmar > revalidar: Sim
+confirmar > cancelar: Não [color: red]
+cancelar > fim_sem [color: red]
+revalidar > biblioteca
+biblioteca > verificar
+verificar > ler
+ler > fim_acesso
+
+legend {
+  [connection: ">", label: "Fluxo de sequência — Modelo descritivo; aquisição simulada sem cobrança"]
+  [connection: ">", color: red, label: "Ramo negativo (sem aquisição)"]
+}

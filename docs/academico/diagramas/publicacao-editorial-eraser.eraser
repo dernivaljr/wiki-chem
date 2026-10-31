@@ -1,0 +1,38 @@
+// Convertido do BPMN 2.0 do repositório Wiki-Chem.
+// docs/academico/diagramas/publicacao-editorial.bpmn
+title Wiki-Chem — Publicação editorial e versionamento
+direction right
+colorMode pastel
+styleMode plain
+typeface clean
+
+"Wiki-Chem: publicação de metodologia" [color: blue] {
+  "Administrador autorizado" {
+    inicio [type: event, label: "Início"]
+    rascunho [type: activity, label: "Cadastrar rascunho, conteúdo e fontes"]
+    revisar [type: activity, label: "Conferir autoria, classificações e fontes"]
+    corrigir [type: activity, label: "Corrigir pendências do rascunho"]
+  }
+  "Sistema Wiki-Chem" {
+    salvar [type: activity, label: "Validar e salvar revisão"]
+    verificar [type: gateway, label: "Critérios atendidos?"]
+    publicar [type: activity, label: "Registrar revisão e publicar versão imutável"]
+    historico [type: activity, label: "Atualizar versão corrente e auditar"]
+    fim [type: event, label: "Versão publicada"]
+  }
+}
+
+inicio > rascunho
+rascunho > salvar
+salvar > revisar
+revisar > verificar
+verificar > publicar: Sim
+verificar > corrigir: Não [color: red]
+corrigir > revisar
+publicar > historico
+historico > fim
+
+legend {
+ [connection: ">", label: "Fluxo de sequência"]
+ [connection: ">", color: red, label: "Retorno para correção"]
+}

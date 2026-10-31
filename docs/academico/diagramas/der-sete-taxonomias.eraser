@@ -1,0 +1,100 @@
+// Wiki-Chem — sete taxonomias e relações N:N vinculadas às versões.
+// Fonte: MODELO-DADOS.md seção 4 e migrações do backend.
+title Wiki-Chem — DER: sete taxonomias técnicas
+notation crows-feet
+colorMode pastel
+styleMode plain
+typeface clean
+
+methodology_versions [color: purple] {
+ id bigint pk
+ methodology_id bigint fk
+ version_label varchar
+ editorial_status enum
+}
+
+techniques [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_techniques [color: yellow] {
+ version_id bigint pk,fk
+ technique_id bigint pk,fk
+}
+
+technologies [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_technologies [color: yellow] {
+ version_id bigint pk,fk
+ technology_id bigint pk,fk
+}
+
+equipment [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_equipment [color: yellow] {
+ version_id bigint pk,fk
+ equipment_id bigint pk,fk
+}
+
+matrices [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_matrices [color: yellow] {
+ version_id bigint pk,fk
+ matrix_id bigint pk,fk
+}
+
+analytes [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_analytes [color: yellow] {
+ version_id bigint pk,fk
+ analyte_id bigint pk,fk
+}
+
+standards [color: green] {
+ id bigint pk
+ issuer varchar
+ identifier varchar
+ edition_label varchar
+}
+version_standards [color: yellow] {
+ version_id bigint pk,fk
+ standard_id bigint pk,fk
+}
+
+segments [color: blue] {
+ id bigint pk
+ code varchar unique
+ label varchar
+}
+version_segments [color: yellow] {
+ version_id bigint pk,fk
+ segment_id bigint pk,fk
+}
+
+methodology_versions.id < version_techniques.version_id
+techniques.id < version_techniques.technique_id
+methodology_versions.id < version_technologies.version_id
+technologies.id < version_technologies.technology_id
+methodology_versions.id < version_equipment.version_id
+equipment.id < version_equipment.equipment_id
+methodology_versions.id < version_matrices.version_id
+matrices.id < version_matrices.matrix_id
+methodology_versions.id < version_analytes.version_id
+analytes.id < version_analytes.analyte_id
+methodology_versions.id < version_standards.version_id
+standards.id < version_standards.standard_id
+methodology_versions.id < version_segments.version_id
+segments.id < version_segments.segment_id
