@@ -35,3 +35,15 @@ jobs:
             docs/academico/diagramas/der-*.png
           if-no-files-found: error
           retention-days: 30
+
+      - name: Empacotar identidade visual utilizada no React
+        uses: actions/upload-artifact@v7
+        with:
+          name: identidade-visual-wikichem
+          path: |
+            frontend/src/assets/logo-horizontal.png
+            frontend/src/assets/wiki-chem-symbol.png
+            frontend/src/assets/hero-home.webp
+            frontend/src/assets/about-lab.png
+          if-no-files-found: error
+          retention-days: 30
