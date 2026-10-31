@@ -4,9 +4,13 @@ O frontend React/TypeScript consome uma API REST Fastify/Node.js 24/TypeScript s
 
 A **Figura 1** apresenta a arquitetura lógica do MVP e a execução local por Docker Compose. O frontend React é executado no navegador; o container frontend disponibiliza os arquivos e encaminha `/api/v1` para a API. Os módulos do backend pertencem a **um único monólito modular**, não a serviços independentes. A API e o MySQL não ficam expostos diretamente ao navegador no ambiente de demonstração.
 
-A fonte editável desta figura, preparada para o **Eraser**, está em [arquitetura-wiki-chem.eraser](diagramas/arquitetura-wiki-chem.eraser). Há [instruções de renderização e exportação](diagramas/README.md); a exportação SVG no Eraser será anexada ao GitHub após conferência visual.
+A figura foi criada e renderizada diretamente no **Eraser**. O [arquivo de diagrama editável](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=4qm0dR5Imeo-I1uG7p_W&layout=canvas) e o [código-fonte versionado](diagramas/arquitetura-wiki-chem.eraser) permitem revisões futuras. A [imagem PNG](diagramas/arquitetura-wiki-chem.png) foi exportada do Eraser em tema claro.
 
-**Figura 1 — Arquitetura de software do Wiki-Chem (representação equivalente renderizada no GitHub).**
+**Figura 1 — Arquitetura de software do Wiki-Chem (Eraser, 2026).**
+
+![Arquitetura do Wiki-Chem: React, Fastify modular, MySQL e Docker Compose](diagramas/arquitetura-wiki-chem.png)
+
+**Representação equivalente em Mermaid (editável no GitHub):**
 
 ```mermaid
 flowchart LR
