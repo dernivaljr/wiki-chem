@@ -80,11 +80,12 @@ function CartBody({ initial, reload }: { initial: CartData; reload: () => void }
             <button
               className="consultas__secondary-btn"
               type="button"
+              aria-label={'Remover ' + item.title}
               disabled={pending}
               onClick={() => { void remove(item.productId) }}
             >
               <Trash2 size={14} aria-hidden="true" style={{ marginRight: 6, verticalAlign: '-2px' }} />
-              <span>Remover {item.title}</span>
+              <span>Remover</span>
             </button>
           </div>
         </article>

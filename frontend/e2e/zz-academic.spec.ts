@@ -78,14 +78,15 @@ test('ACADEMICO: evidências reais da experiência final do MVP, e-commerce anal
     await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
     await expect(page.getByRole('checkbox')).toBeVisible()
     await expect(page.getByText(/Transação isenta de cobrança:/)).toBeVisible()
-    await capture(page, '08-revisao-pedido.png', 'Checkout com aviso discreto e inequívoco de isenção de cobrança financeira e confirmação explícita.')
+    await page.getByRole('radio', { name: /^PIX/ }).check()
+    await capture(page, '08-revisao-pedido.png', 'Checkout com seleção de modalidade de pagamento simulado (PIX, Cartão de crédito e Boleto bancário), aviso discreto de isenção de cobrança e confirmação explícita.')
 
     expect((await customer.request.get('/api/v1/library/' + data.methods[0]!.id + '/content')).status()).toBe(403)
     await page.getByRole('checkbox').check()
     await page.getByRole('button', { name: 'Confirmar pedido' }).click()
     await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Carrinho (0 itens)' })).toBeVisible()
-    await capture(page, '09-confirmacao.png', 'Pedido concluído, contador do carrinho zerado e direito de acesso liberado.')
+    await capture(page, '09-confirmacao.png', 'Pedido concluído via simulação PIX, contador do carrinho zerado e ligação direta para o conteúdo adquirido.')
 
     await page.getByRole('link', { name: 'Ver pedido persistido', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Detalhes do pedido' })).toBeVisible()

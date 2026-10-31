@@ -9,6 +9,7 @@ async function purchase(page: Page, methodologyId: string) {
   await page.getByRole('button', { name: 'Prosseguir para revisão do pedido' }).click()
   await expect(page.getByRole('checkbox')).toBeVisible()
   const orderId = page.url().split('/').pop()!
+  await page.getByRole('radio', { name: /^PIX/ }).check()
   await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar pedido' }).click()
   await expect(page.getByRole('heading', { name: 'Pedido concluído' })).toBeVisible()
   return orderId
@@ -33,6 +34,7 @@ test('login → pesquisa → carrinho → revisão → pedido → biblioteca →
     await expect(page.getByRole('checkbox')).toBeVisible()
     const id = page.url().split('/').pop()!
     expect((await user.context.request.get('/api/v1/library/' + item.methodologyId + '/content')).status()).toBe(403)
+    await page.getByRole('radio', { name: /^PIX/ }).check()
     await page.getByRole('checkbox').check(); await page.getByRole('button', { name: 'Confirmar pedido' }).click()
     await page.getByRole('link', { name: 'Ver pedido persistido', exact: true }).click()
     await page.getByRole('link', { name: 'Ler ' + item.title + ' na minha biblioteca', exact: true }).click()

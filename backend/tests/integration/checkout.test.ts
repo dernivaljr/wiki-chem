@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify'
-import type { RowDataPacket } from 'mysql2/promise'
+import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { buildApp } from '../../src/app.js'
 import { loadConfig } from '../../src/config/env.js'
@@ -11,7 +11,7 @@ import { createCatalogRepository } from '../../src/modules/catalog/catalog.repos
 import { createCommerceRepository } from '../../src/modules/commerce/commerce.repository.js'
 import { createCheckoutRepository } from '../../src/modules/checkout/checkout.repository.js'
 import type { Checkpoint } from '../../src/modules/checkout/checkout.repository.js'
-import type { OrderDetail } from '../../src/modules/checkout/checkout.contracts.js'
+import type { OrderDetail, PaymentMethod } from '../../src/modules/checkout/checkout.contracts.js'
 import type { Cart, Product } from '../../src/modules/commerce/commerce.contracts.js'
 import type { Methodology, Preview, Version } from '../../src/modules/catalog/catalog.contracts.js'
 import { facets } from '../../src/modules/catalog/catalog.contracts.js'
@@ -71,7 +71,8 @@ async function prepare(user: Session, products = [fx[0]!]) {
   return cart(user)
 }
 const create = (user: Session, revision: number, key = randomUUID()) => call('POST', '/checkout/simulations', { cartRevision: revision }, user, key)
-const confirm = (user: Session, id: string, key = randomUUID()) => call('POST', '/orders/' + id + '/confirm-simulation', { demoAcknowledged: true }, user, key)
+const confirm = (user: Session, id: string, key = randomUUID(), paymentMethod: PaymentMethod = 'PIX') =>
+  call('POST', '/orders/' + id + '/confirm-simulation', { demoAcknowledged: true, paymentMethod }, user, key)
 const get = async (user: Session, id: string) => data<OrderDetail>(await call('GET', '/orders/' + id, undefined, user))
 async function changePrice(p: Product, amount = '1250') {
   const current = data<Product>(await call('GET', '/admin/products/' + p.id))
@@ -92,10 +93,10 @@ beforeEach(() => { clock = Date.now(); fault = null; advance = false })
 afterAll(async () => { await app?.close(); await resetTestDatabase(pool, config); await migrateTestDatabase(config); await pool.end() })
 
 describe('checkout demonstrativo transacional com MySQL real', () => {
-  it('T1 cria pedido de 12000 centavos com snapshots e sem conceder direitos ou limpar carrinho', async () => {
+  it('T1 cria pedido de 12000 centavos com snapshots, paymentMethod nulo e sem conceder direitos ou limpar carrinho', async () => {
     const user = await customer(), before = await prepare(user, fx), key = randomUUID()
     const order = data<OrderDetail>(await create(user, before.revision, key), 201)
-    expect(order).toMatchObject({ status: 'PENDING_CONFIRMATION', mode: 'SIMULATED', totalCentavos: '12000', itemCount: 5 })
+    expect(order).toMatchObject({ status: 'PENDING_CONFIRMATION', mode: 'SIMULATED', paymentMethod: null, totalCentavos: '12000', itemCount: 5 })
     expect(order.items.map(item => item.unitAmountCentavos)).toEqual([...demoPrices()])
     expect(order.items.every(item => item.quantity === 1 && item.lineTotalCentavos === item.unitAmountCentavos)).toBe(true)
     expect((await cart(user)).revision).toBe(before.revision); expect((await cart(user)).items).toHaveLength(5)
@@ -104,17 +105,70 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
     expect(stored[0]?.key_hash).toBe(createHash('sha256').update(key).digest('hex'))
     expect(JSON.stringify(stored)).not.toContain(key)
   })
-  it('T2 conclui, concede direitos, limpa somente itens adquiridos e persiste histórico', async () => {
+  it('T2 conclui, registra modalidade, concede direitos, limpa somente itens adquiridos e persiste histórico', async () => {
     const user = await customer(), before = await prepare(user, fx.slice(0, 2))
     const order = data<OrderDetail>(await create(user, before.revision), 201)
     data<Cart>(await add(user, fx[2]!))
-    const result = data<OrderDetail>(await confirm(user, order.id))
-    expect(result).toMatchObject({ status: 'COMPLETED_SIMULATED', totalCentavos: '2750' }); expect(result.completedAt).toBeTruthy()
+    const result = data<OrderDetail>(await confirm(user, order.id, randomUUID(), 'CREDIT_CARD'))
+    expect(result).toMatchObject({ status: 'COMPLETED_SIMULATED', paymentMethod: 'CREDIT_CARD', totalCentavos: '2750' }); expect(result.completedAt).toBeTruthy()
     const rights = await sql('SELECT methodology_id, order_item_id, status FROM entitlements WHERE user_id = ? ORDER BY methodology_id', [user.id])
     expect(rights).toHaveLength(2); expect(rights.every(row => row.status === 'ACTIVE')).toBe(true)
     expect((await cart(user)).items.map(item => item.productId)).toEqual([fx[2]!.id])
-    expect((await call('GET', '/orders', undefined, user)).json().data[0]).toMatchObject({ id: order.id, status: 'COMPLETED_SIMULATED', itemCount: 2 })
+    expect((await call('GET', '/orders', undefined, user)).json().data[0]).toMatchObject({ id: order.id, status: 'COMPLETED_SIMULATED', paymentMethod: 'CREDIT_CARD', itemCount: 2 })
     expect((await get(user, order.id)).items).toEqual(order.items)
+  })
+  it('permite três compras consecutivas do mesmo usuário com PIX, CREDIT_CARD e BOLETO e pedidos distintos', async () => {
+    const user = await customer()
+    const methods: PaymentMethod[] = ['PIX', 'CREDIT_CARD', 'BOLETO']
+    const orderIds: string[] = []
+    for (const [idx, method] of methods.entries()) {
+      const currentCart = await prepare(user, [fx[idx]!])
+      const created = data<OrderDetail>(await create(user, currentCart.revision, randomUUID()), 201)
+      expect(orderIds).not.toContain(created.id)
+      orderIds.push(created.id)
+      const done = data<OrderDetail>(await confirm(user, created.id, randomUUID(), method))
+      expect(done).toMatchObject({ id: created.id, status: 'COMPLETED_SIMULATED', paymentMethod: method })
+      expect((await cart(user)).items).toHaveLength(0)
+    }
+    expect(new Set(orderIds).size).toBe(3)
+    const listed = (await call('GET', '/orders', undefined, user)).json().data as OrderDetail[]
+    expect(listed.map(o => [o.id, o.paymentMethod])).toEqual([
+      [orderIds[2]!, 'BOLETO'],
+      [orderIds[1]!, 'CREDIT_CARD'],
+      [orderIds[0]!, 'PIX'],
+    ])
+    expect(await sql('SELECT id FROM entitlements WHERE user_id = ? AND status = \'ACTIVE\'', [user.id])).toHaveLength(3)
+  })
+  it('replay de confirmação preserva modalidade original e rejeita alteração indevida de forma de pagamento', async () => {
+    const user = await customer(), before = await prepare(user), order = data<OrderDetail>(await create(user, before.revision), 201), key = randomUUID()
+    const completed = data<OrderDetail>(await confirm(user, order.id, key, 'PIX'))
+    expect(completed.paymentMethod).toBe('PIX')
+    const sameReplay = data<OrderDetail>(await confirm(user, order.id, key, 'PIX'))
+    expect(sameReplay).toMatchObject({ id: order.id, status: 'COMPLETED_SIMULATED', paymentMethod: 'PIX' })
+    const alteredSameKey = await confirm(user, order.id, key, 'BOLETO')
+    expect(alteredSameKey.statusCode).toBe(409)
+    expect(alteredSameKey.json().error.code).toBe('IDEMPOTENCY_CONFLICT')
+    const alteredOtherKey = await confirm(user, order.id, randomUUID(), 'CREDIT_CARD')
+    expect(alteredOtherKey.statusCode).toBe(409)
+    expect(alteredOtherKey.json().error.code).toBe('IDEMPOTENCY_CONFLICT')
+    expect((await get(user, order.id)).paymentMethod).toBe('PIX')
+  })
+  it('mantém compatibilidade de leitura com pedidos antigos sem modalidade preenchida (payment_method NULL)', async () => {
+    const user = await customer()
+    const [ins] = await pool.execute<ResultSetHeader>(
+      "INSERT INTO orders (user_id, mode, currency, total_centavos, cart_revision_snapshot, created_at, expires_at) VALUES (?, 'SIMULATED', 'BRL', 1000, 1, UTC_TIMESTAMP(6), DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 15 MINUTE))",
+      [user.id],
+    )
+    const legacyId = String(ins.insertId)
+    const [priceRows] = await sql('SELECT id FROM product_prices WHERE product_id = ? ORDER BY id DESC LIMIT 1', [fx[0]!.id])
+    await pool.execute(
+      'INSERT INTO order_items (order_id, user_id, product_id, methodology_id, methodology_version_id, price_id, offer_revision_snapshot, title_snapshot, version_label_snapshot, unit_amount_centavos) VALUES (?, ?, ?, ?, (SELECT current_published_version_id FROM methodologies WHERE id = ?), ?, 1, ?, ?, 1000)',
+      [legacyId, user.id, fx[0]!.id, fx[0]!.methodologyId, fx[0]!.methodologyId, String(priceRows!.id), 'Legado compatível', 'v1'],
+    )
+    await pool.execute("UPDATE orders SET status = 'COMPLETED_SIMULATED', completed_at = UTC_TIMESTAMP(6) WHERE id = ?", [legacyId])
+    const detailRes = await get(user, legacyId)
+    expect(detailRes).toMatchObject({ id: legacyId, status: 'COMPLETED_SIMULATED', paymentMethod: null })
+    expect((await call('GET', '/orders', undefined, user)).json().data[0]).toMatchObject({ id: legacyId, paymentMethod: null })
   })
   it('replay de criação após conclusão devolve o mesmo pedido, e payload diferente conflita', async () => {
     const user = await customer(), before = await prepare(user), key = randomUUID()
@@ -135,9 +189,9 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
   it('duas abas/chaves confirmam o mesmo pedido sem dupla concessão ou revisão extra do carrinho', async () => {
     const user = await customer(), before = await prepare(user)
     const order = data<OrderDetail>(await create(user, before.revision), 201), key = randomUUID()
-    const responses = await Promise.all([confirm(user, order.id, key), confirm(user, order.id, randomUUID())])
+    const responses = await Promise.all([confirm(user, order.id, key, 'PIX'), confirm(user, order.id, randomUUID(), 'PIX')])
     expect(responses.map(response => data<OrderDetail>(response).status)).toEqual(['COMPLETED_SIMULATED','COMPLETED_SIMULATED'])
-    data<OrderDetail>(await confirm(user, order.id, key))
+    data<OrderDetail>(await confirm(user, order.id, key, 'PIX'))
     expect(await sql('SELECT id FROM entitlements WHERE user_id = ?', [user.id])).toHaveLength(1)
     expect((await cart(user)).revision).toBe(before.revision + 1)
     expect(await sql("SELECT id FROM audit_events WHERE actor_user_id = ? AND action = 'ORDER_COMPLETED_SIMULATED'", [user.id])).toHaveLength(1)
@@ -173,13 +227,16 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
   })
   it.each(['ORDER_COMPLETED','ENTITLEMENT_CREATED','CART_UPDATED','AUDIT_RECORDED','IDEMPOTENCY_RECORDED'] as const)('falha T2 em %s faz rollback integral e permite a mesma chave', async point => {
     const user = await customer(), before = await prepare(user, fx.slice(0, 2)), order = data<OrderDetail>(await create(user, before.revision), 201), key = randomUUID(); fault = point
-    expect((await confirm(user, order.id, key)).statusCode).toBe(503)
+    expect((await confirm(user, order.id, key, 'BOLETO')).statusCode).toBe(503)
     expect((await get(user, order.id)).status).toBe('PENDING_CONFIRMATION')
+    expect((await get(user, order.id)).paymentMethod).toBeNull()
     expect(await sql('SELECT id FROM entitlements WHERE user_id = ?', [user.id])).toHaveLength(0)
     expect((await cart(user)).items).toHaveLength(2); expect((await cart(user)).revision).toBe(before.revision)
     expect(await sql("SELECT id FROM idempotency_records WHERE user_id = ? AND operation = 'CONFIRM_SIMULATION'", [user.id])).toHaveLength(0)
     expect(await sql("SELECT id FROM audit_events WHERE actor_user_id = ? AND action = 'ORDER_COMPLETED_SIMULATED'", [user.id])).toHaveLength(0)
-    fault = null; expect(data<OrderDetail>(await confirm(user, order.id, key)).status).toBe('COMPLETED_SIMULATED')
+    fault = null
+    const done = data<OrderDetail>(await confirm(user, order.id, key, 'BOLETO'))
+    expect(done).toMatchObject({ status: 'COMPLETED_SIMULATED', paymentMethod: 'BOLETO' })
   })
   it.each(['1250','750'])('mudança de preço para %s exige outra revisão, sem substituir snapshots', async amount => {
     const p = await product(), user = await customer(), before = await prepare(user, [p]), order = data<OrderDetail>(await create(user, before.revision), 201)
@@ -240,18 +297,25 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
     expect((await confirm(user, order.id)).json().error.code).toBe('ORDER_EXPIRED')
     expect((await get(user, order.id)).status).toBe('EXPIRED'); expect((await cart(user)).items).toHaveLength(1)
   })
-  it('snapshots e origem do direito permanecem imutáveis; revogação não autoriza recompra', async () => {
+  it('snapshots, modalidade e origem do direito permanecem imutáveis; revogação não autoriza recompra', async () => {
     const p = await product(), user = await customer(), before = await prepare(user, [p]), order = data<OrderDetail>(await create(user, before.revision), 201), key = randomUUID()
-    data<OrderDetail>(await confirm(user, order.id, key)); await changePrice(p, '3000')
+    data<OrderDetail>(await confirm(user, order.id, key, 'PIX')); await changePrice(p, '3000')
     expect((await get(user, order.id)).items).toEqual(order.items)
-    for (const query of ['UPDATE orders SET total_centavos = 1 WHERE id = ?', 'UPDATE orders SET expires_at = UTC_TIMESTAMP(6) WHERE id = ?', 'DELETE FROM orders WHERE id = ?']) await expect(pool.execute(query, [order.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
+    for (const query of [
+      'UPDATE orders SET total_centavos = 1 WHERE id = ?',
+      "UPDATE orders SET payment_method = 'BOLETO' WHERE id = ?",
+      'UPDATE orders SET expires_at = UTC_TIMESTAMP(6) WHERE id = ?',
+      'DELETE FROM orders WHERE id = ?',
+    ]) {
+      await expect(pool.execute(query, [order.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
+    }
     await expect(pool.execute('UPDATE order_items SET title_snapshot = ? WHERE order_id = ?', ['forjado', order.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     await expect(pool.execute('DELETE FROM order_items WHERE order_id = ?', [order.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     await expect(pool.execute('UPDATE entitlements SET methodology_id = ? WHERE user_id = ?', [fx[1]!.methodologyId, user.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     await expect(pool.execute('DELETE FROM entitlements WHERE user_id = ?', [user.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     await pool.execute("UPDATE entitlements SET status = 'REVOKED', revoked_at = UTC_TIMESTAMP(6), reason = 'Restrição sintética DEMO de teste' WHERE user_id = ?", [user.id])
     expect((await add(user, p)).json().error.code).toBe('ALREADY_OWNED')
-    expect(data<OrderDetail>(await confirm(user, order.id, key)).status).toBe('COMPLETED_SIMULATED')
+    expect(data<OrderDetail>(await confirm(user, order.id, key, 'PIX')).status).toBe('COMPLETED_SIMULATED')
     expect((await sql('SELECT status FROM entitlements WHERE user_id = ?', [user.id]))[0]!.status).toBe('REVOKED')
   })
   it('banco impede concessão a partir de pedido pendente ou a proprietário divergente', async () => {
@@ -261,13 +325,15 @@ describe('checkout demonstrativo transacional com MySQL real', () => {
     await expect(pool.execute("INSERT INTO entitlements (user_id, methodology_id, order_item_id, status, granted_at) VALUES (?, ?, ?, 'ACTIVE', UTC_TIMESTAMP(6))", [other.id, item.methodologyId, item.id])).rejects.toMatchObject({ code: 'ER_SIGNAL_EXCEPTION' })
     expect(await sql('SELECT id FROM entitlements WHERE user_id = ?', [other.id])).toHaveLength(0)
   })
-  it('propriedade, sessão, CSRF e chave são obrigatórios', async () => {
+  it('propriedade, sessão, CSRF, chave e modalidade são obrigatórios', async () => {
     const user = await customer(), other = await customer(), before = await prepare(user), order = data<OrderDetail>(await create(user, before.revision), 201)
-    for (const [method, path, body] of [['GET','/orders/' + order.id,undefined],['POST','/orders/' + order.id + '/cancel',{}],['POST','/orders/' + order.id + '/confirm-simulation',{ demoAcknowledged: true }]] as const) expect((await call(method, path, body, other, randomUUID())).statusCode).toBe(404)
+    for (const [method, path, body] of [['GET','/orders/' + order.id,undefined],['POST','/orders/' + order.id + '/cancel',{}],['POST','/orders/' + order.id + '/confirm-simulation',{ demoAcknowledged: true, paymentMethod: 'PIX' }]] as const) expect((await call(method, path, body, other, randomUUID())).statusCode).toBe(404)
     expect((await call('GET', '/orders', undefined, null)).statusCode).toBe(401)
     expect((await call('GET', '/orders?userId=' + user.id, undefined, other)).statusCode).toBe(400)
     expect((await call('POST', '/checkout/simulations', { cartRevision: before.revision }, user)).statusCode).toBe(400)
-    expect((await call('POST', '/orders/' + order.id + '/confirm-simulation', { demoAcknowledged: false }, user, randomUUID())).statusCode).toBe(400)
+    expect((await call('POST', '/orders/' + order.id + '/confirm-simulation', { demoAcknowledged: false, paymentMethod: 'PIX' }, user, randomUUID())).statusCode).toBe(400)
+    expect((await call('POST', '/orders/' + order.id + '/confirm-simulation', { demoAcknowledged: true }, user, randomUUID())).statusCode).toBe(400)
+    expect((await call('POST', '/orders/' + order.id + '/confirm-simulation', { demoAcknowledged: true, paymentMethod: 'INVALID' }, user, randomUUID())).statusCode).toBe(400)
     expect((await app.inject({ method: 'POST', url: '/api/v1/checkout/simulations', headers: { cookie: user.cookie, origin: config.APP_ORIGIN, 'idempotency-key': randomUUID() }, payload: { cartRevision: before.revision } })).statusCode).toBe(403)
   })
   it('chave de confirmação não pode ser reutilizada para outro pedido do mesmo usuário', async () => {
