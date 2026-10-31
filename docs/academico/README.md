@@ -7,7 +7,7 @@ Este conjunto prepara a posterior adaptação ao modelo do professor. Não é o 
 - [Problema, objetivos e escopo](VISAO-GERAL.md).
 - [Requisitos e rastreabilidade](RASTREABILIDADE.md).
 - [Arquitetura e modelagem](ARQUITETURA-E-MODELO.md).
-- [Diagrama de arquitetura no Eraser (fonte editável e instruções)](diagramas/README.md).
+- [Diagrama de arquitetura criado no Eraser (imagem, fonte e instruções)](diagramas/README.md).
 - [Processos BPMN](PROCESSOS.md).
 - [Resultados, evidências e limitações](RESULTADOS.md).
 - [Capturas reais](evidencias/README.md).
