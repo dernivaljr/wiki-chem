@@ -3,32 +3,36 @@
 // Representa a demonstração local, não infraestrutura de produção.
 // Sem microserviços, gateway de pagamento ou motor de IA/RAG.
 
-direction right
-colorMode pastel
-styleMode shadow
-typeface clean
+title Wiki-Chem — MVP local com Docker Compose — Sem IA/RAG
 
-Acesso [label: "Acesso pelo navegador", color: blue] {
+direction right
+colorMode outline
+styleMode plain
+typeface clean
+textSize large
+wrap off
+
+Acesso [label: "Usuário / Navegador", color: blue] {
   Pessoa [label: "Cliente ou administrador"]
   AplicacaoWeb [label: "Aplicação web React + TypeScript\nPesquisa, carrinho e biblioteca"]
 }
 
-AmbienteLocal [label: "Ambiente local - Docker Compose", color: gray] {
+InterfaceLocal [label: "Serviço de interface local", color: blue] {
   ServidorFrontend [label: "Servidor frontend\nVite preview (porta interna 4173)", color: blue]
+}
 
-  Backend [label: "Monólito modular - Node.js 24 / Fastify", color: purple] {
-    ApiRest [label: "API REST /api/v1\nValidação Zod e controles de acesso"]
-    Identidade [label: "Identidade e sessão\nLogin, perfil, CSRF"]
-    Catalogo [label: "Catálogo e pesquisa\nSete filtros e versões"]
-    Comercio [label: "Comércio\nProdutos, preços e carrinho"]
-    Checkout [label: "Checkout e pedidos\nPagamento simulado, direitos"]
-    Biblioteca [label: "Biblioteca digital\nLeitura integral autorizada"]
-    Administracao [label: "Administração editorial\nFontes, revisão e publicação"]
-  }
+Backend [label: "Backend monólito modular", color: purple] {
+  ApiRest [label: "API REST /api/v1 - Fastify / Node.js 24\nValidação Zod e controles de acesso"]
+  Identidade [label: "Identidade e sessão\nLogin, perfil, CSRF"]
+  Catalogo [label: "Catálogo e pesquisa\nSete filtros e versões"]
+  Comercio [label: "Comércio\nProdutos, preços e carrinho"]
+  Checkout [label: "Checkout e pedidos\nPagamento simulado sem integração financeira; direitos"]
+  Biblioteca [label: "Biblioteca digital\nLeitura integral autorizada"]
+  Administracao [label: "Administração editorial\nFontes, revisão e publicação"]
+}
 
-  Persistencia [label: "Persistência transacional", color: green] {
-    MySQL [label: "MySQL 8.4\nUsuários e sessões\nMetodologias, preços, pedidos e direitos"]
-  }
+Persistencia [label: "Persistência MySQL", color: green] {
+  MySQL [label: "MySQL 8.4\nUsuários e sessões\nMetodologias, preços, pedidos e direitos"]
 }
 
 Pessoa > AplicacaoWeb: utiliza
