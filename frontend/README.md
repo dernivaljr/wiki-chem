@@ -1,7 +1,26 @@
-# Frontend Wiki-Chem
+# Interface web do Wiki-Chem
 
-Aplicação React/TypeScript/Vite. Consulte o [README principal](../README.md) para instalação, estado real das funcionalidades, comandos e integração contínua.
+Frontend responsivo em **React, TypeScript e Vite**, responsável pela navegação, pesquisa de metodologias, visualização de guias digitais, carrinho, checkout simulado e biblioteca do usuário.
 
-A partir deste diretório, os equivalentes são `npm ci`, `npm run dev`, `npm run build`, `npm run lint`, `npm test` e `npm run test:e2e`. Prepare o Chromium com `npm exec -- playwright install --no-shell chromium` antes dos testes de navegador.
+A aplicação utiliza a **API Fastify real** do projeto para cadastro, autenticação, catálogo, preços, pedidos e controle de acesso. Não se trata de interfaces simuladas de login ou pesquisa.
 
-Login, cadastro e pesquisa permanecem interfaces simuladas. A suíte inicial cobre apresentação e interações locais, sem afirmar que autenticação, persistência ou consulta estejam implementadas.
+## Execução local
+
+Para iniciar a experiência completa, com frontend, API e MySQL, prefira a [demonstração integrada com Docker](../README.md#executar-no-seu-computador).
+
+Para trabalhar somente com o frontend:
+
+```bash
+npm ci
+npm run dev
+```
+
+Os recursos autenticados dependem da API configurada. Para compilação e verificações locais:
+
+```bash
+npm run build
+npm run lint
+npm test
+```
+
+O navegador de testes pode ser instalado com `npm exec -- playwright install --no-shell chromium`. Veja o [guia técnico](../docs/desenvolvimento/GUIA-TECNICO.md) para configuração de backend, MySQL, variáveis de ambiente e verificações integradas.
