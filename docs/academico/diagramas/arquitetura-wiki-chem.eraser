@@ -1,7 +1,7 @@
 // Wiki-Chem - arquitetura de software do MVP
 // Fonte: backend/src/app.ts, frontend/src/App.tsx e demo/compose.yaml
-// Representa a demonstracao local, nao infraestrutura de producao.
-// Sem microservicos, gateway de pagamento ou motor de IA/RAG.
+// Representa a demonstração local, não infraestrutura de produção.
+// Sem microserviços, gateway de pagamento ou motor de IA/RAG.
 
 direction right
 colorMode pastel
@@ -10,24 +10,24 @@ typeface clean
 
 Acesso [label: "Acesso pelo navegador", color: blue] {
   Pessoa [label: "Cliente ou administrador"]
-  AplicacaoWeb [label: "Aplicacao web React + TypeScript\nPesquisa, carrinho e biblioteca"]
+  AplicacaoWeb [label: "Aplicação web React + TypeScript\nPesquisa, carrinho e biblioteca"]
 }
 
 AmbienteLocal [label: "Ambiente local - Docker Compose", color: gray] {
   ServidorFrontend [label: "Servidor frontend\nVite preview (porta interna 4173)", color: blue]
 
-  Backend [label: "Monolito modular - Node.js 24 / Fastify", color: purple] {
-    ApiRest [label: "API REST /api/v1\nValidacao Zod e controles de acesso"]
-    Identidade [label: "Identidade e sessao\nLogin, perfil, CSRF"]
-    Catalogo [label: "Catalogo e pesquisa\nSete filtros e versoes"]
-    Comercio [label: "Comercio\nProdutos, precos e carrinho"]
+  Backend [label: "Monólito modular - Node.js 24 / Fastify", color: purple] {
+    ApiRest [label: "API REST /api/v1\nValidação Zod e controles de acesso"]
+    Identidade [label: "Identidade e sessão\nLogin, perfil, CSRF"]
+    Catalogo [label: "Catálogo e pesquisa\nSete filtros e versões"]
+    Comercio [label: "Comércio\nProdutos, preços e carrinho"]
     Checkout [label: "Checkout e pedidos\nPagamento simulado, direitos"]
     Biblioteca [label: "Biblioteca digital\nLeitura integral autorizada"]
-    Administracao [label: "Administracao editorial\nFontes, revisao e publicacao"]
+    Administracao [label: "Administração editorial\nFontes, revisão e publicação"]
   }
 
-  Persistencia [label: "Persistencia transacional", color: green] {
-    MySQL [label: "MySQL 8.4\nUsuarios e sessoes\nMetodologias, precos, pedidos e direitos"]
+  Persistencia [label: "Persistência transacional", color: green] {
+    MySQL [label: "MySQL 8.4\nUsuários e sessões\nMetodologias, preços, pedidos e direitos"]
   }
 }
 
@@ -35,4 +35,4 @@ Pessoa > AplicacaoWeb: utiliza
 AplicacaoWeb > ServidorFrontend: HTTP local 127.0.0.1:4180
 ServidorFrontend > ApiRest: proxy de /api/v1
 ApiRest > Identidade, Catalogo, Comercio, Checkout, Biblioteca, Administracao
-Backend > MySQL: mysql2 / SQL parametrizado e transacoes
+Backend > MySQL: mysql2 / SQL parametrizado e transações
