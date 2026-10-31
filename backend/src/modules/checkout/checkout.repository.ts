@@ -7,7 +7,7 @@ import type { Actor } from '../identity/access.js'
 import { placeholders } from '../catalog/catalog.search.js'
 import { currentVersions, loadOffers, ownedMethods, rows } from '../commerce/commerce.offers.js'
 import { maxPrice } from '../commerce/commerce.contracts.js'
-import type { Operation, OrderDetail, OrderSummary } from './checkout.contracts.js'
+import type { Operation, OrderDetail, OrderSummary, PaymentMethod } from './checkout.contracts.js'
 
 type Row = RowDataPacket
 export type Checkpoint = 'ORDER_CREATED' | 'ITEM_CREATED' | 'OFFERS_VALIDATED' | 'ORDER_COMPLETED' | 'ENTITLEMENT_CREATED' | 'CART_UPDATED' | 'AUDIT_RECORDED' | 'IDEMPOTENCY_RECORDED'
@@ -17,8 +17,8 @@ const date = (ms: number) => new Date(ms).toISOString().slice(0, 23).replace('T'
 const millis = (value: string) => Date.parse(value.replace(' ', 'T') + 'Z')
 const iso = (value: string | null) => value === null ? null : new Date(millis(value)).toISOString()
 const missing = () => new AppError(404, 'NOT_FOUND', 'Pedido não encontrado.')
-export function requestHash(operation: Operation, target: string, payload: { cartRevision: number } | { demoAcknowledged: true }) {
-  return digest(JSON.stringify([operation, target, 'cartRevision' in payload ? { cartRevision: payload.cartRevision } : { demoAcknowledged: true }]))
+export function requestHash(operation: Operation, target: string, payload: { cartRevision: number } | { demoAcknowledged: true; paymentMethod: PaymentMethod }) {
+  return digest(JSON.stringify([operation, target, 'cartRevision' in payload ? { cartRevision: payload.cartRevision } : { demoAcknowledged: true, paymentMethod: payload.paymentMethod }]))
 }
 async function audit(db: PoolConnection, actor: Actor, action: string, orderId: string) {
   await db.execute('INSERT INTO audit_events (actor_user_id, action, target_type, target_id, request_id, occurred_at) VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP(6))', [actor.userId, action, 'order', orderId, actor.requestId])
@@ -30,8 +30,21 @@ async function ownOrder(db: PoolConnection, id: string, userId: string, lock = f
 }
 const effectiveStatus = (row: Row, now: number): OrderDetail['status'] => row.status === 'PENDING_CONFIRMATION' && millis(row.expires_at) <= now ? 'EXPIRED' : row.status
 function summary(row: Row, itemCount: number, now: number): OrderSummary {
-  return { id: String(row.id), status: effectiveStatus(row, now), mode: 'SIMULATED', currency: 'BRL', totalCentavos: String(row.total_centavos), cartRevisionSnapshot: Number(row.cart_revision_snapshot),
-    createdAt: iso(row.created_at)!, expiresAt: iso(row.expires_at)!, completedAt: iso(row.completed_at), cancelledAt: iso(row.cancelled_at), itemCount, serverTime: new Date(now).toISOString() }
+  return {
+    id: String(row.id),
+    status: effectiveStatus(row, now),
+    mode: 'SIMULATED',
+    currency: 'BRL',
+    paymentMethod: (row.payment_method as PaymentMethod | null) ?? null,
+    totalCentavos: String(row.total_centavos),
+    cartRevisionSnapshot: Number(row.cart_revision_snapshot),
+    createdAt: iso(row.created_at)!,
+    expiresAt: iso(row.expires_at)!,
+    completedAt: iso(row.completed_at),
+    cancelledAt: iso(row.cancelled_at),
+    itemCount,
+    serverTime: new Date(now).toISOString(),
+  }
 }
 async function detail(db: PoolConnection, row: Row, now: number, currentRead = false): Promise<OrderDetail> {
   const found = await rows(db, 'SELECT * FROM order_items WHERE order_id = ? AND user_id = ? ORDER BY product_id' + (currentRead ? ' FOR SHARE' : ''), [String(row.id), String(row.user_id)])
@@ -90,7 +103,7 @@ export function createCheckoutRepository(pool: Pool, options: CheckoutOptions = 
     // chaves inexistentes entre compradores independentes.
     const [record] = await rows(db, 'SELECT order_id, request_hash FROM idempotency_records WHERE user_id = ? AND operation = ? AND key_hash = ?', [actor.userId, operation, digest(key)])
     if (!record) return null
-    if (record.request_hash !== hash) throw new AppError(409, 'IDEMPOTENCY_CONFLICT', 'A chave já identifica outra intenção. Consulte o histórico antes de iniciar nova revisão.')
+    if (record.request_hash !== hash) throw new AppError(409, 'IDEMPOTENCY_CONFLICT', 'A chave já identifica outra intenção ou modalidade de pagamento. Consulte o histórico antes de iniciar nova revisão.')
     return detail(db, await ownOrder(db, String(record.order_id), actor.userId, true), now(), true)
   }
   async function remember(db: PoolConnection, actor: Actor, operation: Operation, key: string, hash: string, orderId: string) {
@@ -133,14 +146,17 @@ export function createCheckoutRepository(pool: Pool, options: CheckoutOptions = 
         return detail(db, await ownOrder(db, orderId, actor.userId, true), now(), true)
       })
     },
-    async confirm(actor: Actor, orderId: string, key: string) {
-      const hash = requestHash('CONFIRM_SIMULATION', orderId, { demoAcknowledged: true })
+    async confirm(actor: Actor, orderId: string, paymentMethod: PaymentMethod, key: string) {
+      const hash = requestHash('CONFIRM_SIMULATION', orderId, { demoAcknowledged: true, paymentMethod })
       return write(actor, async db => {
         const cart = await lockCart(db, actor.userId)
         const order = await ownOrder(db, orderId, actor.userId, true)
         const previous = await replay(db, actor, 'CONFIRM_SIMULATION', key, hash)
         if (previous) return previous
         if (order.status === 'COMPLETED_SIMULATED') {
+          if (order.payment_method !== null && order.payment_method !== paymentMethod) {
+            throw new AppError(409, 'IDEMPOTENCY_CONFLICT', 'Este pedido já foi concluído com outra forma de pagamento simulada.')
+          }
           await remember(db, actor, 'CONFIRM_SIMULATION', key, hash, orderId)
           return detail(db, order, now(), true)
         }
@@ -159,7 +175,7 @@ export function createCheckoutRepository(pool: Pool, options: CheckoutOptions = 
         checkpoint('OFFERS_VALIDATED')
         if (await expire(db, actor, order)) return new AppError(409, 'ORDER_EXPIRED', 'O prazo de confirmação encerrou. Nenhuma aquisição foi concluída.')
         const completed = date(now())
-        await db.execute("UPDATE orders SET status = 'COMPLETED_SIMULATED', completed_at = ? WHERE id = ?", [completed, orderId])
+        await db.execute("UPDATE orders SET status = 'COMPLETED_SIMULATED', payment_method = ?, completed_at = ? WHERE id = ?", [paymentMethod, completed, orderId])
         checkpoint('ORDER_COMPLETED')
         for (const [index, item] of items.entries()) {
           await db.execute("INSERT INTO entitlements (user_id, methodology_id, order_item_id, status, granted_at) VALUES (?, ?, ?, 'ACTIVE', ?)", [actor.userId, String(item.methodology_id), String(item.id), completed])

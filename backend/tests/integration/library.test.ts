@@ -72,7 +72,7 @@ async function prepare(user: Session, products = [fx[0]!]) {
   return cart(user)
 }
 const create = (user: Session, revision: number, key = randomUUID()) => call('POST', '/checkout/simulations', { cartRevision: revision }, user, key)
-const confirm = (user: Session, id: string, key = randomUUID()) => call('POST', '/orders/' + id + '/confirm-simulation', { demoAcknowledged: true }, user, key)
+const confirm = (user: Session, id: string, key = randomUUID()) => call('POST', '/orders/' + id + '/confirm-simulation', { demoAcknowledged: true, paymentMethod: 'PIX' }, user, key)
 const content = (user: Session, p: Product, versionId?: string) => call('GET', '/library/' + p.methodologyId + '/content' + (versionId ? '?versionId=' + versionId : ''), undefined, user)
 beforeAll(async () => {
   await resetTestDatabase(pool, config); await migrateTestDatabase(config)

@@ -5,7 +5,7 @@ import { useCatalogResource } from '../catalog/useCatalogResource'
 import type { Page } from '../catalog/types'
 import { brl } from '../commerce/types'
 import type { OrderSummary } from './types'
-import { statusLabels } from './types'
+import { paymentMethodLabels, statusLabels } from './types'
 import '../pages/Consultas/Consultas.css'
 
 function History({ page, navigate }: { page: number; navigate: (page: number) => void }) {
@@ -33,7 +33,10 @@ function History({ page, navigate }: { page: number; navigate: (page: number) =>
                   <Link to={'/pedidos/' + order.id}>Pedido {order.id}</Link>
                 </h2>
                 <p style={{ margin: '4px 0', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                  {statusLabels[order.status]} · {new Date(order.createdAt).toLocaleString('pt-BR')}
+                  {statusLabels[order.status]}
+                  {order.paymentMethod ? ' · ' + paymentMethodLabels[order.paymentMethod] : ''}
+                  {' · '}
+                  {new Date(order.status === 'COMPLETED_SIMULATED' && order.completedAt ? order.completedAt : order.createdAt).toLocaleString('pt-BR')}
                 </p>
                 <p style={{ margin: '4px 0', fontWeight: 650 }}>
                   {order.itemCount} {order.itemCount === 1 ? 'metodologia' : 'metodologias'} · {brl(order.totalCentavos)}
@@ -77,7 +80,7 @@ export default function Orders() {
         <header className="consultas__heading">
           <p className="consultas__eyebrow">CONTA E AQUISIÇÕES</p>
           <h1>Meus pedidos</h1>
-          <p>Consulte os pedidos registrados, os valores consolidados e o acesso aos conteúdos liberados.</p>
+          <p>Consulte os pedidos registrados, a modalidade utilizada, os valores consolidados e o acesso aos conteúdos liberados.</p>
         </header>
         {valid ? (
           <History key={value} page={Number(value)} navigate={page => setParams(page === 1 ? {} : { page: String(page) })} />

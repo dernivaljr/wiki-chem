@@ -1,13 +1,15 @@
 import { z } from 'zod'
 import { id, revision } from '../../shared/identifiers.js'
 import { amountCentavos } from '../commerce/commerce.contracts.js'
+export const paymentMethod = z.enum(['PIX', 'CREDIT_CARD', 'BOLETO'])
+export type PaymentMethod = z.infer<typeof paymentMethod>
 export const creationInput = z.strictObject({ cartRevision: revision })
-export const confirmationInput = z.strictObject({ demoAcknowledged: z.literal(true) })
+export const confirmationInput = z.strictObject({ demoAcknowledged: z.literal(true), paymentMethod })
 export const idempotencyKey = z.uuid().transform(value => value.toLowerCase())
 export const idempotencyHeaders = z.looseObject({ 'idempotency-key': idempotencyKey })
 export const orderStatus = z.enum(['PENDING_CONFIRMATION', 'COMPLETED_SIMULATED', 'CANCELLED', 'EXPIRED'])
 export const orderSummary = z.strictObject({
-  id, status: orderStatus, mode: z.literal('SIMULATED'), currency: z.literal('BRL'), totalCentavos: amountCentavos,
+  id, status: orderStatus, mode: z.literal('SIMULATED'), currency: z.literal('BRL'), paymentMethod: paymentMethod.nullable(), totalCentavos: amountCentavos,
   cartRevisionSnapshot: revision, createdAt: z.string(), expiresAt: z.string(), completedAt: z.string().nullable(), cancelledAt: z.string().nullable(),
   itemCount: z.number().int().min(1).max(100), serverTime: z.string(),
 })
