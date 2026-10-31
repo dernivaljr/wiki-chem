@@ -30,4 +30,4 @@ Os RF01–RF17 e RNFs completos são definidos na [especificação](../especific
 | Reprodutibilidade | [Preparação isolada](../../backend/tests/integration/demo.test.ts), sistema completo e restauração verificados em ambiente descartável |
 | Acessibilidade | Labels, teclado, foco e contraste nos cenários automatizados; não equivale a auditoria integral WCAG ou avaliação com todas as tecnologias assistivas |
 
-Cobertura de código percentual não é apresentada como métrica de atendimento. Os testes e as limitações estão associados aos critérios; curadoria de fontes reais e requisitos de implantação permanecem pendentes.
+Cobertura de código percentual não é apresentada como métrica de atendimento. Os testes e as limitações estão associados aos critérios; embora a demonstração inclua 15 fichas informativas com referências públicas verificáveis sem oferta comercial, a revisão científica humana, o licenciamento comercial de procedimentos externos e os requisitos de implantação produtiva permanecem fora do escopo atual.

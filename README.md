@@ -8,15 +8,15 @@ Plataforma acadêmica de pesquisa e comercialização demonstrativa de metodolog
 | --- | --- |
 | Identidade real, sessão, logout, perfil e rotas protegidas | Recuperação e e-mail verificado continuam fora do incremento |
 | Administração /admin exclusiva de ADMIN | CUSTOMER não recebe conteúdo editorial nem modifica o catálogo |
-| Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulários científicos e curadoria ainda precisam de validação humana |
-| Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Sem corpus científico ou permissões pré-carregados |
+| Sete taxonomias, múltiplos vínculos por versão e normas identificadas por edição | Vocabulário analítico demonstrativo restrito a `NODE_ENV=test`; curadoria humana continua exigida fora de testes |
+| Metodologias, rascunhos, fontes, autoria/curadoria e revisão explícita | Produção permanece sem seed; demonstração isolada separa fichas informativas (sem venda) de fixtures comerciais sintéticas |
 | Publicação imutável, nova versão, arquivamento e exclusão lógica de rascunhos | Versão publicada não é sobrescrita nem excluída por API |
-| Pesquisa autenticada e detalhes gratuitos | Texto, sete filtros múltiplos, paginação e ordenação; sem procedimento/evidência privada; ofertas e preços quando cadastrados, carrinho autenticado |
+| Pesquisa autenticada e detalhes gratuitos | Texto com aliases químicos controlados (`ferro`/`Fe`, `UV-Vis`, `GC-MS`, `ICP-OES`), sete filtros compactos, paginação e ordenação; sem procedimento/evidência privada |
 | Ofertas, histórico imutável de preços BRL e carrinho por usuário | Valores comerciais reais exigem definição |
 | Checkout demonstrativo, pedidos/histórico e direitos persistidos | DEMONSTRAÇÃO — SEM COBRANÇA; biblioteca integral autenticada está implementada |
 | Migrações controladas, pool MySQL e testes automatizados | Fixtures DEMO existem nas suítes e na demonstração isolada NODE_ENV=test |
 
-A identidade visual React foi preservada. /consultas pesquisa prévias por texto e sete filtros; /metodologias/:id apresenta detalhes gratuitos. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. As candidatas da EPA permanecem somente referências documentais para futura avaliação. IA/RAG permanece fora do MVP.
+A identidade visual React foi preservada. `/consultas` pesquisa prévias por texto (incluindo símbolos e siglas analíticas controladas) e sete filtros compactos com identificação normativa sob demanda; `/metodologias/:id` apresenta detalhes gratuitos e atribuição documental. A administração aceita texto simples, sem executar HTML ou buscar automaticamente URLs. Na demonstração isolada (`NODE_ENV=test`), fichas técnicas informativas baseadas em referências oficiais públicas (EPA e USGS) nunca reproduzem procedimentos integrais nem oferecem compra comercial, permanecendo separadas das cinco fixtures sintéticas de aquisição simulada. IA/RAG permanece fora do MVP.
 
 ## Instalação
 
@@ -183,7 +183,7 @@ Os comandos existentes install:clean, build, lint, test, test:integration, test:
 
 ## Demonstração acadêmica isolada
 
-Com Docker/Compose v2 e Node.js 24 disponíveis, execute `npm run demo:prepare`. Abra http://127.0.0.1:4180. O sistema completo utiliza MySQL 8.4 privado, API Fastify e React, com cinco exemplos originais sintéticos cobrindo os sete filtros. O estado publicado existe somente no banco de testes e não representa revisão humana científica, licença externa ou validade analítica/comercial.
+Com Docker/Compose v2 e Node.js 24 disponíveis, execute `npm run demo:prepare` (ou `npm run demo:up` para reconciliar de forma idempotente um ambiente demonstrativo já preparado sem apagar contas, pedidos ou volumes). Abra http://127.0.0.1:4180. O sistema completo utiliza MySQL 8.4 privado, API Fastify e React com 20 registros publicados exclusivamente no banco de testes (`wikichem_test_demo`, `NODE_ENV=test`, `DEMO_ALLOW=true`): **15 fichas técnicas informativas** em português com referências oficiais verificáveis da U.S. EPA e do USGS (incluindo ferro por 1,10-fenantrolina UV-Vis / USGS TEI-223, EPA 200.7, EPA 300.0 e EPA 8260D), sem reprodução de procedimento integral e sem oferta comercial (`offer: null`), além de **5 exemplos sintéticos originais** (`DEMO 01`–`DEMO 05`) reservados exclusivamente aos testes de carrinho, checkout simulado e biblioteca digital. Não existe seed de produção, revisão científica humana presumida nem comercialização de documentos de terceiros.
 
 `npm run demo:access` gera acesso administrativo sintético aleatório em terminal interativo, sem senha padrão ou arquivo de credenciais. Cadastre uma conta cliente para apresentação. Segredos de infraestrutura e backups ficam fora do repositório, em diretório temporário restrito do sistema. `demo:down` preserva dados, `demo:up` retoma, `demo:backup` e `demo:restore -- CAMINHO` ensaiam recuperação apenas desse ambiente. Consulte o [guia operacional](docs/desenvolvimento/DEMONSTRACAO-LOCAL.md) para requisitos, isolamento, recuperação e reset explícito. Nenhum serviço pago ou hospedagem é configurado.
 
