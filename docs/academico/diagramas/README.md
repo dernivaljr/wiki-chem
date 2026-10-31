@@ -14,11 +14,11 @@ O checkout representa **PIX, cartão e boleto simulados, sem processamento finan
 
 ## Gerar a imagem no Eraser
 
-1. Acesse [Eraser](https://app.eraser.io/) e crie um arquivo/canvas novo.
+1. Acesse o [diagrama já criado no Eraser](https://app.eraser.io/workspace/XzHWqEo8ogZcoPdLxsKl?diagram=4qm0dR5Imeo-I1uG7p_W&layout=canvas). Para recriar a figura em outro workspace, abra um canvas novo.
 2. Insira um **Diagram as Code** do tipo **Cloud Architecture Diagram** (arquitetura); abra o editor do código do diagrama.
 3. Copie o conteúdo integral de [arquitetura-wiki-chem.eraser](arquitetura-wiki-chem.eraser), cole no editor e confira a renderização, em especial agrupamentos, setas e rótulos.
 4. No menu de exportação (`...` no alto à direita ou `Ctrl+E`), selecione **Canvas** e exporte em **SVG**, com tema claro e fundo sólido. Se necessário para o relatório, exporte também **PNG** em boa resolução.
-5. Depois da revisão, salve a figura definitiva nesta pasta como **`arquitetura-wiki-chem.svg`** e, se usado, **`arquitetura-wiki-chem.png`**. Somente inclua esses links nas páginas acadêmicas depois de adicionar os arquivos reais ao repositório.
+5. A [imagem PNG exportada diretamente do Eraser](arquitetura-wiki-chem.png) já está versionada nesta pasta e inserida na seção acadêmica. Para obter uma versão vetorial, exporte manualmente um SVG no próprio Eraser, confira sua renderização e só então anexe-o ao GitHub.
 
 Se o Eraser reorganizar automaticamente os elementos, mantenha a semântica: no navegador está o React, a API é um único backend modular e o MySQL não é exposto diretamente ao usuário. Não atribua ao sistema IA, pagamentos reais ou infraestrutura de produção.
 
