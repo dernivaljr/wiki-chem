@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-10-31T00:30:36.305Z",
+  "measuredAt": "2026-10-31T11:19:02.202Z",
   "environment": {
     "node": "v24.19.0",
     "mysql": "8.4.13",
     "platform": "linux",
-    "cpuModel": "AMD EPYC 9V45 96-Core Processor",
+    "cpuModel": "AMD EPYC 7763 64-Core Processor",
     "logicalCpus": 4,
     "memoryBytes": 16759443456
   },
@@ -14,9 +14,10 @@
     "publishedVersions": 500,
     "taxonomyTerms": 73,
     "associations": 3723,
-    "informativeReferenceSheets": 15,
-    "syntheticCommercialFixtures": 5,
-    "products": 5
+    "commercialOriginalProducts": 15,
+    "informativeReferenceSheets": 0,
+    "retiredLegacyFixtures": 5,
+    "products": 20
   },
   "results": [
     {
@@ -24,11 +25,11 @@
       "scenario": "texto com acento",
       "samples": 20,
       "warmups": 3,
-      "total": 3,
-      "minMs": 3.8300200000003315,
-      "medianMs": 4.425262500000144,
-      "p95Ms": 5.490013999999974,
-      "maxMs": 9.545352999999977
+      "total": 0,
+      "minMs": 4.949967000000015,
+      "medianMs": 5.120419500000025,
+      "p95Ms": 5.230678999999782,
+      "maxMs": 5.258060000000114
     },
     {
       "volume": 20,
@@ -36,10 +37,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 0,
-      "minMs": 1.2897860000002765,
-      "medianMs": 1.4262825000000703,
-      "p95Ms": 1.4717310000000907,
-      "maxMs": 1.4798129999999219
+      "minMs": 2.702491000000009,
+      "medianMs": 2.794217000000117,
+      "p95Ms": 2.9123610000001463,
+      "maxMs": 3.000876000000062
     },
     {
       "volume": 20,
@@ -47,10 +48,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 4,
-      "minMs": 2.007759999999962,
-      "medianMs": 2.5640339999999924,
-      "p95Ms": 2.924582999999984,
-      "maxMs": 2.975528999999824
+      "minMs": 5.042078999999831,
+      "medianMs": 5.542748500000016,
+      "p95Ms": 5.865920000000187,
+      "maxMs": 5.986634000000322
     },
     {
       "volume": 20,
@@ -58,32 +59,32 @@
       "samples": 20,
       "warmups": 3,
       "total": 0,
-      "minMs": 2.7355680000000575,
-      "medianMs": 2.976521000000048,
-      "p95Ms": 3.0693209999999453,
-      "maxMs": 3.134270000000015
+      "minMs": 5.067575999999917,
+      "medianMs": 5.18530799999985,
+      "p95Ms": 5.283437000000049,
+      "maxMs": 5.341795000000275
     },
     {
       "volume": 20,
       "scenario": "pagina intermediaria ordenada",
       "samples": 20,
       "warmups": 3,
-      "total": 20,
-      "minMs": 0.5143560000001344,
-      "medianMs": 0.5490839999999935,
-      "p95Ms": 0.7369119999998475,
-      "maxMs": 0.791204000000107
+      "total": 15,
+      "minMs": 1.3920170000001235,
+      "medianMs": 1.4251034999999774,
+      "p95Ms": 1.4494529999997212,
+      "maxMs": 1.456876999999622
     },
     {
       "volume": 100,
       "scenario": "texto com acento",
       "samples": 20,
       "warmups": 3,
-      "total": 19,
-      "minMs": 10.578413000000182,
-      "medianMs": 11.371037500000057,
-      "p95Ms": 11.821375999999873,
-      "maxMs": 11.96187400000008
+      "total": 16,
+      "minMs": 18.80851200000052,
+      "medianMs": 18.9394355000004,
+      "p95Ms": 19.417285999999876,
+      "maxMs": 19.63344599999982
     },
     {
       "volume": 100,
@@ -91,10 +92,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 48,
-      "minMs": 3.7549529999996594,
-      "medianMs": 4.205879000000095,
-      "p95Ms": 14.952174999999897,
-      "maxMs": 17.350180999999793
+      "minMs": 7.746221000000332,
+      "medianMs": 7.870533000000705,
+      "p95Ms": 8.309269000000313,
+      "maxMs": 8.45571099999961
     },
     {
       "volume": 100,
@@ -102,10 +103,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 84,
-      "minMs": 3.3859769999999116,
-      "medianMs": 3.6576219999997193,
-      "p95Ms": 4.073500000000422,
-      "maxMs": 4.0771310000000085
+      "minMs": 6.638170000000173,
+      "medianMs": 6.721695500000351,
+      "p95Ms": 7.188223000000107,
+      "maxMs": 7.196178000000145
     },
     {
       "volume": 100,
@@ -113,32 +114,32 @@
       "samples": 20,
       "warmups": 3,
       "total": 0,
-      "minMs": 10.512183999999252,
-      "medianMs": 10.71612099999993,
-      "p95Ms": 10.909922999999253,
-      "maxMs": 11.801046999999926
+      "minMs": 17.046041999999943,
+      "medianMs": 17.229491000000053,
+      "p95Ms": 17.4654129999999,
+      "maxMs": 18.200771999999233
     },
     {
       "volume": 100,
       "scenario": "pagina intermediaria ordenada",
       "samples": 20,
       "warmups": 3,
-      "total": 100,
-      "minMs": 2.7246669999994992,
-      "medianMs": 2.9916395000000193,
-      "p95Ms": 3.3211950000004435,
-      "maxMs": 3.3789120000001276
+      "total": 95,
+      "minMs": 5.74641100000008,
+      "medianMs": 5.996349999999893,
+      "p95Ms": 6.4684040000001914,
+      "maxMs": 6.554844999999659
     },
     {
       "volume": 500,
       "scenario": "texto com acento",
       "samples": 20,
       "warmups": 3,
-      "total": 99,
-      "minMs": 42.571444999999585,
-      "medianMs": 43.1756349999996,
-      "p95Ms": 45.31794499999887,
-      "maxMs": 47.693154000000504
+      "total": 96,
+      "minMs": 69.71468800000002,
+      "medianMs": 70.71274799999992,
+      "p95Ms": 71.74909900000057,
+      "maxMs": 71.81780600000275
     },
     {
       "volume": 500,
@@ -146,10 +147,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 288,
-      "minMs": 6.946289999999863,
-      "medianMs": 7.070702000000892,
-      "p95Ms": 7.753466000000117,
-      "maxMs": 8.043273000001136
+      "minMs": 13.346701000002213,
+      "medianMs": 13.449538499999107,
+      "p95Ms": 13.897035000001779,
+      "maxMs": 13.927513000002364
     },
     {
       "volume": 500,
@@ -157,10 +158,10 @@
       "samples": 20,
       "warmups": 3,
       "total": 484,
-      "minMs": 6.775383000000147,
-      "medianMs": 7.201616499999545,
-      "p95Ms": 7.63158199999998,
-      "maxMs": 7.9082389999985025
+      "minMs": 12.032504999999219,
+      "medianMs": 12.347929500001555,
+      "p95Ms": 12.61057499999879,
+      "maxMs": 16.4697840000008
     },
     {
       "volume": 500,
@@ -168,42 +169,42 @@
       "samples": 20,
       "warmups": 3,
       "total": 0,
-      "minMs": 48.71164899999894,
-      "medianMs": 49.61541599999964,
-      "p95Ms": 50.71279499999946,
-      "maxMs": 52.40297299999838
+      "minMs": 77.6639099999993,
+      "medianMs": 78.1585654999999,
+      "p95Ms": 78.9535300000025,
+      "maxMs": 84.74924300000202
     },
     {
       "volume": 500,
       "scenario": "pagina intermediaria ordenada",
       "samples": 20,
       "warmups": 3,
-      "total": 500,
-      "minMs": 4.909169000000475,
-      "medianMs": 5.159806499999831,
-      "p95Ms": 5.328881999999794,
-      "maxMs": 5.460209999999279
+      "total": 495,
+      "minMs": 9.461083000001963,
+      "medianMs": 9.651798000000781,
+      "p95Ms": 9.960301999999501,
+      "maxMs": 10.159002000000328
     }
   ],
   "seedTimes": [
     {
       "volume": 20,
-      "milliseconds": 0.004776999999876352
+      "milliseconds": 0.00823599999966973
     },
     {
       "volume": 100,
-      "milliseconds": 1265.7699280000002
+      "milliseconds": 2449.658448
     },
     {
       "volume": 500,
-      "milliseconds": 5998.812349999999
+      "milliseconds": 11500.734102
     }
   ],
   "plan": {
     "query_block": {
       "select_id": 1,
       "cost_info": {
-        "query_cost": "74.07"
+        "query_cost": "74.28"
       },
       "ordering_operation": {
         "using_temporary_table": true,
@@ -527,14 +528,14 @@
               "ref": [
                 "wikichem_test_ci.v.id"
               ],
-              "rows_examined_per_scan": 3,
+              "rows_examined_per_scan": 5,
               "rows_produced_per_join": 0,
               "filtered": "33.33",
               "first_match": "m",
               "cost_info": {
-                "read_cost": "0.10",
+                "read_cost": "0.11",
                 "eval_cost": "0.04",
-                "prefix_cost": "73.83",
+                "prefix_cost": "73.93",
                 "data_read_per_join": "4K"
               },
               "used_columns": [
@@ -560,14 +561,14 @@
               "ref": [
                 "wikichem_test_ci.v.id"
               ],
-              "rows_examined_per_scan": 3,
+              "rows_examined_per_scan": 5,
               "rows_produced_per_join": 0,
               "filtered": "100.00",
               "not_exists": true,
               "cost_info": {
-                "read_cost": "0.10",
+                "read_cost": "0.11",
                 "eval_cost": "0.04",
-                "prefix_cost": "74.07",
+                "prefix_cost": "74.28",
                 "data_read_per_join": "4K"
               },
               "used_columns": [

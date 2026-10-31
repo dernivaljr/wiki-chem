@@ -1,29 +1,29 @@
 # Medição observada da pesquisa
 
-Ensaio realizado em 2026-10-31T00:30:36.305Z, com Node v24.19.0, MySQL 8.4.13 e linux. O processo reportou 4 CPUs lógicas, modelo AMD EPYC 9V45 96-Core Processor e 15.61 GiB de memória visível (`16759443456` bytes); esses valores não representam reserva exclusiva de recursos.
+Ensaio realizado em 2026-10-31T11:19:02.202Z, com Node v24.19.0, MySQL 8.4.13 e linux. O processo reportou 4 CPUs lógicas, modelo AMD EPYC 7763 64-Core Processor e 15.61 GiB de memória visível (`16759443456` bytes); esses valores não representam reserva exclusiva de recursos.
 
-O ensaio parte das 20 publicações iniciais do catálogo demonstrativo (15 fichas técnicas informativas verificadas + 5 fixtures comerciais sintéticas) e escala com fixtures sintéticas até 100 e 500 metodologias/versões publicadas, totalizando 73 termos ativos nas sete taxonomias e 3723 associações N:N ao final. Somente cinco metodologias possuem produtos/ofertas comerciais. Cada série inclui três aquecimentos e 20 amostras; p95 usa a posição de ordem `ceil(0,95 × n)`, sem excluir amostras. Preparação do corpus não integra o tempo de consulta.
+O ensaio parte das 15 metodologias publicadas ativas do catálogo demonstrativo (produtos digitais autorais do Wiki-Chem fundamentados em fontes públicas EPA/USGS, com os 5 registros sintéticos legados arquivados em `RETIRED`) e escala com registros sintéticos de volume até 20, 100 e 500 versões publicadas, totalizando 73 termos ativos nas sete taxonomias e 3723 associações N:N ao final. Cada série inclui três aquecimentos e 20 amostras; p95 usa a posição de ordem `ceil(0,95 × n)`, sem excluir amostras. Preparação do corpus não integra o tempo de consulta.
 
 | Metodologias | Cenário | Amostras | Resultados | Mediana (ms) | p95 (ms) | Máximo (ms) |
-| --- | --- | --- | --- | --- | --- | --- |
-| 20 | texto com acento | 20 | 3 | 4.43 | 5.49 | 9.55 |
-| 20 | sete filtros AND | 20 | 0 | 1.43 | 1.47 | 1.48 |
-| 20 | matrizes e analitos OR | 20 | 4 | 2.56 | 2.92 | 2.98 |
-| 20 | sem resultados | 20 | 0 | 2.98 | 3.07 | 3.13 |
-| 20 | pagina intermediaria ordenada | 20 | 20 | 0.55 | 0.74 | 0.79 |
-| 100 | texto com acento | 20 | 19 | 11.37 | 11.82 | 11.96 |
-| 100 | sete filtros AND | 20 | 48 | 4.21 | 14.95 | 17.35 |
-| 100 | matrizes e analitos OR | 20 | 84 | 3.66 | 4.07 | 4.08 |
-| 100 | sem resultados | 20 | 0 | 10.72 | 10.91 | 11.80 |
-| 100 | pagina intermediaria ordenada | 20 | 100 | 2.99 | 3.32 | 3.38 |
-| 500 | texto com acento | 20 | 99 | 43.18 | 45.32 | 47.69 |
-| 500 | sete filtros AND | 20 | 288 | 7.07 | 7.75 | 8.04 |
-| 500 | matrizes e analitos OR | 20 | 484 | 7.20 | 7.63 | 7.91 |
-| 500 | sem resultados | 20 | 0 | 49.62 | 50.71 | 52.40 |
-| 500 | pagina intermediaria ordenada | 20 | 500 | 5.16 | 5.33 | 5.46 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| 20 | texto com acento | 20 | 0 | 5.12 | 5.23 | 5.26 |
+| 20 | sete filtros AND | 20 | 0 | 2.79 | 2.91 | 3.00 |
+| 20 | matrizes e analitos OR | 20 | 4 | 5.54 | 5.87 | 5.99 |
+| 20 | sem resultados | 20 | 0 | 5.19 | 5.28 | 5.34 |
+| 20 | pagina intermediaria ordenada | 20 | 15 | 1.43 | 1.45 | 1.46 |
+| 100 | texto com acento | 20 | 16 | 18.94 | 19.42 | 19.63 |
+| 100 | sete filtros AND | 20 | 48 | 7.87 | 8.31 | 8.46 |
+| 100 | matrizes e analitos OR | 20 | 84 | 6.72 | 7.19 | 7.20 |
+| 100 | sem resultados | 20 | 0 | 17.23 | 17.47 | 18.20 |
+| 100 | pagina intermediaria ordenada | 20 | 95 | 6.00 | 6.47 | 6.55 |
+| 500 | texto com acento | 20 | 96 | 70.71 | 71.75 | 71.82 |
+| 500 | sete filtros AND | 20 | 288 | 13.45 | 13.90 | 13.93 |
+| 500 | matrizes e analitos OR | 20 | 484 | 12.35 | 12.61 | 16.47 |
+| 500 | sem resultados | 20 | 0 | 78.16 | 78.95 | 84.75 |
+| 500 | pagina intermediaria ordenada | 20 | 495 | 9.65 | 9.96 | 10.16 |
 
-A página 2 do volume de 20 registros é vazia (`pageSize = 20`); não deve ser interpretada como leitura de 20 cartões completos. As consultas puramente por filtros e paginação mantiveram medianas entre 5.16 e 7.20 ms com 500 publicações, enquanto a varredura textual completa (`LIKE` parametrizado em campos gratuitos, sete facetas ativas e fontes) apresentou medianas de 43.18 ms (com resultados) e 49.62 ms (sem resultados). Não existe meta ou SLA aprovado; esses números não representam latência HTTP, experiência do usuário ou carga concorrente.
+As consultas puramente por filtros e paginação mantiveram medianas entre 9.65 e 13.45 ms com 500 publicações, enquanto a varredura textual completa (`LIKE` parametrizado em campos gratuitos, sete facetas ativas e fontes) apresentou medianas de 70.71 ms (com resultados) e 78.16 ms (sem resultados). Não existe meta ou SLA aprovado; esses números não representam latência HTTP, experiência do usuário ou carga concorrente.
 
-O `EXPLAIN` da combinação dos sete filtros, incluído no [registro bruto](medicao.json), estimou varredura `ALL` em `methodology_versions` (500 linhas) e acessos `eq_ref`/`PRIMARY` nas sete tabelas de associação, além de consultas por chave às fontes. São estimativas do otimizador, não tempos medidos por nó.
+O `EXPLAIN` da combinação dos sete filtros, incluído no [registro bruto](medicao.json), estimou varredura sobre `methodology_versions` e acessos `eq_ref`/`PRIMARY` nas tabelas de associação e fontes. São estimativas do otimizador, não tempos medidos por nó.
 
-Limitações: conteúdo sintético de volume após os 20 registros iniciais, ambiente compartilhado aquecido, uma conexão por caso de uso e ausência de clientes concorrentes/rede/renderização. Não foi introduzido mecanismo externo de busca ou IA para este ensaio.
+Limitações: conteúdo sintético de volume após os registros analíticos iniciais, ambiente compartilhado aquecido, uma conexão por caso de uso e ausência de clientes concorrentes/rede/renderização. Não foi introduzido mecanismo externo de busca ou IA para este ensaio.
