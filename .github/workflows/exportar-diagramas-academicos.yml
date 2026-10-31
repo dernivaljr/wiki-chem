@@ -1,0 +1,37 @@
+name: Exportação dos diagramas acadêmicos
+
+on:
+  push:
+    paths:
+      - '.github/workflows/exportar-diagramas-academicos.yml'
+      - 'docs/academico/diagramas/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  empacotar:
+    name: Diagramas oficiais do Eraser
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Publicar exportações existentes do Eraser
+        uses: actions/upload-artifact@v7
+        with:
+          name: diagramas-eraser-wikichem
+          path: docs/academico/diagramas/*-eraser.png
+          if-no-files-found: error
+          retention-days: 30
+      - name: Incluir arquitetura e três DERs
+        uses: actions/upload-artifact@v7
+        with:
+          name: diagramas-eraser-arquitetura-der
+          path: |
+            docs/academico/diagramas/arquitetura-wiki-chem.png
+            docs/academico/diagramas/der-*.png
+          if-no-files-found: error
+          retention-days: 30
