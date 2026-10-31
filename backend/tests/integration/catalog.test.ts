@@ -439,6 +439,32 @@ describe('pesquisa autenticada de prévias no MySQL', () => {
     expect(ids(after)).toEqual([first.method.id, second.method.id])
     expect(after.json().total).toBe(2)
   })
+  it('expande aliases químicos (ferro/Fe) com precisão, sem falsos positivos em palavras com substring fe/cu', async () => {
+    const aliasToken = 'alias' + randomUUID().replaceAll('-', '')
+    const ironDraft = await methodAndDraft()
+    const ironEditor = {
+      ...fields('a'),
+      title: `Determinação espectrofotométrica ${aliasToken}`,
+      freeSummary: 'Complexação colorimétrica de Fe²⁺ com 1,10-fenantrolina em matriz aquosa (UV/Vis).',
+      publicDescription: 'Ficha analítica para Fe(II) e ferro dissolvido.',
+    }
+    await saveAndPublish(ironDraft.version, ironEditor)
+
+    const noiseDraft = await methodAndDraft()
+    const noiseEditor = {
+      ...fields('b'),
+      title: `Referência documental de efluentes ${aliasToken}`,
+      freeSummary: 'Avaliação de interferências e curadoria documental sem metais de transição.',
+      publicDescription: 'Escopo diferente para controle de falso positivo em diferentes matrizes.',
+    }
+    await saveAndPublish(noiseDraft.version, noiseEditor)
+
+    expect(ids(await find(new URLSearchParams({ q: `${aliasToken} Fe` })))).toEqual([ironDraft.method.id])
+    expect(ids(await find(new URLSearchParams({ q: `${aliasToken} ferro` })))).toEqual([ironDraft.method.id])
+    expect(ids(await find(new URLSearchParams({ q: `${aliasToken} phenanthroline` })))).toEqual([ironDraft.method.id])
+    expect(ids(await find(new URLSearchParams({ q: `${aliasToken} UV-Vis` })))).toEqual([ironDraft.method.id])
+    expect(ids(await find(new URLSearchParams({ q: `${aliasToken} Cu` })))).toEqual([])
+  })
   it('prévia e pesquisa usam o mesmo bloqueio de suspensão, exclusão e condição de fonte', async () => {
     const cases = [
       { sql: "UPDATE methodology_versions SET access_state = ? WHERE id = ?", blocked: 'SUSPENDED', restored: 'ALLOWED', id: current.id },

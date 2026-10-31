@@ -39,7 +39,7 @@ try {
     await run(['up', '-d', '--wait', 'mysql'])
     await run(['run', '--build', '--rm', '-T', 'prepare'])
     await run(['up', '-d', '--build', '--wait', 'api', 'frontend'])
-    console.log('Demonstração isolada: http://127.0.0.1:4180 — material sintético de teste, sem validade analítica/comercial. Segredos de infraestrutura fora do repositório: ' + directory)
+    console.log('Demonstração isolada: http://127.0.0.1:4180 — catálogo demonstrativo (15 fichas técnicas de referência pública sem oferta comercial + 5 fixtures sintéticas de aquisição simulada). Segredos de infraestrutura fora do repositório: ' + directory)
   } else if (action === 'down') await run(['down'])
   else if (action === 'status') await run(['ps'])
   else if (action === 'diagnose') {

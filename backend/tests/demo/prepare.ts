@@ -11,4 +11,4 @@ try {
     const result = await seedAcademic(config, pool)
     console.log(JSON.stringify(result)) // Apenas IDs/avisos; nenhuma credencial ou conteúdo integral.
   } finally { await pool.end() }
-} catch { console.error('Preparação recusada ou incompleta. Exige banco de testes isolado vazio; consulte o guia demonstrativo.'); process.exitCode = 1 }
+} catch { console.error('Preparação recusada ou incompleta. Exige banco de testes isolado vazio ou já preparado pela demonstração; consulte o guia demonstrativo.'); process.exitCode = 1 }

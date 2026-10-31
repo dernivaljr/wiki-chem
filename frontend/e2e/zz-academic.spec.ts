@@ -8,12 +8,15 @@ import { loadConfig } from '../../backend/src/config/env'
 import { createDatabasePool } from '../../backend/src/database/pool'
 import { migrateTestDatabase, resetTestDatabase } from '../../backend/tests/test-database'
 import { seedAcademic, demoOperator } from '../../backend/tests/demo/seed'
-import { academicEditor, vocabulary } from '../../backend/tests/demo/examples'
+import { academicEditor } from '../../backend/tests/demo/examples'
+import { technicalSheets, technicalTaxonomies } from '../../backend/tests/demo/technical-catalog'
 import { hashPassword } from '../../backend/src/modules/identity/security'
 import { facets, labels } from '../src/catalog/types'
 import { origin, signed } from './commerce.fixture'
+
 test.use({ storageState: { cookies: [], origins: [] } })
-test('ACADEMICO: evidências reais do percurso completo e administração separada', async ({ browser }) => {
+
+test('ACADEMICO: evidências reais do percurso completo, catálogo técnico e administração separada', async ({ browser }) => {
   test.setTimeout(180000)
   const config = loadConfig({ ...process.env, APP_ORIGIN: origin }), pool = createDatabasePool(config)
   const output = resolve('../.artifacts/evidence'); await mkdir(output, { recursive: true })
@@ -40,17 +43,26 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await capture(page, '03-login.png', 'Cadastro concluído e acesso por autenticação real.')
     await page.getByLabel('E-mail', { exact: true }).fill(email); await page.getByPlaceholder('••••••••').fill(password)
     await page.getByRole('button', { name: 'Entrar no Wiki-Chem' }).click()
-    await expect(page.getByRole('status')).toContainText('5 metodologias encontradas')
-    await capture(page, '04-pesquisa.png', 'Cinco exemplos sintéticos publicados exclusivamente no banco de testes.')
-    for (const facet of facets) await page.getByRole('group', { name: labels[facet], exact: true }).getByRole('checkbox', { name: new RegExp('^DEMO — ' + vocabulary[facet][0]) }).check()
+    await expect(page.getByRole('status')).toContainText('20 metodologias encontradas')
+    await capture(page, '04-pesquisa.png', 'Catálogo demonstrativo com 15 fichas técnicas analíticas verificadas e 5 fixtures comerciais sintéticas.')
+    await page.getByRole('searchbox', { name: 'Termo de consulta' }).fill('ferro')
+    for (const facet of facets) {
+      const targetCode = technicalSheets[0]!.classifications[facet][0]!
+      const targetLabel = technicalTaxonomies[facet].find(term => term.code === targetCode)!.label
+      await page.getByRole('group', { name: labels[facet], exact: true }).getByRole('checkbox', { name: targetLabel, exact: true }).check()
+    }
     await page.getByRole('button', { name: 'Pesquisar', exact: true }).click()
-    await expect(page.getByRole('status')).toContainText('3 metodologias encontradas')
-    await capture(page, '05-sete-filtros.png', 'Combinação real dos sete filtros, OR interno e AND entre categorias.')
+    await expect(page.getByRole('status')).toContainText('1 metodologia encontrada')
+    await expect(page.getByRole('link', { name: /1,10-fenantrolina/ })).toBeVisible()
+    await expect(page.getByText('Ficha técnica informativa de referência pública — sem oferta comercial de conteúdo de terceiros.')).toBeVisible()
+    await capture(page, '05-sete-filtros.png', 'Pesquisa por ferro combinada com espectrofotometria/UV-Vis e os sete filtros analíticos reais.')
+    await page.getByRole('button', { name: 'Limpar pesquisa e filtros' }).click()
+    await expect(page.getByRole('status')).toContainText('20 metodologias encontradas')
     await page.getByRole('link', { name: data.methods[0]!.title, exact: true }).click()
     await expect(page).toHaveURL(url => url.pathname === '/metodologias/' + data.methods[0]!.id)
     await expect(page.getByRole('heading', { level: 1, name: data.methods[0]!.title, exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Adicionar ao carrinho' })).toBeVisible()
-    await capture(page, '06-previa.png', 'Prévia gratuita e oferta de demonstração, sem procedimento integral.')
+    await capture(page, '06-previa.png', 'Prévia gratuita e oferta de demonstração sintética separada das fichas informativas.')
     await page.getByRole('button', { name: 'Adicionar ao carrinho' }).click(); await page.getByRole('link', { name: 'Ver carrinho', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Meu carrinho' })).toBeVisible(); await expect(page.getByRole('article')).toHaveCount(1); await capture(page, '07-carrinho.png', 'Carrinho persistente com valores de fixture explicitamente demonstrativos.')
     await page.getByRole('button', { name: 'Avançar para checkout demonstrativo' }).click()
@@ -69,10 +81,10 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await adminPage.getByLabel('Identificador da nova versão').fill('v2'); await adminPage.getByRole('button', { name: 'Criar rascunho', exact: true }).click()
     await expect(adminPage.getByRole('heading', { name: 'Versão v2 — DRAFT', exact: true })).toBeVisible()
     const versions = (await (await admin.request.get('/api/v1/admin/methodologies/' + data.methods[0]!.id + '/versions')).json()).data, draft = versions.find((v: { versionLabel: string }) => v.versionLabel === 'v2')
-    const saved = await admin.request.patch('/api/v1/admin/versions/' + draft.id, { headers: await signed(admin), data: { ...academicEditor(0, data.ids, 'v2'), expectedRevision: draft.revision } }); expect(saved.status()).toBe(200)
+    const saved = await admin.request.patch('/api/v1/admin/versions/' + draft.id, { headers: await signed(admin), data: { ...academicEditor(0, undefined, 'v2'), expectedRevision: draft.revision } }); expect(saved.status()).toBe(200)
     await adminPage.getByRole('button', { name: 'Descartar edição local e recarregar versão' }).click()
     await expect(adminPage.getByLabel('Título', { exact: true })).toHaveValue(data.methods[0]!.title)
-    await capture(adminPage, '13-admin-rascunho.png', 'Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.')
+    await capture(adminPage, '13-admin-rascunho.png', 'Administração separada: rascunho v2 de fixture sintética; evidências privadas mascaradas.')
     await adminPage.getByLabel('Nota da revisão', { exact: true }).fill('Conferência automatizada de fixture original; não representa revisão humana científica ou autorização de terceiros.')
     await adminPage.getByRole('checkbox', { name: 'Revisei o conteúdo salvo, autoria, classificações e condições de uso.' }).check()
     await capture(adminPage, '14-revisao-automatizada.png', 'Estado editorial de teste: conferência automatizada explicitamente identificada, sem revisão humana presumida.')
@@ -83,8 +95,8 @@ test('ACADEMICO: evidências reais do percurso completo e administração separa
     await expect(page.getByRole('region', { name: 'Leitura autorizada' })).toContainText('Percurso de software v1'); await capture(page, '15-historico.png', 'Atualização v2 disponível e escolha explícita da v1 adquirida, sem recompra.')
     for (const width of [320, 375, 768, 1280]) { await page.setViewportSize({ width, height: 800 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true) }
     await page.setViewportSize({ width: 320, height: 800 }); await capture(page, '16-leitura-320.png', 'Leitura responsiva em viewport de 320 px.')
-    await page.goto('/consultas'); await expect(page.getByRole('status')).toContainText('5 metodologias encontradas'); await capture(page, '17-pesquisa-320.png', 'Pesquisa, navegação e sete categorias em 320 px.')
-    await adminPage.getByRole('button', { name: 'Classificações', exact: true }).click(); await expect(adminPage.getByLabel('Código do termo')).toBeVisible(); await capture(adminPage, '18-classificacoes.png', 'Gestão de termos sintéticos, sem vigência normativa presumida.')
+    await page.goto('/consultas'); await expect(page.getByRole('status')).toContainText('20 metodologias encontradas'); await capture(page, '17-pesquisa-320.png', 'Pesquisa, navegação e sete categorias compactas em 320 px.')
+    await adminPage.getByRole('button', { name: 'Classificações', exact: true }).click(); await expect(adminPage.getByLabel('Código do termo')).toBeVisible(); await capture(adminPage, '18-classificacoes.png', 'Gestão de taxonomias reais de química analítica, com identificação normativa explícita.')
     await writeFile(resolve(output, 'manifest.json'), JSON.stringify({ generatedAt: new Date().toISOString(), notice: data.notice, capture: 'Chromium automatizado com API e MySQL reais; senhas, e-mails e evidências privadas mascarados.', files: captured }, null, 2))
   } finally { await customer.close(); await admin.close(); await pool.end() }
 })
