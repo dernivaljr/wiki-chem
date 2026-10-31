@@ -7,7 +7,7 @@ npm run demo:prepare
 npm run demo:access
 ```
 
-`demo:prepare` constrói React/API, aguarda MySQL 8.4, aplica as 48 migrações e reconcilia de forma idempotente o catálogo demonstrativo pelos contratos editoriais e comerciais reais. Usa exclusivamente `NODE_ENV=test`, banco `wikichem_test_demo`, habilitações `MYSQL_TEST_ALLOW=true` / `DEMO_ALLOW=true` e projeto Compose `wikichem-academic-demo`. O frontend fica em `http://127.0.0.1:4180`; API e MySQL não publicam portas no host. A origem deve ser usada exatamente como indicada, devido ao controle de origem/CSRF. Não existe seed de produção.
+`demo:prepare` constrói React/API, aguarda MySQL 8.4, aplica as 51 migrações e reconcilia de forma idempotente o catálogo demonstrativo pelos contratos editoriais e comerciais reais. Usa exclusivamente `NODE_ENV=test`, banco `wikichem_test_demo`, habilitações `MYSQL_TEST_ALLOW=true` / `DEMO_ALLOW=true` e projeto Compose `wikichem-academic-demo`. O frontend fica em `http://127.0.0.1:4180`; API e MySQL não publicam portas no host. A origem deve ser usada exatamente como indicada, devido ao controle de origem/CSRF. Não existe seed de produção.
 
 O catálogo demonstrativo reconciliado organiza as metodologias em dois grupos:
 
