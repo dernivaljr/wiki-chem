@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:39:35.940Z",
+  "generatedAt": "2026-10-31T00:32:00.072Z",
   "notice": "MATERIAL ACADÊMICO DEMONSTRATIVO — SEM VALIDADE ANALÍTICA OU COMERCIAL",
   "capture": "Chromium automatizado com API e MySQL reais; senhas, e-mails e evidências privadas mascarados.",
   "files": [
@@ -26,108 +26,108 @@
     },
     {
       "file": "04-pesquisa.png",
-      "description": "Cinco exemplos sintéticos publicados exclusivamente no banco de testes.",
+      "description": "Catálogo demonstrativo com 15 fichas técnicas analíticas verificadas e 5 fixtures comerciais sintéticas.",
       "width": 1280,
-      "height": 5638,
-      "sha256": "337869d15750e046f21778353ec323b5ce4d5233bd5a11249d3ec8966a6faaec"
+      "height": 13327,
+      "sha256": "358999d9d6edbfb9a4a1ae4389aaf8c6a32bcb00b6765d0fac1cfe65141a5c7e"
     },
     {
       "file": "05-sete-filtros.png",
-      "description": "Combinação real dos sete filtros, OR interno e AND entre categorias.",
+      "description": "Pesquisa por ferro combinada com espectrofotometria/UV-Vis e os sete filtros analíticos reais.",
       "width": 1280,
-      "height": 4122,
-      "sha256": "411dce2997af6a4af39bfecd63795ea78d276e3f5883f9ba4669802710e65590"
+      "height": 1958,
+      "sha256": "f7f8f8773133cbfea85cd52d5534a744c3892dc3d87ad30a331cf086f6da5d6c"
     },
     {
       "file": "06-previa.png",
-      "description": "Prévia gratuita e oferta de demonstração, sem procedimento integral.",
+      "description": "Prévia gratuita e oferta de demonstração sintética separada das fichas informativas.",
       "width": 1280,
-      "height": 1482,
-      "sha256": "fe2522198bb19f60badd9ac3cb65c57a23d0af30e9c26984467102808abd3179"
+      "height": 1116,
+      "sha256": "8ae64d97d66f5ac30392e2a49cc7017dcf1caf357b847bd8aca6aeaebae99d1b"
     },
     {
       "file": "07-carrinho.png",
       "description": "Carrinho persistente com valores de fixture explicitamente demonstrativos.",
       "width": 1280,
-      "height": 1129,
-      "sha256": "a59a135c9a4534cd84f0f2c60f3946af840b14e693c235b6d8612a617c10531c"
+      "height": 1089,
+      "sha256": "135abbd82b86101bb4d5d28ca6677d9f0deb470e0b5017e9af33337564bd2589"
     },
     {
       "file": "08-revisao-pedido.png",
       "description": "Pedido pendente e confirmação explícita obrigatória; sem cobrança.",
       "width": 1280,
-      "height": 919,
-      "sha256": "894518995a0070abc64e4963aa2e4be1b74acb671e0e7d965e923f955b100942"
+      "height": 893,
+      "sha256": "b8bafe817dba75bd9ab965a5de22dc4f2ea133d3f31b73a78e1cc18b12f9d774"
     },
     {
       "file": "09-confirmacao.png",
       "description": "Confirmação demonstrativa concluída e direito persistido.",
       "width": 1280,
-      "height": 907,
-      "sha256": "94771e48f46786a2089f7aadfd2d90ddac45e29abb1e518e0107b0b720926e71"
+      "height": 881,
+      "sha256": "59729c4c83ff40ab92a29ac7851ea283103826de729050e90b0557f78da048a5"
     },
     {
       "file": "10-pedido.png",
       "description": "Pedido persistido com título, versão e preço originais.",
       "width": 1280,
-      "height": 907,
-      "sha256": "340dc7f132fbec04ece301e5a8f672fcdd12588a2554251acfbeb7da1528fc91"
+      "height": 881,
+      "sha256": "04fd38e3157bc8706493a45990beefc65cea38f0371473361d9a8f248ae975e1"
     },
     {
       "file": "11-biblioteca.png",
       "description": "Biblioteca do titular, sem procedimento na listagem.",
       "width": 1280,
       "height": 721,
-      "sha256": "18f210c514df9d4697299635e7893e0e21d3ee819e95d07937e7b8214a28ef62"
+      "sha256": "084e932a23e4064106e33212b7259b48a7f40d38392e626285395c3d3ee91ef9"
     },
     {
       "file": "12-leitura-v1.png",
       "description": "Texto integral original sintético liberado somente ao titular.",
       "width": 1280,
-      "height": 1536,
-      "sha256": "70259b6f10b81eb0d2d258cf9228f4b13b3ed31bef940b4e67372132248eb73b"
+      "height": 1500,
+      "sha256": "f6e7ddb63bbfd5924f390db501c41645733c3b895240b3011690ba54a4fc9837"
     },
     {
       "file": "13-admin-rascunho.png",
-      "description": "Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.",
+      "description": "Administração separada: rascunho v2 de fixture sintética; evidências privadas mascaradas.",
       "width": 1280,
-      "height": 6103,
-      "sha256": "d872a7d5dcfbf4a96c9f56fbca65c8e714439b5d121df0ef5cfbb4c89171eb7f"
+      "height": 7721,
+      "sha256": "d746997e4519f1eb318ba21281e7cdf2f76f99aed631287d85e51981b7ddeeb3"
     },
     {
       "file": "14-revisao-automatizada.png",
       "description": "Estado editorial de teste: conferência automatizada explicitamente identificada, sem revisão humana presumida.",
       "width": 1280,
-      "height": 6103,
-      "sha256": "d6ee2d7fc1c3de1e31a838d83f5a9523e7abac632b5eb8cbf7d227f698f0df21"
+      "height": 7721,
+      "sha256": "8a500f53b79a0bfd47dd8fcd042a5b37a92c672fa6bb3f6e3f2a18a86982a852"
     },
     {
       "file": "15-historico.png",
       "description": "Atualização v2 disponível e escolha explícita da v1 adquirida, sem recompra.",
       "width": 1280,
-      "height": 1536,
-      "sha256": "cbf1edb5e08f633b9d90b49c44266f4b226691c852cf9b994560acb71a36c963"
+      "height": 1500,
+      "sha256": "86effee4bcc96038cff289b7b7041a6e9027635e9bd16b3f65594fb156315a19"
     },
     {
       "file": "16-leitura-320.png",
       "description": "Leitura responsiva em viewport de 320 px.",
       "width": 320,
       "height": 2562,
-      "sha256": "3b9b1f7cef3767a44a8d494abce7283a6df3d85e683f1fbe147324aaa5a6222b"
+      "sha256": "f019e6b2a120ceee403ff21f8cd33f6585fba2d3f967ea88994b39d533252f2d"
     },
     {
       "file": "17-pesquisa-320.png",
-      "description": "Pesquisa, navegação e sete categorias em 320 px.",
+      "description": "Pesquisa, navegação e sete categorias compactas em 320 px.",
       "width": 320,
-      "height": 10121,
-      "sha256": "fca329099a01af63159556038cf3da570ee2d2630ff7923cde9d715a922351ae"
+      "height": 30598,
+      "sha256": "5aeb5b44e7570e399c63bac7045ea5cc226f3f91980ba46e6da238125b88dace"
     },
     {
       "file": "18-classificacoes.png",
-      "description": "Gestão de termos sintéticos, sem vigência normativa presumida.",
+      "description": "Gestão de taxonomias reais de química analítica, com identificação normativa explícita.",
       "width": 1280,
-      "height": 1134,
-      "sha256": "2473cbd38d8db3cc1721a6c1e3d580b5b723241d2367777135b4abcfb93e96a8"
+      "height": 1594,
+      "sha256": "0e414b277c09e5ffd627a72f37f703f8039ae81bb41242669336d3239726a57b"
     }
   ]
 }

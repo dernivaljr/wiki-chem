@@ -7,8 +7,29 @@ import { failure, fixtureSession, mockFetch, success } from '../../test/mockApi'
 import { facets, labels } from '../../catalog/types'
 import type { Page, Preview, Taxonomies } from '../../catalog/types'
 
-const terms = Object.fromEntries(facets.map(facet => [facet, ['1', '2'].map(id => ({ id, code: 'demo-' + id, label: labels[facet] + ' DEMO ' + id, active: true, revision: 1, ...(facet === 'standards' ? { issuer: 'Emissor DEMO', identifier: id, editionLabel: 'DEMO' } : {}) }))])) as Taxonomies
+const terms = Object.fromEntries(facets.map(facet => [facet, ['1', '2'].map(id => ({ id, code: 'demo-' + id, label: labels[facet] + ' DEMO ' + id, active: true, revision: 1, ...(facet === 'standards' ? { issuer: 'Emissor DEMO', identifier: 'ID-' + id, editionLabel: 'Rev. ' + id } : {}) }))])) as Taxonomies
 const preview = (title = 'DEMO Água'): Preview => ({ owned: false, offer: null, purchasable: false, id: '10', versionId: '20', versionLabel: 'v2', title, freeSummary: 'Resumo gratuito original DEMO.', publicDescription: 'Descrição gratuita DEMO.', technicalMetadata: terms, references: [{ referenceText: 'Origem original DEMO da suíte', sourceType: 'ORIGINAL', ownerCredit: 'Autoria DEMO', editionLabel: 'DEMO', locator: 'Fixture original', canonicalUrl: '' }], contributors: [{ displayName: 'Equipe DEMO', contributorType: 'ORGANIZATION', reference: 'Fixture', role: 'CURATOR' }] })
+const informativePreview = (): Preview => ({
+  owned: false,
+  offer: null,
+  purchasable: false,
+  id: '30',
+  versionId: '40',
+  versionLabel: 'v1',
+  title: 'Determinação espectrofotométrica de ferro total com 1,10-fenantrolina (UV-Vis)',
+  freeSummary: 'Ficha técnica informativa sobre determinação espectrofotométrica de ferro.',
+  publicDescription: 'Descrição original resumida com limitações documentais.',
+  technicalMetadata: terms,
+  references: [{
+    referenceText: 'Cuttitta, F. (1952). USGS TEI-223.',
+    sourceType: 'REFERENCE',
+    ownerCredit: 'U.S. Geological Survey (USGS)',
+    editionLabel: 'TEI-223 (1952)',
+    locator: 'USGS Publications Warehouse — TEI-223',
+    canonicalUrl: 'https://pubs.usgs.gov/publication/tei223',
+  }],
+  contributors: [{ displayName: 'Catálogo técnico demonstrativo do Wiki-Chem', contributorType: 'ORGANIZATION', reference: 'Síntese', role: 'CURATOR' }],
+})
 const page = (data = [preview()], meta = {}): Page<Preview> => ({ data, total: data.length, page: 1, pageSize: 20, ...meta })
 const list = (data = page()) => new Response(JSON.stringify(data))
 function Location() { const location = useLocation(); return <div data-testid="location">{location.pathname + location.search}</div> }
@@ -23,13 +44,26 @@ function mock(handler?: (url: string) => Response | Promise<Response>) {
 }
 
 describe('pesquisa React integrada aos contratos públicos', () => {
-  it('carrega prévias reais do contrato e sete filtros sem inventar preço ou acesso pago', async () => {
+  it('carrega prévias reais do contrato, sete filtros compactos e detalhes normativos sob demanda sem poluir rótulos', async () => {
     mock(); open()
     expect(await screen.findByRole('link', { name: 'DEMO Água' })).toBeInTheDocument()
     for (const facet of facets) expect(screen.getByRole('group', { name: labels[facet] })).toBeInTheDocument()
+    const normGroup = screen.getByRole('group', { name: 'Normas' })
+    expect(within(normGroup).getByRole('checkbox', { name: 'Normas DEMO 1' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Detalhes normativos de Normas DEMO 1')).toBeInTheDocument()
     expect(screen.getByRole('searchbox', { name: 'Termo de consulta' })).toBeEnabled()
     expect(screen.getByText('Oferta comercial ainda não disponível.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /comprar/i })).not.toBeInTheDocument()
+  })
+  it('destaca ficha técnica informativa com fonte pública externa sem oferecer aquisição comercial', async () => {
+    mock(() => list(page([informativePreview()])))
+    open('/consultas?q=ferro')
+    expect(await screen.findByRole('link', { name: /1,10-fenantrolina/ })).toBeInTheDocument()
+    expect(screen.getByText('Ficha técnica informativa · Fonte pública externa')).toBeInTheDocument()
+    expect(screen.getByText('Fonte: U.S. Geological Survey (USGS) (TEI-223 (1952))')).toBeInTheDocument()
+    expect(screen.getByText('Ficha técnica informativa de referência pública — sem oferta comercial de conteúdo de terceiros.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Adicionar ao carrinho' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Consultar fonte 1' })).toHaveAttribute('href', 'https://pubs.usgs.gov/publication/tei223')
   })
   it('combina múltiplos valores, aplica URL, remove e limpa filtros', async () => {
     mock(); open(); const user = userEvent.setup()
@@ -61,11 +95,15 @@ describe('pesquisa React integrada aos contratos públicos', () => {
     await waitFor(() => expect(screen.getByRole('searchbox')).toHaveValue('agua'))
     expect(screen.getByTestId('location')).toHaveTextContent('page=2')
   })
-  it('informa vazio sem construir resultados substitutos', async () => {
-    mock(() => list(page([]))); open('/consultas?q=inexistente')
+  it('informa vazio sem construir resultados substitutos e oferece atalhos de recuperação', async () => {
+    mock(() => list(page([]))); open('/consultas?q=inexistente&analyteIds=1')
     expect(await screen.findByText(/Nenhuma metodologia encontrada/)).toBeInTheDocument()
     expect(screen.getByRole('searchbox')).toHaveValue('inexistente')
     expect(screen.queryByRole('article')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar apenas filtros' }))
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/consultas?q=inexistente'))
+    await userEvent.click(await screen.findByRole('button', { name: 'Redefinir consulta' }))
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/consultas$/))
   })
   it('não mantém resultados anteriores durante carregamento nem aceita resposta obsoleta', async () => {
     let resolve: ((response: Response) => void) | undefined

@@ -1,8 +1,8 @@
 # Capturas reais da demonstração
 
-18 imagens produzidas automaticamente em 2026-10-30T22:39:35.940Z por Chromium, consumindo API e MySQL reais em ambiente isolado. Todas foram revisadas; não são mockups e os originais não foram editados. Senhas, e-mails e evidências privadas são mascarados pelo próprio navegador no momento da captura, com a cor azul escura da interface. Contas e conteúdos são sintéticos e não representam informações pessoais reais, revisão humana científica ou autorização comercial.
+18 imagens produzidas automaticamente em 2026-10-31T00:32:00.072Z por Chromium, consumindo API e MySQL reais em ambiente isolado. Todas foram revisadas; não são mockups e os originais não foram editados. Senhas, e-mails e evidências privadas são mascarados pelo próprio navegador no momento da captura, com a cor azul escura da interface. Contas e conteúdos comerciais são sintéticos; as fichas técnicas analíticas são exclusivamente informativas (sem cópia de procedimento integral e sem oferta comercial) e não representam revisão científica humana.
 
-O [manifesto](manifest.json) registra descrição, dimensões e hash SHA-256 de cada arquivo para conferência de integridade. As figuras comerciais mantêm DEMONSTRAÇÃO — SEM COBRANÇA. Os textos integrais mostrados são originais de teste, sem instruções laboratoriais ou validade analítica.
+O [manifesto](manifest.json) registra descrição, dimensões e hash SHA-256 de cada arquivo para conferência de integridade. As figuras comerciais mantêm DEMONSTRAÇÃO — SEM COBRANÇA.
 
 ## Figura 1 — home
 
@@ -24,21 +24,21 @@ Cadastro concluído e acesso por autenticação real.
 
 ## Figura 4 — pesquisa
 
-Cinco exemplos sintéticos publicados exclusivamente no banco de testes.
+Catálogo demonstrativo com 15 fichas técnicas analíticas verificadas e 5 fixtures comerciais sintéticas.
 
-![Cinco exemplos sintéticos publicados exclusivamente no banco de testes.](04-pesquisa.png)
+![Catálogo demonstrativo com 15 fichas técnicas analíticas verificadas e 5 fixtures comerciais sintéticas.](04-pesquisa.png)
 
 ## Figura 5 — sete-filtros
 
-Combinação real dos sete filtros, OR interno e AND entre categorias.
+Pesquisa por ferro combinada com espectrofotometria/UV-Vis e os sete filtros analíticos reais.
 
-![Combinação real dos sete filtros, OR interno e AND entre categorias.](05-sete-filtros.png)
+![Pesquisa por ferro combinada com espectrofotometria/UV-Vis e os sete filtros analíticos reais.](05-sete-filtros.png)
 
 ## Figura 6 — previa
 
-Prévia gratuita e oferta de demonstração, sem procedimento integral.
+Prévia gratuita e oferta de demonstração sintética separada das fichas informativas.
 
-![Prévia gratuita e oferta de demonstração, sem procedimento integral.](06-previa.png)
+![Prévia gratuita e oferta de demonstração sintética separada das fichas informativas.](06-previa.png)
 
 ## Figura 7 — carrinho
 
@@ -78,9 +78,9 @@ Texto integral original sintético liberado somente ao titular.
 
 ## Figura 13 — admin-rascunho
 
-Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.
+Administração separada: rascunho v2 de fixture sintética; evidências privadas mascaradas.
 
-![Administração separada: rascunho v2 e classificação múltipla; evidências privadas mascaradas.](13-admin-rascunho.png)
+![Administração separada: rascunho v2 de fixture sintética; evidências privadas mascaradas.](13-admin-rascunho.png)
 
 ## Figura 14 — revisao-automatizada
 
@@ -102,12 +102,12 @@ Leitura responsiva em viewport de 320 px.
 
 ## Figura 17 — pesquisa-320
 
-Pesquisa, navegação e sete categorias em 320 px.
+Pesquisa, navegação e sete categorias compactas em 320 px.
 
-![Pesquisa, navegação e sete categorias em 320 px.](17-pesquisa-320.png)
+![Pesquisa, navegação e sete categorias compactas em 320 px.](17-pesquisa-320.png)
 
 ## Figura 18 — classificacoes
 
-Gestão de termos sintéticos, sem vigência normativa presumida.
+Gestão de taxonomias reais de química analítica, com identificação normativa explícita.
 
-![Gestão de termos sintéticos, sem vigência normativa presumida.](18-classificacoes.png)
+![Gestão de taxonomias reais de química analítica, com identificação normativa explícita.](18-classificacoes.png)
