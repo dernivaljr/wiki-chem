@@ -2,19 +2,41 @@
 
 O frontend React/TypeScript consome uma API REST Fastify/Node.js 24/TypeScript strict, com validação Zod. MySQL 8.4 persiste usuários, sessões, conhecimento editorial e comércio demonstrativo. O backend é um monólito modular; não há serviço externo de pagamento ou IA.
 
+A **Figura 1** apresenta a arquitetura lógica do MVP e a execução local por Docker Compose. O frontend React é executado no navegador; o container frontend disponibiliza os arquivos e encaminha `/api/v1` para a API. Os módulos do backend pertencem a **um único monólito modular**, não a serviços independentes. A API e o MySQL não ficam expostos diretamente ao navegador no ambiente de demonstração.
+
+A fonte editável desta figura, preparada para o **Eraser**, está em [arquitetura-wiki-chem.eraser](diagramas/arquitetura-wiki-chem.eraser). Há [instruções de renderização e exportação](diagramas/README.md); a exportação SVG no Eraser será anexada ao GitHub após conferência visual.
+
+**Figura 1 — Arquitetura de software do Wiki-Chem (representação equivalente renderizada no GitHub).**
+
 ```mermaid
 flowchart LR
-  U["Usuário no navegador"] --> F["React: pesquisa, aquisição e biblioteca"]
-  F --> A["API REST /api/v1: sessão e validação"]
-  A --> I["Identidade e autorização"]
-  A --> C["Catálogo editorial e pesquisa"]
-  A --> E["Carrinho, pedidos e direitos"]
-  A --> L["Biblioteca: leitura por direito e versão"]
-  I --> M[("MySQL 8.4")]
-  C --> M
-  E --> M
-  L --> M
+  P["Cliente / Administrador"] --> R["Navegador<br/>React + TypeScript"]
+
+  subgraph D["Ambiente local de demonstração · Docker Compose"]
+    direction LR
+    F["Frontend<br/>Vite preview"]
+    subgraph B["Backend · monólito modular · Node.js 24 / Fastify"]
+      direction TB
+      A["API REST /api/v1<br/>Zod · sessão · autorização"]
+      I["Identidade"]
+      C["Catálogo e pesquisa"]
+      E["Ofertas e carrinho"]
+      O["Checkout e pedidos"]
+      L["Biblioteca autorizada"]
+      AD["Administração editorial"]
+      A --> I & C & E & O & L & AD
+    end
+    DB[("MySQL 8.4<br/>usuários · metodologias<br/>preços · pedidos · direitos")]
+    F -->|"Proxy /api/v1"| A
+    I & C & E & O & L & AD --> DB
+  end
+
+  R -->|"HTTP local :4180"| F
+  style B fill:#F3EFFF,stroke:#7B6EAC,color:#151E43
+  style D fill:#F5F8FF,stroke:#ABBEDB,color:#151E43
+  style DB fill:#DCEFE8,stroke:#43806B,color:#16382B
 ```
+
 
 ```mermaid
 erDiagram
